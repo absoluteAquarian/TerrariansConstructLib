@@ -1,0 +1,3 @@
+displayName = Terrarians' Construct Library
+author = absoluteAquarian
+version = 0.1
