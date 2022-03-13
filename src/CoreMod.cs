@@ -121,5 +121,56 @@ namespace TerrariansConstructLib {
 		/// <exception cref="ArgumentException"/>
 		public static ItemPart GetItemPart(Material material, int partID)
 			=> ItemPart.partData.Get(material, partID);
+
+		/// <summary>
+		/// Registers the part items for the material, <paramref name="materialType"/>, with the given rarity, <paramref name="rarity"/>
+		/// </summary>
+		/// <param name="mod">The mod instance to add the part to</param>
+		/// <param name="materialType">The item ID</param>
+		/// <param name="rarity">The item rarity</param>
+		/// <param name="actions">The actions</param>
+		/// <param name="tooltipForAllParts">The tooltip that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetTooltip(Material, int, string)"/></param>
+		/// <param name="partIDsToIgnore">The IDs to ignore when iterating to create the part items</param>
+		public static void AddAllPartsOfType(Mod mod, int materialType, int rarity, ItemPartActionsBuilder actions, string tooltipForAllParts, params int[] partIDsToIgnore) {
+			Material material = new(){
+				type = materialType,
+				rarity = rarity
+			};
+
+			for (int partID = 0; partID < MaterialPartID.TotalCount; partID++) {
+				if (Array.IndexOf(partIDsToIgnore, partID) > -1)
+					continue;
+
+				AddPart(mod, material, partID, actions, tooltipForAllParts);
+			}
+		}
+
+		/// <summary>
+		/// Registers a part item for the material, <paramref name="material"/>
+		/// </summary>
+		/// <param name="mod">The mod instance to add the part to</param>
+		/// <param name="material">The material instance</param>
+		/// <param name="partID">The part ID</param>
+		/// <param name="actions">The actions</param>
+		/// <param name="tooltip">The tooltip for this part.  Can be modified via <seealso cref="ItemPart.SetTooltip(Material, int, string)"/></param>
+		public static void AddPart(Mod mod, Material material, int partID, ItemPartActionsBuilder actions, string tooltip) {
+			ItemPartItem item = ItemPartItem.Create(material, partID, actions, tooltip);
+
+			mod.AddContent(item);
+				
+			ItemPartItem.registeredPartsByItemID[item.Type] = item.part;
+		}
+
+		/// <summary>
+		/// Registers a part item for the material, <paramref name="materialType"/>, with the given rarity, <paramref name="rarity"/>
+		/// </summary>
+		/// <param name="mod">The mod instance to add the part to</param>
+		/// <param name="materialType">The item ID</param>
+		/// <param name="rarity">The item rarity</param>
+		/// <param name="partID">The part ID</param>
+		/// <param name="actions">The actions</param>
+		/// <param name="tooltip">The tooltip for this part.  Can be modified via <seealso cref="ItemPart.SetTooltip(Material, int, string)"/></param>
+		public static void AddPart(Mod mod, int materialType, int rarity, int partID, ItemPartActionsBuilder actions, string tooltip)
+			=> AddPart(mod, new Material(){ type = materialType, rarity = rarity }, partID, actions, tooltip);
 	}
 }
