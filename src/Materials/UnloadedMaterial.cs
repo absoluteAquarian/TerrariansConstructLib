@@ -5,7 +5,11 @@ namespace TerrariansConstructLib.Materials {
 	public sealed class UnloadedMaterial : Material {
 		public string modName, itemName;
 
+		public override string GetModName() => nameof(TerrariansConstructLib);
+
 		public override string GetName() => "Unloaded";
+
+		public override string GetItemName() => GetName();
 
 		public override TagCompound SerializeData() {
 			TagCompound tag = new();
@@ -26,7 +30,7 @@ namespace TerrariansConstructLib.Materials {
 				modName = mod,
 				itemName = name,
 				rarity = rarity,
-				type = -1
+				type = -100413
 			};
 		};
 	}

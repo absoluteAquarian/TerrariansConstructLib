@@ -141,6 +141,18 @@ namespace TerrariansConstructLib {
 				rarity = rarity
 			};
 
+			AddAllPartsOfMaterial(mod, material, actions, tooltipForAllParts, partIDsToIgnore);
+		}
+
+		/// <summary>
+		/// Registers the part items for the material, <paramref name="material"/>
+		/// </summary>
+		/// <param name="mod">The mod instance to add the part to</param>
+		/// <param name="material">The material instance</param>
+		/// <param name="actions">The actions</param>
+		/// <param name="tooltipForAllParts">The tooltip that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetTooltip(Material, int, string)"/></param>
+		/// <param name="partIDsToIgnore">The IDs to ignore when iterating to create the part items</param>
+		public static void AddAllPartsOfMaterial(Mod mod, Material material, ItemPartActionsBuilder actions, string tooltipForAllParts, params int[] partIDsToIgnore) {
 			for (int partID = 0; partID < MaterialPartID.TotalCount; partID++) {
 				if (Array.IndexOf(partIDsToIgnore, partID) > -1)
 					continue;

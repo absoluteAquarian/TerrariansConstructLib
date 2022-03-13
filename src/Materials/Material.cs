@@ -16,7 +16,7 @@ namespace TerrariansConstructLib.Materials {
 		/// </summary>
 		public int rarity;
 
-		public string GetModName() {
+		public virtual string GetModName() {
 			if (ItemID.Search.TryGetName(type, out _))
 				return "Terraria";
 			else if (ModContent.GetModItem(type) is ModItem mItem)
@@ -31,6 +31,9 @@ namespace TerrariansConstructLib.Materials {
 				return mItem.Name;
 			throw new Exception("Invalid material type ID");
 		}
+
+		public virtual string GetItemName()
+			=> Lang.GetItemNameValue(type);
 
 		public Item AsItem() => new(type);
 

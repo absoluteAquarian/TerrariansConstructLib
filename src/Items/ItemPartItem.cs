@@ -34,7 +34,7 @@ namespace TerrariansConstructLib.Items {
 					// Default to the "unknown" asset
 					string path = $"{MaterialPartID.registeredIDsToAssetFolders[part.partID]}/{MaterialPartID.registeredIDsToInternalNames[part.partID]}/Unknown";
 
-					Mod.Logger.Warn($"Part texture (Material: \"{Lang.GetItemNameValue(part.material.type)}\", Name: \"{MaterialPartID.registeredIDsToNames[part.partID]}\") could not be found.  Defaulting to Unknown texture path:\n" +
+					Mod.Logger.Warn($"Part texture (Material: \"{part.material.GetItemName()}\", Name: \"{MaterialPartID.registeredIDsToNames[part.partID]}\") could not be found.  Defaulting to Unknown texture path:\n" +
 						path);
 
 					return path;
@@ -75,7 +75,7 @@ namespace TerrariansConstructLib.Items {
 				buildersByPartID = PartActions.builders[materialType] = new();
 
 			if (buildersByPartID.ContainsKey(partID))
-				throw new ArgumentException($"The part type \"{MaterialPartID.registeredIDsToNames[partID]}\" has already been assigned to the material type \"{Lang.GetItemNameValue(materialType)}\" (ID: {materialType})");
+				throw new ArgumentException($"The part type \"{MaterialPartID.registeredIDsToNames[partID]}\" has already been assigned to the material type \"{material.GetItemName()}\" (ID: {materialType})");
 
 			buildersByPartID[partID] = builder;
 
