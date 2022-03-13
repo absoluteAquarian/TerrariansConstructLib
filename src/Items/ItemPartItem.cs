@@ -34,7 +34,8 @@ namespace TerrariansConstructLib.Items {
 					// Default to the "unknown" asset
 					string path = $"{MaterialPartID.registeredIDsToAssetFolders[part.partID]}/{MaterialPartID.registeredIDsToInternalNames[part.partID]}/Unknown";
 
-					Mod.Logger.Warn($"Part texture (Material: \"{part.material.GetItemName()}\", Name: \"{MaterialPartID.registeredIDsToNames[part.partID]}\") could not be found.  Defaulting to Unknown texture path:\n" +
+					Mod.Logger.Warn($"Part texture (Material: \"{part.material.GetItemName()}\", Name: \"{MaterialPartID.registeredIDsToNames[part.partID]}\") could not be found." +
+						"  Defaulting to Unknown texture path:\n" +
 						path);
 
 					return path;
@@ -66,9 +67,6 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public static ItemPartItem Create(Material material, int partID, ItemPartActionsBuilder builder, string tooltip) {
-			if (material is UnloadedMaterial)
-				return null;
-
 			int materialType = material.type;
 
 			if (!PartActions.builders.TryGetValue(materialType, out var buildersByPartID))
