@@ -1,22 +1,33 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.IO;
 using System.Linq;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using TerrariansConstructLib.API;
 using TerrariansConstructLib.ID;
 using TerrariansConstructLib.Projectiles;
 
 namespace TerrariansConstructLib.Items {
 	[Autoload(false)]
 	public class BaseTCItem : ModItem {
-		public ItemPart[] parts = Array.Empty<ItemPart>();
+		internal ItemPartSlotCollection parts;
 
 		public int ammoReserve, ammoReserveMax;
 
+		public virtual int PartsCount => 0;
+
+		protected ReadOnlySpan<ItemPart> GetParts() => parts.ToArray();
+
+		protected ItemPart GetPart(int index) => parts[index];
+
 		public BaseTCItem(params ItemPart[] parts) {
-			this.parts = parts;
+			if (parts.Length != PartsCount)
+				throw new ArgumentException($"Parts length ({parts.Length}) was not equal to the expected length of {PartsCount}");
+
+			this.parts = new(parts);
 		}
 
 		public void SetUseNoAmmo() {
@@ -138,7 +149,10 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public override void LoadData(TagCompound tag) {
-			parts = tag.GetList<ItemPart>("parts").ToArray();
+			parts = new(tag.GetList<ItemPart>("parts").ToArray());
+
+			if (parts.Length != PartsCount)
+				throw new IOException($"Saved parts list length ({parts.Length}) was not equal to the expected length of {PartsCount}");
 		}
 	}
 }

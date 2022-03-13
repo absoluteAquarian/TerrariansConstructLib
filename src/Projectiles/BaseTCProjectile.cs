@@ -6,7 +6,11 @@ using TerrariansConstructLib.Items;
 namespace TerrariansConstructLib.Projectiles {
 	[Autoload(false)]
 	public class BaseTCProjectile : ModProjectile {
-		public ItemPart[] parts = Array.Empty<ItemPart>();
+		internal ItemPart[] parts = Array.Empty<ItemPart>();
+
+		protected ReadOnlySpan<ItemPart> GetParts() => parts;
+
+		protected ItemPart GetPart(int index) => parts[index];
 
 		public sealed override void SetStaticDefaults() {
 			SafeSetStaticDefaults();
