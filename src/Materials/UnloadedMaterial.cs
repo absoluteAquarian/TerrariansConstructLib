@@ -2,7 +2,7 @@
 using Terraria.ModLoader.IO;
 
 namespace TerrariansConstructLib.Materials {
-	public sealed class UnloadedMaterial : Material {
+	public class UnloadedMaterial : Material {
 		public string modName, itemName;
 
 		public override string GetModName() => nameof(TerrariansConstructLib);
@@ -10,6 +10,10 @@ namespace TerrariansConstructLib.Materials {
 		public override string GetName() => "Unloaded";
 
 		public override string GetItemName() => GetName();
+
+		public UnloadedMaterial() {
+			type = -100413;
+		}
 
 		public override TagCompound SerializeData() {
 			TagCompound tag = new();

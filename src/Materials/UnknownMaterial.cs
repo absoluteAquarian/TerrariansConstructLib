@@ -2,12 +2,16 @@
 using Terraria.ModLoader.IO;
 
 namespace TerrariansConstructLib.Materials {
-	public sealed class UnknownMaterial : Material {
+	public sealed class UnknownMaterial : UnloadedMaterial {
 		public override string GetModName() => nameof(TerrariansConstructLib);
 
 		public override string GetName() => "Unknown";
 
 		public override string GetItemName() => GetName();
+
+		public UnknownMaterial() {
+			type = -100612;
+		}
 
 		public override TagCompound SerializeData() {
 			TagCompound tag = new();
