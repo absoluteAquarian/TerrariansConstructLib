@@ -1,1 +1,3 @@
-Terrarians' Construct Library is a pretty cool mod, it does...this. Modify this file with a description of your mod.
+The library mod for Terrarians' Construct.
+
+Include this mod as a strong reference when using it.
