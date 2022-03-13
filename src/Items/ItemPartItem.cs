@@ -57,7 +57,7 @@ namespace TerrariansConstructLib.Items {
 				if (part is null)
 					part = registeredPartsByItemID[Type];
 
-				return $"ItemPart_{part.material.GetModName()}_{part.material.GetName()}";
+				return $"ItemPart_{part.material.GetModName()}_{part.material.GetName()}_{MaterialPartID.registeredIDsToInternalNames[part.partID]}";
 			}
 		}
 

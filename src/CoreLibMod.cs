@@ -11,10 +11,14 @@ using TerrariansConstructLib.Projectiles;
 using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib {
-	public class CoreMod : Mod {
+	public class CoreLibMod : Mod {
 		public static ModKeybind ActivateAbility;
 
 		private static bool hasReachedPostSetupContent = false;
+
+		public static bool LogAddedParts { get; set; }
+
+		public static CoreLibMod Instance => ModContent.GetInstance<CoreLibMod>();
 
 		public override void Load() {
 			hasReachedPostSetupContent = false;
@@ -158,6 +162,9 @@ namespace TerrariansConstructLib {
 			ItemPartItem.registeredPartsByItemID[item.Type] = item.part;
 
 			mod.AddContent(item);
+
+			if (LogAddedParts)
+				Instance.Logger.Info($"Added item part \"{item.Name}\" (ID: {item.Type})");
 		}
 
 		/// <summary>

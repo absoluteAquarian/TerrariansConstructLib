@@ -37,7 +37,7 @@ namespace TerrariansConstructLib.Items {
 
 		public void SetUseAmmo(int constructedAmmoID) {
 			Item.shoot = ConstructedAmmoID.GetProjectileType(constructedAmmoID);
-			Item.useAmmo = CoreMod.GetAmmoID(constructedAmmoID);
+			Item.useAmmo = CoreLibMod.GetAmmoID(constructedAmmoID);
 		}
 
 		public float copperPartCharge;
