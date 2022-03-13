@@ -5,6 +5,8 @@ namespace TerrariansConstructLib.Materials {
 	public sealed class UnloadedMaterial : Material {
 		public string modName, itemName;
 
+		public override string GetName() => "Unloaded";
+
 		public override TagCompound SerializeData() {
 			TagCompound tag = new();
 

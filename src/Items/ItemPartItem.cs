@@ -28,14 +28,7 @@ namespace TerrariansConstructLib.Items {
 
 				asset.Append('/');
 
-				if (part.material is UnloadedMaterial)
-					asset.Append("Unloaded");
-				else if (ItemID.Search.TryGetName(part.material.type, out string materialName))
-					asset.Append(materialName);
-				else if (ModContent.GetModItem(part.material.type) is ModItem mItem)
-					asset.Append(mItem.Name);
-				else
-					throw new Exception("Invalid material type ID");
+				asset.Append(part.material.GetName());
 
 				if (!ModContent.HasAsset(asset.ToString())) {
 					// Default to the "unknown" asset
@@ -57,6 +50,16 @@ namespace TerrariansConstructLib.Items {
 		public ItemPart part;
 
 		internal static Dictionary<int, ItemPart> registeredPartsByItemID;
+
+		//Needed to allow multiple ItemParItem instances to be loaded
+		public override string Name {
+			get {
+				if (part is null)
+					part = registeredPartsByItemID[Type];
+
+				return $"ItemPart_{part.material.GetModName()}_{part.material.GetName()}";
+			}
+		}
 
 		public ItemPartItem(ItemPart part) {
 			this.part = part;

@@ -1,4 +1,5 @@
 ﻿using System;
+using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
@@ -14,6 +15,24 @@ namespace TerrariansConstructLib.Materials {
 		/// The rarity of the material
 		/// </summary>
 		public int rarity;
+
+		public string GetModName() {
+			if (ItemID.Search.TryGetName(type, out _))
+				return "Terraria";
+			else if (ModContent.GetModItem(type) is ModItem mItem)
+				return mItem.Mod.Name;
+			throw new Exception("Invalid material type ID");
+		}
+
+		public virtual string GetName() {
+			if (ItemID.Search.TryGetName(type, out string materialName))
+				return materialName;
+			else if (ModContent.GetModItem(type) is ModItem mItem)
+				return mItem.Name;
+			throw new Exception("Invalid material type ID");
+		}
+
+		public Item AsItem() => new(type);
 
 		public virtual TagCompound SerializeData() {
 			TagCompound tag = new();
