@@ -155,10 +155,9 @@ namespace TerrariansConstructLib {
 		/// <param name="tooltip">The tooltip for this part.  Can be modified via <seealso cref="ItemPart.SetTooltip(Material, int, string)"/></param>
 		public static void AddPart(Mod mod, Material material, int partID, ItemPartActionsBuilder actions, string tooltip) {
 			ItemPartItem item = ItemPartItem.Create(material, partID, actions, tooltip);
+			ItemPartItem.registeredPartsByItemID[item.Type] = item.part;
 
 			mod.AddContent(item);
-				
-			ItemPartItem.registeredPartsByItemID[item.Type] = item.part;
 		}
 
 		/// <summary>
