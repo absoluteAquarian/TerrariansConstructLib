@@ -7,7 +7,7 @@ using Terraria.GameInput;
 using Terraria.UI;
 
 namespace TerrariansConstructLib.API.UI {
-	public class UIItemSlot : UIElement {
+	public class TCUIItemSlot : UIElement {
 		private int Context { get; set; }
 
 		public float Scale { get; private set; }
@@ -32,7 +32,7 @@ namespace TerrariansConstructLib.API.UI {
 
 		public bool IgnoreClicks{ get; set; }
 
-		public UIItemSlot(int context = ItemSlot.Context.BankItem, float scale = 1f) {
+		public TCUIItemSlot(int context = ItemSlot.Context.BankItem, float scale = 1f) {
 			Context = context;
 			Scale = scale;
 
