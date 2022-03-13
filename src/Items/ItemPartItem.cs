@@ -92,7 +92,7 @@ namespace TerrariansConstructLib.Items {
 			part = registeredPartsByItemID[Type];
 
 			// TODO: localization handling
-			string name = Lang.GetItemNameValue(part.material.type);
+			string name = part.material.GetItemName();
 			if (name.EndsWith(" Bar"))
 				name = name.AsSpan()[..^4].ToString();
 
