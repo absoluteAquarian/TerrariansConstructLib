@@ -75,6 +75,20 @@ namespace TerrariansConstructLib.Items {
 		/// <inheritdoc cref="SetDefaults"/>
 		public virtual void SafeSetDefaults() { }
 
+		public sealed override ModItem Clone(Item item) {
+			BaseTCItem source = item.ModItem as BaseTCItem;
+			BaseTCItem clone = new();
+
+			Clone(source, clone);
+
+			clone.parts = new(source.parts.ToArray());
+
+			return clone;
+		}
+
+		/// <inheritdoc cref="Clone(Item)"/>
+		public virtual void Clone(BaseTCItem source, BaseTCItem clone) { }
+
 		public sealed override bool CanBeConsumedAsAmmo(Player player) => false;
 
 		public sealed override void ModifyWeaponDamage(Player player, ref StatModifier damage, ref float flat) {
