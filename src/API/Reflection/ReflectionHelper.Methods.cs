@@ -76,7 +76,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_0);
 
-			il.EmitCall(OpCodes.Call, methodInfo, null);
+			il.Emit(OpCodes.Call, methodInfo);
 
 			il.Emit(OpCodes.Ret);
 
@@ -164,7 +164,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_0);
 
-			il.EmitCall(OpCodes.Call, methodInfo, null);
+			il.Emit(OpCodes.Call, methodInfo);
 
 			il.Emit(OpCodes.Ret);
 
@@ -258,7 +258,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_1);
 
-			il.EmitCall(OpCodes.Call, methodInfo, null);
+			il.Emit(OpCodes.Call, methodInfo);
 
 			il.Emit(OpCodes.Ret);
 
@@ -350,7 +350,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_1);
 
-			il.EmitCall(OpCodes.Call, methodInfo, null);
+			il.Emit(OpCodes.Call, methodInfo);
 
 			il.Emit(OpCodes.Ret);
 
@@ -447,7 +447,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_2);
 
-			il.EmitCall(OpCodes.Call, methodInfo, null);
+			il.Emit(OpCodes.Call, methodInfo);
 
 			il.Emit(OpCodes.Ret);
 
@@ -542,7 +542,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_2);
 
-			il.EmitCall(OpCodes.Call, methodInfo, null);
+			il.Emit(OpCodes.Call, methodInfo);
 
 			il.Emit(OpCodes.Ret);
 
@@ -642,7 +642,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_3);
 
-			il.EmitCall(OpCodes.Call, methodInfo, null);
+			il.Emit(OpCodes.Call, methodInfo);
 
 			il.Emit(OpCodes.Ret);
 
@@ -740,7 +740,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_3);
 
-			il.EmitCall(OpCodes.Call, methodInfo, null);
+			il.Emit(OpCodes.Call, methodInfo);
 
 			il.Emit(OpCodes.Ret);
 
