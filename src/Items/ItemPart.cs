@@ -21,12 +21,20 @@ namespace TerrariansConstructLib.Items {
 
 		internal static PartsDictionary<ItemPart> partData;
 
-		public void SetTooltip(string tooltip)
-			=> SetTooltip(material, partID, tooltip);
+		public void SetGlobalTooltip(string tooltip)
+			=> SetGlobalTooltip(material, partID, tooltip);
 
-		public static void SetTooltip(Material material, int partID, string tooltip) {
+		public static void SetGlobalTooltip(Material material, int partID, string tooltip) {
 			if (material is not UnloadedMaterial)
 				partData.Get(material, partID).tooltip = tooltip;
+		}
+
+		public void SetGlobalModifierText(string modifierText)
+			=> SetGlobalModifierText(material, partID, modifierText);
+
+		public static void SetGlobalModifierText(Material material, int partID, string modifierText) {
+			if (material is not UnloadedMaterial)
+				partData.Get(material, partID).tooltip = modifierText;
 		}
 
 		/// <summary>
@@ -40,6 +48,15 @@ namespace TerrariansConstructLib.Items {
 		public int partID;
 
 		public string tooltip;
+
+		public string modifierText;
+
+		public virtual ItemPart Clone() => new(){
+			material = material.Clone(),
+			partID = partID,
+			tooltip = tooltip,
+			modifierText = modifierText
+		};
 
 		public PartItemFunc SetItemDefaults => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).setItemDefaults;
 

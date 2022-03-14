@@ -15,6 +15,13 @@ namespace TerrariansConstructLib.Materials {
 			type = -100413;
 		}
 
+		public override Material Clone() => new UnloadedMaterial() {
+			modName = modName,
+			itemName = itemName,
+			type = type,
+			rarity = rarity
+		};
+
 		public override TagCompound SerializeData() {
 			TagCompound tag = new();
 

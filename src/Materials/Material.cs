@@ -16,6 +16,8 @@ namespace TerrariansConstructLib.Materials {
 		/// </summary>
 		public int rarity;
 
+		public virtual Material Clone() => new() { type = type, rarity = rarity };
+
 		public virtual string GetModName() {
 			if (ItemID.Search.TryGetName(type, out _))
 				return "Terraria";

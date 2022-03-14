@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Terraria;
@@ -101,6 +102,22 @@ namespace TerrariansConstructLib.Items {
 
 		/// <inheritdoc cref="SetDefaults"/>
 		public virtual void SafeSetDefaults() { }
+
+		public sealed override void ModifyTooltips(List<TooltipLine> tooltips) {
+			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TYPES>", i => "PartType_" + i,
+				string.Join('\n', parts.Select(p => p.material.GetItemName())));
+
+			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TYPES>", i => "PartTooltip_" + i,
+				string.Join('\n', parts.Select(p => p.tooltip).Where(s => !string.IsNullOrWhiteSpace(s))));
+
+			// TODO: modifier strings
+
+			if (ammoReserveMax > 0)
+				Utility.FindAndModify(tooltips, "<AMMO_COUNT>", $"{ammoReserve}/{ammoReserveMax}");
+		}
+
+		/// <inheritdoc cref="ModifyTooltips(List{TooltipLine})"/>
+		public virtual void SafeModifyTooltips(List<TooltipLine> tooltips) { }
 
 		public sealed override ModItem Clone(Item item) {
 			BaseTCItem source = item.ModItem as BaseTCItem;

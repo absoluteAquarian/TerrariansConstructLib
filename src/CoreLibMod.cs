@@ -167,6 +167,42 @@ namespace TerrariansConstructLib {
 			=> id >= 0 && id < PartRegistry.Count ? PartRegistry.registeredIDs[id].name : throw new Exception($"A part with ID {id} does not exist");
 
 		/// <summary>
+		/// Gets the global tooltip of an <seealso cref="ItemPart"/>
+		/// </summary>
+		/// <param name="material">The material</param>
+		/// <param name="partID">The part ID</param>
+		/// <returns>The global tooltip</returns>
+		public static string GetPartTooltip(Material material, int partID)
+			=> ItemPart.partData.Get(material, partID).tooltip;
+
+		/// <summary>
+		/// Sets the global tooltip of an <seealso cref="ItemPart"/>
+		/// </summary>
+		/// <param name="material">The material</param>
+		/// <param name="partID">The part ID</param>
+		/// <param name="tooltip">The new tooltip</param>
+		public static void SetGlobalPartTooltip(Material material, int partID, string tooltip)
+			=> ItemPart.SetGlobalTooltip(material, partID, tooltip);
+
+		/// <summary>
+		/// Gets the global modifier text of an <seealso cref="ItemPart"/>
+		/// </summary>
+		/// <param name="material">The material</param>
+		/// <param name="partID">The part ID</param>
+		/// <returns>The global modifier text</returns>
+		public static string GetPartModifierText(Material material, int partID)
+			=> ItemPart.partData.Get(material, partID).modifierText;
+
+		/// <summary>
+		/// Sets the global modifier text of an <seealso cref="ItemPart"/>
+		/// </summary>
+		/// <param name="material">The material</param>
+		/// <param name="partID">The part ID</param>
+		/// <param name="tooltip">The new modifier text</param>
+		public static void SetGlobalPartModifierText(Material material, int partID, string tooltip)
+			=> ItemPart.SetGlobalTooltip(material, partID, tooltip);
+
+		/// <summary>
 		/// Gets the name of a registered constructed ammo type
 		/// </summary>
 		/// <param name="constructedAmmoID">The ID of the constructed ammo type to get</param>
@@ -259,7 +295,7 @@ namespace TerrariansConstructLib {
 		}
 
 		/// <summary>
-		/// Gets an <seealso cref="ItemPart"/> instance from a material and part ID
+		/// Gets an <seealso cref="ItemPart"/> instance clone from a material and part ID
 		/// </summary>
 		/// <param name="material">The material</param>
 		/// <param name="partID">The part ID</param>
@@ -267,7 +303,7 @@ namespace TerrariansConstructLib {
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
 		public static ItemPart GetItemPart(Material material, int partID)
-			=> ItemPart.partData.Get(material, partID);
+			=> ItemPart.partData.Get(material, partID).Clone();
 
 		/// <summary>
 		/// Gets an <seealso cref="ItemPartItem"/> item type from a material and part ID
@@ -287,7 +323,7 @@ namespace TerrariansConstructLib {
 		/// <param name="materialType">The item ID</param>
 		/// <param name="rarity">The item rarity</param>
 		/// <param name="actions">The actions</param>
-		/// <param name="tooltipForAllParts">The tooltip that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetTooltip(Material, int, string)"/></param>
+		/// <param name="tooltipForAllParts">The tooltip that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetGlobalTooltip(Material, int, string)"/></param>
 		/// <param name="partIDsToIgnore">The IDs to ignore when iterating to create the part items</param>
 		public static void AddAllPartsOfType(Mod mod, int materialType, int rarity, ItemPartActionsBuilder actions, string tooltipForAllParts, params int[] partIDsToIgnore) {
 			Material material = new(){
@@ -304,7 +340,7 @@ namespace TerrariansConstructLib {
 		/// <param name="mod">The mod instance to add the part to</param>
 		/// <param name="material">The material instance</param>
 		/// <param name="actions">The actions</param>
-		/// <param name="tooltipForAllParts">The tooltip that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetTooltip(Material, int, string)"/></param>
+		/// <param name="tooltipForAllParts">The tooltip that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetGlobalTooltip(Material, int, string)"/></param>
 		/// <param name="partIDsToIgnore">The IDs to ignore when iterating to create the part items</param>
 		public static void AddAllPartsOfMaterial(Mod mod, Material material, ItemPartActionsBuilder actions, string tooltipForAllParts, params int[] partIDsToIgnore) {
 			for (int partID = 0; partID < PartRegistry.Count; partID++) {
@@ -322,7 +358,7 @@ namespace TerrariansConstructLib {
 		/// <param name="material">The material instance</param>
 		/// <param name="partID">The part ID</param>
 		/// <param name="actions">The actions</param>
-		/// <param name="tooltip">The tooltip for this part.  Can be modified via <seealso cref="ItemPart.SetTooltip(Material, int, string)"/></param>
+		/// <param name="tooltip">The tooltip for this part.  Can be modified via <seealso cref="ItemPart.SetGlobalTooltip(Material, int, string)"/></param>
 		public static void AddPart(Mod mod, Material material, int partID, ItemPartActionsBuilder actions, string tooltip) {
 			ItemPartItem item = ItemPartItem.Create(material, partID, actions, tooltip);
 
@@ -344,7 +380,7 @@ namespace TerrariansConstructLib {
 		/// <param name="rarity">The item rarity</param>
 		/// <param name="partID">The part ID</param>
 		/// <param name="actions">The actions</param>
-		/// <param name="tooltip">The tooltip for this part.  Can be modified via <seealso cref="ItemPart.SetTooltip(Material, int, string)"/></param>
+		/// <param name="tooltip">The tooltip for this part.  Can be modified via <seealso cref="ItemPart.SetGlobalTooltip(Material, int, string)"/></param>
 		public static void AddPart(Mod mod, int materialType, int rarity, int partID, ItemPartActionsBuilder actions, string tooltip)
 			=> AddPart(mod, new Material(){ type = materialType, rarity = rarity }, partID, actions, tooltip);
 	}
