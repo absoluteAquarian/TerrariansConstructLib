@@ -15,8 +15,8 @@ using TerrariansConstructLib.Registry;
 namespace TerrariansConstructLib.API.Edits.Detours {
 	partial class Vanilla {
 		//Must use a delegate since generic types can't have "ref type"
-		private delegate void Hook_ItemSlot_TextureModificationFunc(int context, ref Texture2D value);
-		private delegate void Hook_ItemSlot_DrawExtra(Texture2D value6, Vector2 position, Rectangle rectangle, Color color, float rotation, Vector2 origin, float scale, SpriteEffects effects, float layerDepth, int slot, int context);
+		public delegate void Hook_ItemSlot_TextureModificationFunc(int context, ref Texture2D value);
+		public delegate void Hook_ItemSlot_DrawExtra(Texture2D value6, Vector2 position, Rectangle rectangle, Color color, float rotation, Vector2 origin, float scale, SpriteEffects effects, float layerDepth, int slot, int context);
 
 		internal static void Hook_ItemSlot_Draw(ILContext il) {
 			MethodInfo Utils_Size_Texture2D = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Texture2D) });
@@ -26,7 +26,6 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 			MethodInfo Color_get_White = typeof(Color).GetProperty("White", BindingFlags.Public | BindingFlags.Static).GetGetMethod();
 			MethodInfo Color_op_Multiply = typeof(Color).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Color), typeof(float) });
 			MethodInfo Utils_Size_Rectangle = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Rectangle) });
-			MethodInfo PartRegistry_get_Count = typeof(PartRegistry).GetProperty(nameof(PartRegistry.Count), BindingFlags.Public | BindingFlags.Static).GetGetMethod();
 			FieldInfo Item_type = typeof(Item).GetField("type", BindingFlags.Public | BindingFlags.Instance);
 			FieldInfo Item_stack= typeof(Item).GetField("stack", BindingFlags.Public | BindingFlags.Instance);
 
@@ -107,8 +106,7 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 			c.Emit(OpCodes.Ldarg_2);
 			//  ldc.i4    TCUIItemSlot.SlotContexts.ForgeUI
 			c.Emit(OpCodes.Ldc_I4, TCUIItemSlot.SlotContexts.ForgeUI);
-			//  call      valuetype [TerrariansConstructLib]int32 TerrariansConstructLib.ID.MatrialPartID::get_TotalCount()
-			c.Emit(OpCodes.Call, PartRegistry_get_Count);
+			c.EmitDelegate<Func<int>>(() => PartRegistry.Count);
 			//  add
 			c.Emit(OpCodes.Add);
 			//  bge.s     postContentCheck
