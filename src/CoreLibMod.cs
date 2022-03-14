@@ -1,12 +1,15 @@
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Terraria;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
+using Terraria.ModLoader.Core;
 using TerrariansConstructLib.API.Edits;
+using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Projectiles;
@@ -55,8 +58,30 @@ namespace TerrariansConstructLib {
 			isLoadingParts = false;
 		}
 
+		private static IEnumerable<Mod> FindDependents() {
+			Type BuildProperties = typeof(Mod).Assembly.GetType("Terraria.ModLoader.Core.BuildProperties");
+			MethodInfo BuildProperties_ReadModFile = BuildProperties.GetMethod("ReadModFile", BindingFlags.NonPublic | BindingFlags.Static);
+			FieldInfo BuildProperties_modReferences = BuildProperties.GetField("modReferences", BindingFlags.NonPublic | BindingFlags.Instance);
+			FieldInfo ModReference_mod = BuildProperties.GetNestedType("ModReference").GetField("mod", BindingFlags.Public | BindingFlags.Instance);
+
+			IEnumerable<string> GetReferences(Mod mod) {
+				TmodFile modFile = ReflectionHelperReturn<Mod, TmodFile>.InvokeMethod("get_File", mod);
+				object properties = BuildProperties_ReadModFile.Invoke(null, new object[]{ modFile });  //BuildProperties
+				object references = BuildProperties_modReferences.GetValue(properties);                 //BuildProperties+ModReference[]
+				IEnumerable<object> referencesArray = (references as Array).Cast<object>();
+				return referencesArray.Select(o => ModReference_mod.GetValue(o) as string);
+			}
+
+			foreach (Mod mod in ModLoader.Mods) {
+				string[] dependencies = GetReferences(mod).ToArray();
+
+				if (Array.IndexOf(dependencies, nameof(TerrariansConstructLib)) > -1)
+					yield return mod;
+			}
+		}
+
 		private static void LoadAllOfTheThings(string methodToInvoke) {
-			foreach (var (mod, method) in ModLoader.Mods.Select(m => (m, m.GetType().GetMethod(methodToInvoke, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)))) {
+			foreach (var (mod, method) in FindDependents().Select(m => (m, m.GetType().GetMethod(methodToInvoke, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)))) {
 				if (method is null) {
 					Instance.Logger.Warn($"Mod \"{mod.Name}\" does not have a \"{methodToInvoke}\" method declared in its Mod class");
 					continue;
@@ -131,7 +156,7 @@ namespace TerrariansConstructLib {
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentOutOfRangeException"/>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterAmmo<T>(Mod mod, string name, int ammoID) where T : BaseTCProjectile{
+		public static int RegisterAmmo<T>(Mod mod, string name, int ammoID) where T : BaseTCProjectile, new() {
 			if (!isLoadingParts)
 				throw new Exception(GetLateLoadReason("RegisterTCAmmunition"));
 
@@ -234,7 +259,7 @@ namespace TerrariansConstructLib {
 		/// <exception cref="Exception"/>
 		public static int GetAmmoProjectileType(int constructedAmmoID)
 			=> constructedAmmoID >= 0 && constructedAmmoID < ConstructedAmmoRegistry.Count
-				? ConstructedAmmoRegistry.registeredIDs[constructedAmmoID].projectileType
+				? ConstructedAmmoRegistry.registeredIDs[constructedAmmoID].mod.Find<ModProjectile>(ConstructedAmmoRegistry.registeredIDs[constructedAmmoID].projectileInternalName).Type
 				: throw new Exception($"A constructed ammo type with ID {constructedAmmoID} does not exist");
 
 		/// <summary>
@@ -365,7 +390,11 @@ namespace TerrariansConstructLib {
 		public static void AddPart(Mod mod, Material material, int partID, ItemPartActionsBuilder actions, string tooltip, string modifierText) {
 			ItemPartItem item = ItemPartItem.Create(material, partID, actions, tooltip, modifierText);
 
+			ReflectionHelper<Mod>.InvokeSetterFunction("loading", mod, true);
+
 			mod.AddContent(item);
+
+			ReflectionHelper<Mod>.InvokeSetterFunction("loading", mod, false);
 
 			//ModItem.Type is only set after Mod.AddContent is called
 			ItemPartItem.registeredPartsByItemID[item.Type] = item.part;

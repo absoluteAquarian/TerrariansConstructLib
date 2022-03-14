@@ -34,7 +34,7 @@ namespace TerrariansConstructLib.Items {
 			set => parts[index] = value;
 		}
 
-		protected BaseTCItem() {
+		public BaseTCItem() {
 			parts = new(PartsCount);
 			registeredItemID = -1;
 		}

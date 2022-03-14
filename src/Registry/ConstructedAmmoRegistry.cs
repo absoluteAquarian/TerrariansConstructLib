@@ -6,7 +6,7 @@ using TerrariansConstructLib.Projectiles;
 
 namespace TerrariansConstructLib.Registry {
 	public static class ConstructedAmmoRegistry {
-		internal static int Register<T>(Mod mod, string name, int ammoID) where T : BaseTCProjectile {
+		internal static int Register<T>(Mod mod, string name, int ammoID) where T : BaseTCProjectile, new() {
 			if (name is null)
 				throw new ArgumentNullException(nameof(name));
 
@@ -22,7 +22,7 @@ namespace TerrariansConstructLib.Registry {
 				mod = mod,
 				name = name,
 				ammoID = ammoID,
-				projectileType = ModContent.ProjectileType<T>()
+				projectileInternalName = new T().Name
 			};
 
 			nextID++;
@@ -62,7 +62,7 @@ namespace TerrariansConstructLib.Registry {
 			public Mod mod;
 			public string name;
 			public int ammoID;
-			public int projectileType;
+			public string projectileInternalName;
 		}
 	}
 }

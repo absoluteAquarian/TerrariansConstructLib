@@ -39,7 +39,7 @@ namespace TerrariansConstructLib.Registry {
 				name = name,
 				internalName = internalName,
 				validPartIDs = validPartIDs,
-				itemInternalName = ReflectionHelperReturn<T, string>.InvokeMethod("get_Name", new T())
+				itemInternalName = new T().Name
 			};
 
 			nextID++;
