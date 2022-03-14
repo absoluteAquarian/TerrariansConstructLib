@@ -221,6 +221,30 @@ namespace TerrariansConstructLib {
 				: throw new Exception($"A registered item with ID {registeredItemID} does not exist");
 
 		/// <summary>
+		/// Attempts to find a registered item whose valid part IDs are set to the same values as <paramref name="partIDs"/>
+		/// </summary>
+		/// <param name="partIDs">The part IDs to check</param>
+		/// <returns>A value &gt;= <c>0</c> and &lt; <seealso cref="ItemRegistry.Count"/> if successful, <c>-1</c> otherwise</returns>
+		public static int FindItem(int[] partIDs) {
+			foreach (var (id, data) in ItemRegistry.registeredIDs)
+				if (data.validPartIDs.SequenceEqual(partIDs))
+					return id;
+
+			return -1;
+		}
+
+		/// <summary>
+		/// Attempts to find a registered item whose valid part IDs are set to the same values as <paramref name="partIDs"/>
+		/// </summary>
+		/// <param name="partIDs">The part IDs to check</param>
+		/// <param name="registeredItemID">A value &gt;= <c>0</c> and &lt; <seealso cref="ItemRegistry.Count"/> if successful, <c>-1</c> otherwise</param>
+		/// <returns><see langword="true"/> if the search was successful, <see langword="false"/> otherwise</returns>
+		public static bool TryFindItem(int[] partIDs, out int registeredItemID) {
+			registeredItemID = FindItem(partIDs);
+			return registeredItemID > -1;
+		}
+
+		/// <summary>
 		/// Gets an <seealso cref="ItemPart"/> instance from a material and part ID
 		/// </summary>
 		/// <param name="material">The material</param>
