@@ -30,6 +30,13 @@ namespace TerrariansConstructLib.Items {
 			parts = new(PartsCount);
 		}
 
+		public BaseTCItem(params int[] validPartIDs) {
+			if (validPartIDs.Length != PartsCount)
+				throw new ArgumentException($"Part IDs length ({validPartIDs.Length}) was not equal to the expected length of {PartsCount}");
+
+			parts = new(validPartIDs.Select((p, i) => new ItemPartSlot(i){ isPartIDValid = id => id == p }).ToArray());
+		}
+
 		public BaseTCItem(params ItemPartSlot[] slots) {
 			if (slots.Length != PartsCount)
 				throw new ArgumentException($"Slots length ({slots.Length}) was not equal to the expected length of {PartsCount}");
