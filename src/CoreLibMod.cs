@@ -68,8 +68,11 @@ namespace TerrariansConstructLib {
 		private static IEnumerable<Mod> FindDependents() {
 			static IEnumerable<string> GetReferences(Mod mod) {
 				TmodFile modFile = ReflectionHelperReturn<Mod, TmodFile>.InvokeMethod("get_File", mod);
-				object properties = BuildProperties_ReadModFile.Invoke(null, new object[]{ modFile });
-				return BuildProperties_RefNames.Invoke(properties, new object[]{ true }) as IEnumerable<string>;
+
+				using (modFile.Open()) {
+					object properties = BuildProperties_ReadModFile.Invoke(null, new object[]{ modFile });
+					return BuildProperties_RefNames.Invoke(properties, new object[]{ true }) as IEnumerable<string>;
+				}
 			}
 
 			//Skip the ModLoaderMod entry
@@ -152,18 +155,19 @@ namespace TerrariansConstructLib {
 		/// </summary>
 		/// <param name="mod">The mod that the ammo belongs to</param>
 		/// <param name="name">The name of the constructed ammo type</param>
-		/// <param name="ammoID"></param>
-		/// <typeparam name="T">The type of the projectile to spawn when using the ammo</typeparam>
+		/// <param name="ammoID">The <seealso cref="ItemID"/>/<seealso cref="AmmoID"/> for the constructed ammo ID</param>
+		/// <param name="projectile">The projectile that this constructed ammo will shoot</param>
+		/// <typeparam name="T">The <see langword="class"/> of the <seealso cref="BaseTCProjectile"/> to spawn when using the ammo</typeparam>
 		/// <returns>The ID of the registered constructed ammo type</returns>
 		/// <remarks>Note: The returned ID does not correlate with <seealso cref="AmmoID"/> nor <seealso cref="ItemID"/></remarks>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentOutOfRangeException"/>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterAmmo<T>(Mod mod, string name, int ammoID) where T : BaseTCProjectile, new() {
+		public static int RegisterAmmo<T>(Mod mod, string name, int ammoID, T projectile) where T : BaseTCProjectile {
 			if (!isLoadingParts)
 				throw new Exception(GetLateLoadReason("RegisterTCAmmunition"));
 
-			return ConstructedAmmoRegistry.Register<T>(mod, name, ammoID);
+			return ConstructedAmmoRegistry.Register(mod, name, ammoID, projectile);
 		}
 
 		/// <summary>
@@ -173,16 +177,17 @@ namespace TerrariansConstructLib {
 		/// <param name="mod">The mod that the weapon belongs to</param>
 		/// <param name="internalName">The internal name of the weapon</param>
 		/// <param name="name">The default item type name used by <seealso cref="BaseTCItem.RegisteredItemTypeName"/></param>
+		/// <param name="item">The item type that this registered item ID will be applied to</param>
 		/// <param name="validPartIDs">The array of parts that comprise the weapon</param>
 		/// <returns>The ID of the registered item</returns>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterItem<T>(Mod mod, string internalName, string name, params int[] validPartIDs) where T : BaseTCItem, new() {
+		public static int RegisterItem<T>(Mod mod, string internalName, string name, T item, params int[] validPartIDs) where T : BaseTCItem {
 			if (!isLoadingParts)
 				throw new Exception(GetLateLoadReason("RegisterTCItems"));
 
-			return ItemRegistry.Register<T>(mod, internalName, name, validPartIDs);
+			return ItemRegistry.Register(mod, internalName, name, item, validPartIDs);
 		}
 
 		/// <summary>

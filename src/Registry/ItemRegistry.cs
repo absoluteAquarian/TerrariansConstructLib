@@ -7,7 +7,7 @@ using TerrariansConstructLib.Items;
 
 namespace TerrariansConstructLib.Registry {
 	public static class ItemRegistry {
-		internal static int Register<T>(Mod mod, string internalName, string name, params int[] validPartIDs) where T : BaseTCItem, new() {
+		internal static int Register<T>(Mod mod, string internalName, string name, T item, params int[] validPartIDs) where T : BaseTCItem {
 			if (mod is null)
 				throw new ArgumentNullException(nameof(mod));
 
@@ -39,7 +39,7 @@ namespace TerrariansConstructLib.Registry {
 				name = name,
 				internalName = internalName,
 				validPartIDs = validPartIDs,
-				itemInternalName = new T().Name
+				itemInternalName = item.Name
 			};
 
 			nextID++;
