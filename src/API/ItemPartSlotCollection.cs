@@ -32,6 +32,13 @@ namespace TerrariansConstructLib.API {
 			slots = parts.Select((p, i) => new ItemPartSlot(i){ part = p }).ToArray();
 		}
 
+		public ItemPartSlotCollection(int count) {
+			if (count <= 0)
+				throw new ArgumentOutOfRangeException(nameof(count), "Count must be a positive, non-zero integer");
+
+			slots = Enumerable.Range(0, count).Select(i => new ItemPartSlot(i)).ToArray();
+		}
+
 		public ItemPart this[int slot] {
 			get => slots[slot].part;
 			set => TrySetItemPartSlot(slot, value);
