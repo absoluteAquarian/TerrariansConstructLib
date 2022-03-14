@@ -62,7 +62,7 @@ namespace TerrariansConstructLib.Registry {
 			return false;
 		}
 
-		internal static string IDToIdentifier(int id) {
+		public static string IDToIdentifier(int id) {
 			if (!registeredIDs.TryGetValue(id, out var data))
 				throw new Exception("Invalid part ID: " + id);
 
