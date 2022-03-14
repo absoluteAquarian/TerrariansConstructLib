@@ -52,6 +52,7 @@ namespace TerrariansConstructLib.ID {
 				[Coin] = AmmoID.Coin
 			};
 			
+			// TODO: add the rest of the base ammo projectile types
 			registeredIDsToBaseProjectileTypes = new(){
 				[Bullet] = ModContent.ProjectileType<TCBulletProjectile>()
 			};

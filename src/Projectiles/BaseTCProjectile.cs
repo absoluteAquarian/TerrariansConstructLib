@@ -36,10 +36,16 @@ namespace TerrariansConstructLib.Projectiles {
 				parts[i].OnHitNPC(parts[i].partID, Projectile, target, damage, knockback, crit);
 		}
 
+		/// <inheritdoc cref="OnHitNPC(NPC, int, float, bool)"/>
+		public virtual void SafeOnHitNPC(NPC target, int damage, float knockback, bool crit) { }
+
 		public sealed override void OnHitPlayer(Player target, int damage, bool crit) {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnHitPlayer(parts[i].partID, Projectile, target, damage, crit);
 		}
+
+		/// <inheritdoc cref="OnHitPlayer(Player, int, bool)"/>
+		public virtual void SafeOnHitPlayer(Player target, int damage, bool crit) { }
 
 		public sealed override void AI() {
 			for (int i = 0; i < parts.Length; i++)
@@ -48,6 +54,7 @@ namespace TerrariansConstructLib.Projectiles {
 			SafeAI();
 		}
 
+		/// <inheritdoc cref="AI"/>
 		public virtual void SafeAI() { }
 	}
 }

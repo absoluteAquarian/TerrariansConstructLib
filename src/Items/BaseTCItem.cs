@@ -75,24 +75,37 @@ namespace TerrariansConstructLib.Items {
 		/// <inheritdoc cref="SetDefaults"/>
 		public virtual void SafeSetDefaults() { }
 
-		public override bool CanConsumeAmmo(Player player) {
-			return base.CanConsumeAmmo(player);
-		}
+		public sealed override bool CanBeConsumedAsAmmo(Player player) => false;
 
-		public override void ModifyWeaponDamage(Player player, ref StatModifier damage, ref float flat) {
+		public sealed override void ModifyWeaponDamage(Player player, ref StatModifier damage, ref float flat) {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].ModifyWeaponDamage(parts[i].partID, player, ref damage, ref flat);
+
+			SafeModifyWeaponDamage(player, ref damage, ref flat);
 		}
+
+		/// <inheritdoc cref="ModifyWeaponDamage(Player, ref StatModifier, ref float)"/>
+		public virtual void SafeModifyWeaponDamage(Player player, ref StatModifier damage, ref float flat) { }
 
 		public override void ModifyWeaponKnockback(Player player, ref StatModifier knockback, ref float flat) {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].ModifyWeaponKnockback(parts[i].partID, player, ref knockback, ref flat);
+
+			SafeModifyWeaponKnockback(player, ref knockback, ref flat);
 		}
 
-		public override void ModifyWeaponCrit(Player player, ref int crit) {
+		/// <inheritdoc cref="ModifyWeaponKnockback(Player, ref StatModifier, ref float)"/>
+		public virtual void SafeModifyWeaponKnockback(Player player, ref StatModifier knockback, ref float flat) { }
+
+		public sealed override void ModifyWeaponCrit(Player player, ref int crit) {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].ModifyWeaponCrit(parts[i].partID, player, ref crit);
+
+			SafeModifyWeaponCrit(player, ref crit);
 		}
+
+		/// <inheritdoc cref="ModifyWeaponCrit(Player, ref int)"/>
+		public virtual void SafeModifyWeaponCrit(Player player, ref int crit) { }
 
 		public bool HasPartOfType(int type, out int partIndex) {
 			for (int i = 0; i < parts.Length; i++) {
@@ -106,7 +119,7 @@ namespace TerrariansConstructLib.Items {
 			return false;
 		}
 
-		public override void HoldItem(Player player) {
+		public sealed override void HoldItem(Player player) {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnHold(parts[i].partID, player, Item);
 
@@ -135,14 +148,24 @@ namespace TerrariansConstructLib.Items {
 						copperPartCharge = CopperPartChargeMax;
 				}
 			}
+
+			SafeHoldItem(player);
 		}
 
-		public override bool? UseItem(Player player) {
+		/// <inheritdoc cref="HoldItem(Player)"/>
+		public virtual void SafeHoldItem(Player player) { }
+
+		public sealed override bool? UseItem(Player player) {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnUse(parts[i].partID, player, Item);
 
+			SafeUseItem(player);
+
 			return true;
 		}
+
+		/// <inheritdoc cref="UseItem(Player)"/>
+		public virtual void SafeUseItem(Player player) { }
 
 		public override void SaveData(TagCompound tag) {
 			tag["parts"] = parts.ToList();

@@ -88,6 +88,15 @@ namespace TerrariansConstructLib.Items {
 			=> item2.ModItem is ItemPartItem pItem
 				&& part.material.type == pItem.part.material.type && part.partID == pItem.part.partID;
 
+		public override bool CanStackInWorld(Item item2)
+			=> CanStack(item2);
+
+		public override ModItem Clone(Item item) {
+			ItemPartItem source = item.ModItem as ItemPartItem;
+			
+			return new ItemPartItem(source.part);
+		}
+
 		public override void SetStaticDefaults() {
 			part = registeredPartsByItemID[Type];
 
