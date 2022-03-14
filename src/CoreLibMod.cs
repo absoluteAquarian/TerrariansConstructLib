@@ -28,6 +28,8 @@ namespace TerrariansConstructLib {
 
 		internal static event Action UnloadReflection;
 
+		public static readonly bool LogPreLoadLoading = true;
+
 		public override void Load() {
 			MethodInfo ModLoader_IsEnabled = typeof(ModLoader).GetMethod("IsEnabled", BindingFlags.NonPublic | BindingFlags.Static);
 
@@ -51,8 +53,23 @@ namespace TerrariansConstructLib {
 
 			//In order for all parts/ammos/etc. to be visible by all mods that use the library, we have to do some magic
 			LoadAllOfTheThings("RegisterTCItemParts");
+
+			if (LogPreLoadLoading)
+				foreach (var (id, data) in PartRegistry.registeredIDs)
+					Logger.Debug($"Item Part \"{data.name}\" (ID: {id}) added by {data.mod.Name}");
+
 			LoadAllOfTheThings("RegisterTCAmmunition");
+
+			if (LogPreLoadLoading)
+				foreach (var (id, data) in ConstructedAmmoRegistry.registeredIDs)
+					Logger.Debug($"Constructed Ammo \"{data.name}\" (ID: {id}) added by {data.mod.Name}");
+
 			LoadAllOfTheThings("RegisterTCItems");
+
+			if (LogPreLoadLoading)
+				foreach (var (id, data) in ItemRegistry.registeredIDs)
+					Logger.Debug($"Item Definition \"{data.name}\" (ID: {id}) added by {data.mod.Name}\n" +
+						$"  -- parts: {string.Join(", ", data.validPartIDs.Select(PartRegistry.IDToIdentifier))}");
 
 			EditsLoader.Load();
 
