@@ -32,7 +32,7 @@ namespace TerrariansConstructLib {
 
 			ConstructedAmmoRegistry.Load();
 			PartRegistry.Load();
-			WeaponRegistry.Load();
+			ItemRegistry.Load();
 
 			PartActions.builders = new();
 			ItemPart.partData = new();
@@ -45,7 +45,7 @@ namespace TerrariansConstructLib {
 			//In order for all parts/ammos/etc. to be visible by all mods that use the library, we have to do some magic
 			LoadAllOfTheThings("RegisterTCItemParts");
 			LoadAllOfTheThings("RegisterTCAmmunition");
-			LoadAllOfTheThings("RegisterTCWeapons");
+			LoadAllOfTheThings("RegisterTCItems");
 
 			EditsLoader.Load();
 
@@ -89,7 +89,7 @@ namespace TerrariansConstructLib {
 			
 			ConstructedAmmoRegistry.Unload();
 			PartRegistry.Unload();
-			WeaponRegistry.Unload();
+			ItemRegistry.Unload();
 
 			PartActions.builders = null;
 			ItemPart.partData = null;
@@ -137,20 +137,20 @@ namespace TerrariansConstructLib {
 		}
 
 		/// <summary>
-		/// Registers a name and valid <seealso cref="ItemPart"/> IDs for a weapon
+		/// Registers a name and valid <seealso cref="ItemPart"/> IDs for an item
 		/// </summary>
 		/// <param name="mod">The mod that the weapon belongs to</param>
 		/// <param name="internalName">The internal name of the weapon</param>
 		/// <param name="validPartIDs">The array of parts that comprise the weapon</param>
-		/// <returns>The ID of the registered weapon</returns>
+		/// <returns>The ID of the registered item</returns>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterWeapon(Mod mod, string internalName, params int[] validPartIDs) {
+		public static int RegisterItem(Mod mod, string internalName, params int[] validPartIDs) {
 			if (!isLoadingParts)
-				throw new Exception(GetLateLoadReason("RegisterTCWeapons"));
+				throw new Exception(GetLateLoadReason("RegisterTCItems"));
 
-			return WeaponRegistry.Register(mod, internalName, validPartIDs);
+			return ItemRegistry.Register(mod, internalName, validPartIDs);
 		}
 
 		/// <summary>
@@ -196,6 +196,28 @@ namespace TerrariansConstructLib {
 			=> constructedAmmoID >= 0 && constructedAmmoID < ConstructedAmmoRegistry.Count
 				? ConstructedAmmoRegistry.registeredIDs[constructedAmmoID].projectileType
 				: throw new Exception($"A constructed ammo type with ID {constructedAmmoID} does not exist");
+
+		/// <summary>
+		/// Gets the internal name for a registered item
+		/// </summary>
+		/// <param name="registeredItemID">The ID for the registered item.  Not to be confused with its <seealso cref="ItemID"/> or <seealso cref="ModItem.Type"/></param>
+		/// <returns>The internal name for the registered item</returns>
+		/// <exception cref="Exception"/>
+		public static string GetItemInternalName(int registeredItemID)
+			=> registeredItemID >= 0 && registeredItemID < ItemRegistry.Count
+				? ItemRegistry.registeredIDs[registeredItemID].internalName
+				: throw new Exception($"A registered item with ID {registeredItemID} does not exist");
+
+		/// <summary>
+		/// Gets a clone of the valid part IDs for a registered item
+		/// </summary>
+		/// <param name="registeredItemID">The ID for the registered item.  Not to be confused with its <seealso cref="ItemID"/> or <seealso cref="ModItem.Type"/></param>
+		/// <returns>A clone of the valid part IDs for the registered item</returns>
+		/// <exception cref="Exception"/>
+		public static int[] GetItemValidPartIDs(int registeredItemID)
+			=> registeredItemID >= 0 && registeredItemID < ItemRegistry.Count
+				? (int[])ItemRegistry.registeredIDs[registeredItemID].validPartIDs.Clone()
+				: throw new Exception($"A registered item with ID {registeredItemID} does not exist");
 
 		/// <summary>
 		/// Gets an <seealso cref="ItemPart"/> instance from a material and part ID

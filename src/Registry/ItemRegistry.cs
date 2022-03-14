@@ -4,7 +4,7 @@ using System.Linq;
 using Terraria.ModLoader;
 
 namespace TerrariansConstructLib.Registry {
-	public static class WeaponRegistry {
+	public static class ItemRegistry {
 		internal static int Register(Mod mod, string internalName, params int[] validPartIDs) {
 			if (mod is null)
 				throw new ArgumentNullException(nameof(mod));
