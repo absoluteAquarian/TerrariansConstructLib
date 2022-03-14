@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Terraria;
 using Terraria.ID;
 using Terraria.Localization;
@@ -24,6 +25,8 @@ namespace TerrariansConstructLib {
 		public static bool LogAddedParts { get; set; }
 
 		public static CoreLibMod Instance => ModContent.GetInstance<CoreLibMod>();
+
+		internal static event Action UnloadReflection;
 
 		public override void Load() {
 			MethodInfo ModLoader_IsEnabled = typeof(ModLoader).GetMethod("IsEnabled", BindingFlags.NonPublic | BindingFlags.Static);
@@ -69,7 +72,8 @@ namespace TerrariansConstructLib {
 				return BuildProperties_RefNames.Invoke(properties, new object[]{ true }) as IEnumerable<string>;
 			}
 
-			foreach (Mod mod in ModLoader.Mods) {
+			//Skip the ModLoaderMod entry
+			foreach (Mod mod in ModLoader.Mods[1..]) {
 				string[] dependencies = GetReferences(mod).ToArray();
 
 				if (Array.IndexOf(dependencies, nameof(TerrariansConstructLib)) > -1)
@@ -118,6 +122,8 @@ namespace TerrariansConstructLib {
 			ItemPart.partData = null;
 			ItemPartItem.registeredPartsByItemID = null;
 			ItemPartItem.itemPartToItemID = null;
+
+			Interlocked.Exchange(ref UnloadReflection, null)?.Invoke();
 		}
 
 		//No Mod.Call() implementation.  If people want to add content/add support for content to this mod, they better use a strong/weak reference

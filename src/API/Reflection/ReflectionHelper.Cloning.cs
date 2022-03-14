@@ -45,10 +45,7 @@ namespace TerrariansConstructLib.API.Reflection {
 
 			clone = (Func<T, T>)method.CreateDelegate(typeof(Func<T, T>));
 
-			AssemblyLoadContext ctx = AssemblyLoadContext.GetLoadContext(typeof(T).Assembly);
-
-			if (ctx is not null)
-				ctx.Unloading += _ => clone = null;
+			CoreLibMod.UnloadReflection += () => clone = null;
 		}
 	}
 }

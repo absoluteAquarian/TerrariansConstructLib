@@ -125,6 +125,13 @@ namespace TerrariansConstructLib.API.Reflection {
 				getterFuncs[name] = method.CreateDelegate<Func<T, object>>();
 			else
 				getterStaticFuncs[name] = method.CreateDelegate<Func<object>>();
+
+			if (getterFuncs.Count + getterStaticFuncs.Count == 1) {
+				CoreLibMod.UnloadReflection += () => {
+					getterFuncs.Clear();
+					getterStaticFuncs.Clear();
+				};
+			}
 		}
 
 		/// <summary>
@@ -175,6 +182,13 @@ namespace TerrariansConstructLib.API.Reflection {
 				setterFuncs[name] = method.CreateDelegate<Action<T, object>>();
 			else
 				setterStaticFuncs[name] = method.CreateDelegate<Action<object>>();
+
+			if (setterFuncs.Count + setterStaticFuncs.Count == 1) {
+				CoreLibMod.UnloadReflection += () => {
+					setterFuncs.Clear();
+					setterStaticFuncs.Clear();
+				};
+			}
 		}
 
 		/// <summary>

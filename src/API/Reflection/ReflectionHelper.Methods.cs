@@ -76,7 +76,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_0);
 
-			il.Emit(OpCodes.Call, methodInfo);
+			il.EmitCall(OpCodes.Call, methodInfo, null);
 
 			il.Emit(OpCodes.Ret);
 
@@ -84,6 +84,13 @@ namespace TerrariansConstructLib.API.Reflection {
 				methodFuncs[method] = dMethod.CreateDelegate<MethodDelegate>();
 			else
 				staticMethodFuncs[method] = dMethod.CreateDelegate<StaticMethodDelegate>();
+
+			if (methodFuncs.Count + staticMethodFuncs.Count == 1) {
+				CoreLibMod.UnloadReflection += () => {
+					methodFuncs.Clear();
+					staticMethodFuncs.Clear();
+				};
+			}
 		}
 	}
 
@@ -157,7 +164,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_0);
 
-			il.Emit(OpCodes.Call, methodInfo);
+			il.EmitCall(OpCodes.Call, methodInfo, null);
 
 			il.Emit(OpCodes.Ret);
 
@@ -165,6 +172,13 @@ namespace TerrariansConstructLib.API.Reflection {
 				methodFuncs[method] = dMethod.CreateDelegate<MethodDelegate>();
 			else
 				staticMethodFuncs[method] = dMethod.CreateDelegate<StaticMethodDelegate>();
+
+			if (methodFuncs.Count + staticMethodFuncs.Count == 1) {
+				CoreLibMod.UnloadReflection += () => {
+					methodFuncs.Clear();
+					staticMethodFuncs.Clear();
+				};
+			}
 		}
 	}
 
@@ -244,7 +258,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_1);
 
-			il.Emit(OpCodes.Call, methodInfo);
+			il.EmitCall(OpCodes.Call, methodInfo, null);
 
 			il.Emit(OpCodes.Ret);
 
@@ -252,6 +266,13 @@ namespace TerrariansConstructLib.API.Reflection {
 				methodFuncs[method] = dMethod.CreateDelegate<MethodDelegate>();
 			else
 				staticMethodFuncs[method] = dMethod.CreateDelegate<StaticMethodDelegate>();
+
+			if (methodFuncs.Count + staticMethodFuncs.Count == 1) {
+				CoreLibMod.UnloadReflection += () => {
+					methodFuncs.Clear();
+					staticMethodFuncs.Clear();
+				};
+			}
 		}
 	}
 
@@ -329,7 +350,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_1);
 
-			il.Emit(OpCodes.Call, methodInfo);
+			il.EmitCall(OpCodes.Call, methodInfo, null);
 
 			il.Emit(OpCodes.Ret);
 
@@ -337,6 +358,13 @@ namespace TerrariansConstructLib.API.Reflection {
 				methodFuncs[method] = dMethod.CreateDelegate<MethodDelegate>();
 			else
 				staticMethodFuncs[method] = dMethod.CreateDelegate<StaticMethodDelegate>();
+
+			if (methodFuncs.Count + staticMethodFuncs.Count == 1) {
+				CoreLibMod.UnloadReflection += () => {
+					methodFuncs.Clear();
+					staticMethodFuncs.Clear();
+				};
+			}
 		}
 	}
 
@@ -419,7 +447,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_2);
 
-			il.Emit(OpCodes.Call, methodInfo);
+			il.EmitCall(OpCodes.Call, methodInfo, null);
 
 			il.Emit(OpCodes.Ret);
 
@@ -427,6 +455,13 @@ namespace TerrariansConstructLib.API.Reflection {
 				methodFuncs[method] = dMethod.CreateDelegate<MethodDelegate>();
 			else
 				staticMethodFuncs[method] = dMethod.CreateDelegate<StaticMethodDelegate>();
+
+			if (methodFuncs.Count + staticMethodFuncs.Count == 1) {
+				CoreLibMod.UnloadReflection += () => {
+					methodFuncs.Clear();
+					staticMethodFuncs.Clear();
+				};
+			}
 		}
 	}
 
@@ -507,7 +542,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_2);
 
-			il.Emit(OpCodes.Call, methodInfo);
+			il.EmitCall(OpCodes.Call, methodInfo, null);
 
 			il.Emit(OpCodes.Ret);
 
@@ -515,6 +550,13 @@ namespace TerrariansConstructLib.API.Reflection {
 				methodFuncs[method] = dMethod.CreateDelegate<MethodDelegate>();
 			else
 				staticMethodFuncs[method] = dMethod.CreateDelegate<StaticMethodDelegate>();
+
+			if (methodFuncs.Count + staticMethodFuncs.Count == 1) {
+				CoreLibMod.UnloadReflection += () => {
+					methodFuncs.Clear();
+					staticMethodFuncs.Clear();
+				};
+			}
 		}
 	}
 
@@ -600,7 +642,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_3);
 
-			il.Emit(OpCodes.Call, methodInfo);
+			il.EmitCall(OpCodes.Call, methodInfo, null);
 
 			il.Emit(OpCodes.Ret);
 
@@ -608,6 +650,13 @@ namespace TerrariansConstructLib.API.Reflection {
 				methodFuncs[method] = dMethod.CreateDelegate<MethodDelegate>();
 			else
 				staticMethodFuncs[method] = dMethod.CreateDelegate<StaticMethodDelegate>();
+
+			if (methodFuncs.Count + staticMethodFuncs.Count == 1) {
+				CoreLibMod.UnloadReflection += () => {
+					methodFuncs.Clear();
+					staticMethodFuncs.Clear();
+				};
+			}
 		}
 	}
 
@@ -691,7 +740,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (!dMethod.IsStatic)
 				il.Emit(OpCodes.Ldarg_3);
 
-			il.Emit(OpCodes.Call, methodInfo);
+			il.EmitCall(OpCodes.Call, methodInfo, null);
 
 			il.Emit(OpCodes.Ret);
 
@@ -699,6 +748,13 @@ namespace TerrariansConstructLib.API.Reflection {
 				methodFuncs[method] = dMethod.CreateDelegate<MethodDelegate>();
 			else
 				staticMethodFuncs[method] = dMethod.CreateDelegate<StaticMethodDelegate>();
+
+			if (methodFuncs.Count + staticMethodFuncs.Count == 1) {
+				CoreLibMod.UnloadReflection += () => {
+					methodFuncs.Clear();
+					staticMethodFuncs.Clear();
+				};
+			}
 		}
 	}
 }
