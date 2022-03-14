@@ -199,6 +199,17 @@ namespace TerrariansConstructLib {
 				: throw new Exception($"A constructed ammo type with ID {constructedAmmoID} does not exist");
 
 		/// <summary>
+		/// Gets the name for a registered item
+		/// </summary>
+		/// <param name="registeredItemID">The ID for the registered item.  Not to be confused with its <seealso cref="ItemID"/> or <seealso cref="ModItem.Type"/></param>
+		/// <returns>The name for the registered item</returns>
+		/// <exception cref="Exception"/>
+		public static string GetItemName(int registeredItemID)
+			=> registeredItemID >= 0 && registeredItemID < ItemRegistry.Count
+				? ItemRegistry.registeredIDs[registeredItemID].name
+				: throw new Exception($"A registered item with ID {registeredItemID} does not exist");
+
+		/// <summary>
 		/// Gets the internal name for a registered item
 		/// </summary>
 		/// <param name="registeredItemID">The ID for the registered item.  Not to be confused with its <seealso cref="ItemID"/> or <seealso cref="ModItem.Type"/></param>
