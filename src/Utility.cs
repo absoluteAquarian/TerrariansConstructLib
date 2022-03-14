@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
+using Terraria;
+using Terraria.DataStructures;
+using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
 
@@ -56,6 +60,16 @@ namespace TerrariansConstructLib {
 				throw new Exception($"Part ID {partID} was invalid");
 
 			dictByPartID[partID] = value;
+		}
+
+		/// <summary>
+		/// Spawns a shallow copy of an item in the world
+		/// </summary>
+		/// <param name="source">The entity source</param>
+		/// <param name="item">The item instance</param>
+		/// <param name="rectangle">The area where the item will spawn</param>
+		public static void DropItem(IEntitySource source, Item item, Rectangle rectangle) {
+			ReflectionHelperVoid<Item, IEntitySource, Item, Rectangle>.InvokeMethod("DropItem", null, source, item, rectangle);
 		}
 	}
 }
