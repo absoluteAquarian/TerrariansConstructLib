@@ -25,7 +25,7 @@ namespace TerrariansConstructLib.Projectiles {
 			SafeSetDefaults();
 
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].SetProjectileDefaults(parts[i].partID, Projectile);
+				parts[i].SetProjectileDefaults?.Invoke(parts[i].partID, Projectile);
 		}
 
 		/// <inheritdoc cref="SetDefaults"/>
@@ -33,7 +33,7 @@ namespace TerrariansConstructLib.Projectiles {
 
 		public sealed override void OnHitNPC(NPC target, int damage, float knockback, bool crit) {
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnHitNPC(parts[i].partID, Projectile, target, damage, knockback, crit);
+				parts[i].OnHitNPC?.Invoke(parts[i].partID, Projectile, target, damage, knockback, crit);
 		}
 
 		/// <inheritdoc cref="OnHitNPC(NPC, int, float, bool)"/>
@@ -41,7 +41,7 @@ namespace TerrariansConstructLib.Projectiles {
 
 		public sealed override void OnHitPlayer(Player target, int damage, bool crit) {
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnHitPlayer(parts[i].partID, Projectile, target, damage, crit);
+				parts[i].OnHitPlayer?.Invoke(parts[i].partID, Projectile, target, damage, crit);
 		}
 
 		/// <inheritdoc cref="OnHitPlayer(Player, int, bool)"/>
@@ -49,7 +49,7 @@ namespace TerrariansConstructLib.Projectiles {
 
 		public sealed override void AI() {
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].ProjectileAI(parts[i].partID, Projectile);
+				parts[i].ProjectileAI?.Invoke(parts[i].partID, Projectile);
 
 			SafeAI();
 		}

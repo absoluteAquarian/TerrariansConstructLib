@@ -8,10 +8,9 @@ using System.Reflection;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ModLoader;
-using Terraria.ModLoader.Config;
 using TerrariansConstructLib.API.UI;
-using TerrariansConstructLib.ID;
 using TerrariansConstructLib.Items;
+using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.API.Edits.Detours {
 	partial class Vanilla {
@@ -27,7 +26,7 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 			MethodInfo Color_get_White = typeof(Color).GetProperty("White", BindingFlags.Public | BindingFlags.Static).GetGetMethod();
 			MethodInfo Color_op_Multiply = typeof(Color).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Color), typeof(float) });
 			MethodInfo Utils_Size_Rectangle = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Rectangle) });
-			MethodInfo MaterialPartID_get_TotalCount = typeof(MaterialPartID).GetProperty(nameof(MaterialPartID.TotalCount), BindingFlags.Public | BindingFlags.Static).GetGetMethod();
+			MethodInfo PartRegistry_get_Count = typeof(PartRegistry).GetProperty(nameof(PartRegistry.Count), BindingFlags.Public | BindingFlags.Static).GetGetMethod();
 			FieldInfo Item_type = typeof(Item).GetField("type", BindingFlags.Public | BindingFlags.Instance);
 			FieldInfo Item_stack= typeof(Item).GetField("stack", BindingFlags.Public | BindingFlags.Instance);
 
@@ -56,7 +55,7 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 			//  ldloca     'value'
 			c.Emit(OpCodes.Ldloca, 7);
 			c.EmitDelegate<Hook_ItemSlot_TextureModificationFunc>((int context, ref Texture2D value) => {
-				if (context >= TCUIItemSlot.SlotContexts.ForgeUI && context < TCUIItemSlot.SlotContexts.ForgeUI + MaterialPartID.TotalCount)
+				if (context >= TCUIItemSlot.SlotContexts.ForgeUI && context < TCUIItemSlot.SlotContexts.ForgeUI + PartRegistry.Count)
 					value = TextureAssets.InventoryBack5.Value;
 			});
 
@@ -109,7 +108,7 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 			//  ldc.i4    TCUIItemSlot.SlotContexts.ForgeUI
 			c.Emit(OpCodes.Ldc_I4, TCUIItemSlot.SlotContexts.ForgeUI);
 			//  call      valuetype [TerrariansConstructLib]int32 TerrariansConstructLib.ID.MatrialPartID::get_TotalCount()
-			c.Emit(OpCodes.Call, MaterialPartID_get_TotalCount);
+			c.Emit(OpCodes.Call, PartRegistry_get_Count);
 			//  add
 			c.Emit(OpCodes.Add);
 			//  bge.s     postContentCheck

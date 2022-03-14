@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
-using TerrariansConstructLib.ID;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
 
@@ -43,37 +41,50 @@ namespace TerrariansConstructLib.Items {
 
 		public string tooltip;
 
-		public PartItemFunc SetItemDefaults => PartActions.GetPartActions(material, partID).setItemDefaults;
+		public PartItemFunc SetItemDefaults => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).setItemDefaults;
 
-		public PartProjectileFunc SetProjectileDefaults => PartActions.GetPartActions(material, partID).setProjectileDefaults;
+		public PartProjectileFunc SetProjectileDefaults => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).setProjectileDefaults;
 
-		public PartPlayerFunc OnUse => PartActions.GetPartActions(material, partID).onUse;
+		public PartPlayerFunc OnUse => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onUse;
 
-		public PartPlayerFunc OnHold => PartActions.GetPartActions(material, partID).onHold;
+		public PartPlayerFunc OnHold => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onHold;
 
-		public PartPlayerFunc OnGenericHotkeyUsage => PartActions.GetPartActions(material, partID).onGenericHotkeyUsage;
+		public PartPlayerFunc OnGenericHotkeyUsage => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onGenericHotkeyUsage;
 
-		public PartProjectileSpawnFunc OnProjectileSpawn => PartActions.GetPartActions(material, partID).onProjectileSpawn;
+		public PartProjectileSpawnFunc OnProjectileSpawn => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onProjectileSpawn;
 
-		public PartProjectileHitNPCFunc OnHitNPC => PartActions.GetPartActions(material, partID).onHitNPC;
+		public PartProjectileHitNPCFunc OnHitNPC => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onHitNPC;
 
-		public PartProjectileHitPlayerFunc OnHitPlayer => PartActions.GetPartActions(material, partID).onHitPlayer;
+		public PartProjectileHitPlayerFunc OnHitPlayer => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onHitPlayer;
 
-		public PartModifyWeaponDamageFunc ModifyWeaponDamage => PartActions.GetPartActions(material, partID).modifyWeaponDamage;
+		public PartModifyWeaponDamageFunc ModifyWeaponDamage => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyWeaponDamage;
 
-		public PartModifyWeaponKnockbackFunc ModifyWeaponKnockback => PartActions.GetPartActions(material, partID).modifyWeaponKnockback;
+		public PartModifyWeaponKnockbackFunc ModifyWeaponKnockback => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyWeaponKnockback;
 
-		public PartModifyWeaponCritFunc ModifyWeaponCrit => PartActions.GetPartActions(material, partID).modifyWeaponCrit;
+		public PartModifyWeaponCritFunc ModifyWeaponCrit => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyWeaponCrit;
 
-		public PartProjectileFunc ProjectileAI => PartActions.GetPartActions(material, partID).projectileAI;
-
-		public virtual void ExtraSerializeData(TagCompound tag) { }
+		public PartProjectileFunc ProjectileAI => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).projectileAI;
 
 		public TagCompound SerializeData() {
 			TagCompound tag = new();
-
+			
 			tag["material"] = material;
-			tag["part"] = partID;
+
+			if (this is UnloadedItemPart u) {
+				tag["part"] = new TagCompound() {
+					["mod"] = u.mod,
+					["name"] = u.internalName
+				};
+
+				return tag;
+			}
+
+			var data = PartRegistry.registeredIDs[partID];
+
+			tag["part"] = new TagCompound() {
+				["mod"] = data.mod.Name,
+				["name"] = data.internalName
+			};
 
 			return tag;
 		}
@@ -84,12 +95,22 @@ namespace TerrariansConstructLib.Items {
 			if (material is null)
 				material = tag.Get<UnloadedMaterial>("material");
 
-			int partID = tag.GetInt("part");
+			TagCompound part = tag.GetCompound("part");
 
-			return new ItemPart(){
-				material = material,
-				partID = partID
-			};
+			string modName = part.GetString("mod");
+			string internalName = part.GetString("name");
+
+			if (!ModLoader.TryGetMod(modName, out var mod) || !PartRegistry.TryFindData(mod, internalName, out int id)) {
+				// Unloaded part.  Save the mod and name, but nothing else
+				return new UnloadedItemPart() {
+					mod = modName,
+					internalName = internalName,
+					partID = -1,
+					material = material
+				};
+			}
+
+			return (ItemPart)partData.Get(material, id).MemberwiseClone();
 		};
 	}
 }

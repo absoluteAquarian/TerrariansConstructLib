@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Terraria;
-using TerrariansConstructLib.ID;
 using TerrariansConstructLib.Materials;
+using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib {
 	public static class Utility {
@@ -11,7 +10,7 @@ namespace TerrariansConstructLib {
 			if (!partDictionary.TryGetValue(materialType, out var dictByPartID))
 				throw new ArgumentException($"Unknown material type: \"{material.GetItemName()}\" (ID: {material})");
 
-			if (partID < 0 || partID >= MaterialPartID.TotalCount)
+			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new Exception($"Part ID {partID} was invalid");
 
 			if (!dictByPartID.TryGetValue(partID, out T value))
@@ -26,7 +25,7 @@ namespace TerrariansConstructLib {
 				throw new ArgumentException($"Unknown material type: \"{material.GetItemName()}\" (ID: {material})");
 
 			//Ensure that the part exists
-			if (partID < 0 || partID >= MaterialPartID.TotalCount)
+			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new Exception($"Part ID {partID} was invalid");
 
 			dictByPartID[partID] = value;
@@ -39,7 +38,7 @@ namespace TerrariansConstructLib {
 				return false;
 			}
 
-			if (partID >= MaterialPartID.TotalCount) {
+			if (partID >= PartRegistry.Count) {
 				value = default;
 				return false;
 			}
@@ -53,7 +52,7 @@ namespace TerrariansConstructLib {
 				dictByPartID = partDictionary[materialType] = new();
 
 			//Ensure that the part exists
-			if (partID < 0 || partID >= MaterialPartID.TotalCount)
+			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new Exception($"Part ID {partID} was invalid");
 
 			dictByPartID[partID] = value;

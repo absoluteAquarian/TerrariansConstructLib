@@ -1,12 +1,12 @@
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Linq;
 using System.Reflection;
 using Terraria;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using TerrariansConstructLib.API.Edits;
-using TerrariansConstructLib.ID;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Projectiles;
@@ -16,7 +16,7 @@ namespace TerrariansConstructLib {
 	public class CoreLibMod : Mod {
 		public static ModKeybind ActivateAbility;
 
-		private static bool hasReachedPostSetupContent = false;
+		private static bool isLoadingParts = false;
 
 		public static bool LogAddedParts { get; set; }
 
@@ -28,10 +28,12 @@ namespace TerrariansConstructLib {
 			if (!ModLoader.HasMod("TerrariansConstruct") || !(bool)ModLoader_IsEnabled.Invoke(null, new object[]{ "TerrariansConstruct" }))
 				throw new Exception(Language.GetTextValue("tModLoader.LoadErrorDependencyMissing", "TerrariansConstruct", Name));
 
-			hasReachedPostSetupContent = false;
+			isLoadingParts = false;
 
-			ConstructedAmmoID.Load();
-			MaterialPartID.Load();
+			ConstructedAmmoRegistry.Load();
+			PartRegistry.Load();
+			WeaponRegistry.Load();
+
 			PartActions.builders = new();
 			ItemPart.partData = new();
 			ItemPartItem.registeredPartsByItemID = new();
@@ -40,20 +42,54 @@ namespace TerrariansConstructLib {
 				ActivateAbility = KeybindLoader.RegisterKeybind(this, "Activate Tool Ability", Keys.G);
 			}
 
+			//In order for all parts/ammos/etc. to be visible by all mods that use the library, we have to do some magic
+			LoadAllOfTheThings("RegisterTCItemParts");
+			LoadAllOfTheThings("RegisterTCAmmunition");
+			LoadAllOfTheThings("RegisterTCWeapons");
+
 			EditsLoader.Load();
 
 			DirectDetourManager.Load();
+
+			isLoadingParts = false;
 		}
 
-		public override void PostSetupContent() {
-			hasReachedPostSetupContent = true;
+		private static void LoadAllOfTheThings(string methodToInvoke) {
+			foreach (var (mod, method) in ModLoader.Mods.Select(m => (m, m.GetType().GetMethod(methodToInvoke, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)))) {
+				if (method is null) {
+					Instance.Logger.Warn($"Mod \"{mod.Name}\" does not have a \"{methodToInvoke}\" method declared in its Mod class");
+					continue;
+				}
+
+				string methodDescriptor = $"{method.DeclaringType.FullName}.{method.Name}()";
+
+				if (!method.IsPublic)
+					throw new Exception($"Method {methodDescriptor} was not public");
+
+				if (!method.IsStatic)
+					throw new Exception($"Method {methodDescriptor} was not static");
+
+				if (method.ReturnType != typeof(void))
+					throw new Exception($"Method {methodDescriptor} did not have a void return type");
+
+				var parameters = method.GetParameters();
+
+				if (parameters.Length != 1)
+					throw new Exception($"Method {methodDescriptor} should have only one parameter");
+
+				if (parameters[0].ParameterType != typeof(Mod))
+					throw new Exception($"Method {methodDescriptor} did not have its parameter be of type \"{typeof(Mod).FullName}\"");
+
+				method.Invoke(null, new object[]{ mod });
+			}
 		}
 
 		public override void Unload() {
 			DirectDetourManager.Unload();
 			
-			ConstructedAmmoID.Unload();
-			MaterialPartID.Unload();
+			ConstructedAmmoRegistry.Unload();
+			PartRegistry.Unload();
+			WeaponRegistry.Unload();
 
 			PartActions.builders = null;
 			ItemPart.partData = null;
@@ -61,34 +97,60 @@ namespace TerrariansConstructLib {
 		}
 
 		//No Mod.Call() implementation.  If people want to add content/add support for content to this mod, they better use a strong/weak reference
+		private static string GetLateLoadReason(string method)
+			=> "Method was called too late in the loading process.  This method should be called in a public static void" + method + "() method in your Mod class";
 
 		/// <summary>
 		/// Registers a part definition
 		/// </summary>
+		/// <param name="mod">The mod that the part belongs to</param>
 		/// <param name="internalName">The internal name of the part</param>
 		/// <param name="name">The name of the part</param>
 		/// <param name="assetFolderPath">The path to the folder containing the part's textures</param>
 		/// <returns>The ID of the registered part</returns>
-		public static int RegisterPart(string internalName, string name, string assetFolderPath) {
-			if (hasReachedPostSetupContent)
-				throw new Exception("Method called too late.  This method should be called in Mod.Load()");
+		/// <exception cref="Exception"/>
+		/// <exception cref="ArgumentNullException"/>
+		public static int RegisterPart(Mod mod, string internalName, string name, string assetFolderPath) {
+			if (!isLoadingParts)
+				throw new Exception(GetLateLoadReason("RegisterTCItemParts"));
 
-			return MaterialPartID.Register(internalName, name, assetFolderPath);
+			return PartRegistry.Register(mod, internalName, name, assetFolderPath);
 		}
 
 		/// <summary>
 		/// Registers a name and <seealso cref="ItemID"/>/<seealso cref="AmmoID"/> for the next constructed ammo type to be assigned an ID
 		/// </summary>
+		/// <param name="mod">The mod that the ammo belongs to</param>
 		/// <param name="name">The name of the constructed ammo type</param>
 		/// <param name="ammoID"></param>
 		/// <typeparam name="T">The type of the projectile to spawn when using the ammo</typeparam>
 		/// <returns>The ID of the registered constructed ammo type</returns>
 		/// <remarks>Note: The returned ID does not correlate with <seealso cref="AmmoID"/> nor <seealso cref="ItemID"/></remarks>
-		public static int RegisterAmmo<T>(string name, int ammoID) where T : BaseTCProjectile{
-			if (hasReachedPostSetupContent)
-				throw new Exception("Method called too late.  This method should be called in Mod.Load()");
+		/// <exception cref="Exception"/>
+		/// <exception cref="ArgumentOutOfRangeException"/>
+		/// <exception cref="ArgumentNullException"/>
+		public static int RegisterAmmo<T>(Mod mod, string name, int ammoID) where T : BaseTCProjectile{
+			if (!isLoadingParts)
+				throw new Exception(GetLateLoadReason("RegisterTCAmmunition"));
 
-			return ConstructedAmmoID.Register<T>(name, ammoID);
+			return ConstructedAmmoRegistry.Register<T>(mod, name, ammoID);
+		}
+
+		/// <summary>
+		/// Registers a name and valid <seealso cref="ItemPart"/> IDs for a weapon
+		/// </summary>
+		/// <param name="mod">The mod that the weapon belongs to</param>
+		/// <param name="internalName">The internal name of the weapon</param>
+		/// <param name="validPartIDs">The array of parts that comprise the weapon</param>
+		/// <returns>The ID of the registered weapon</returns>
+		/// <exception cref="Exception"/>
+		/// <exception cref="ArgumentException"/>
+		/// <exception cref="ArgumentNullException"/>
+		public static int RegisterWeapon(Mod mod, string internalName, params int[] validPartIDs) {
+			if (!isLoadingParts)
+				throw new Exception(GetLateLoadReason("RegisterTCWeapons"));
+
+			return WeaponRegistry.Register(mod, internalName, validPartIDs);
 		}
 
 		/// <summary>
@@ -98,17 +160,19 @@ namespace TerrariansConstructLib {
 		/// <returns>The name of the registered part, or throws an exception if a part of type <paramref name="id"/> does not exist</returns>
 		/// <exception cref="Exception"/>
 		public static string GetPartName(int id)
-			=> id >= 0 && id < MaterialPartID.TotalCount ? MaterialPartID.registeredIDsToNames[id] : throw new Exception($"A part with ID {id} does not exist");
+			=> id >= 0 && id < PartRegistry.Count ? PartRegistry.registeredIDs[id].name : throw new Exception($"A part with ID {id} does not exist");
 
 		/// <summary>
 		/// Gets the name of a registered constructed ammo type
 		/// </summary>
-		/// <param name="id">The ID of the constructed ammo type to get</param>
-		/// <returns>The name of the registered constructed ammo type, or throws an exception if a constructed ammo type of type <paramref name="id"/> does not exist</returns>
+		/// <param name="constructedAmmoID">The ID of the constructed ammo type to get</param>
+		/// <returns>The name of the registered constructed ammo type, or throws an exception if a constructed ammo type of type <paramref name="constructedAmmoID"/> does not exist</returns>
 		/// <exception cref="Exception"/>
 		/// <remarks>Note: The input ID does not correlate with <seealso cref="AmmoID"/> nor <seealso cref="ItemID"/></remarks>
-		public static string GetAmmoName(int id)
-			=> id >= 0 && id < ConstructedAmmoID.TotalCount ? ConstructedAmmoID.registeredIDsToNames[id] : null;
+		public static string GetAmmoName(int constructedAmmoID)
+			=> constructedAmmoID >= 0 && constructedAmmoID < ConstructedAmmoRegistry.Count
+				? ConstructedAmmoRegistry.registeredIDs[constructedAmmoID].name
+				: throw new Exception($"A constructed ammo type with ID {constructedAmmoID} does not exist");
 
 		/// <summary>
 		/// Gets the <seealso cref="ItemID"/>/<seealso cref="AmmoID"/> of a registered constructed ammo type
@@ -118,8 +182,19 @@ namespace TerrariansConstructLib {
 		/// <exception cref="Exception"/>
 		/// <remarks>Note: The input ID does not correlate with <seealso cref="AmmoID"/> nor <seealso cref="ItemID"/></remarks>
 		public static int GetAmmoID(int constructedAmmoID)
-			=> constructedAmmoID >= 0 && constructedAmmoID < ConstructedAmmoID.TotalCount
-				? ConstructedAmmoID.registeredIDsToAmmoIDs[constructedAmmoID]
+			=> constructedAmmoID >= 0 && constructedAmmoID < ConstructedAmmoRegistry.Count
+				? ConstructedAmmoRegistry.registeredIDs[constructedAmmoID].ammoID
+				: throw new Exception($"A constructed ammo type with ID {constructedAmmoID} does not exist");
+
+		/// <summary>
+		/// Gets the projectile ID of a registered constructed ammo type
+		/// </summary>
+		/// <param name="constructedAmmoID">The ID of the constructed ammo type to get</param>
+		/// <returns>The <seealso cref="ItemID"/>/<seealso cref="AmmoID"/> of the registered constructed ammo type, or throws an exception if a constructed ammo type of type <paramref name="constructedAmmoID"/> does not exist</returns>
+		/// <exception cref="Exception"/>
+		public static int GetAmmoProjectileType(int constructedAmmoID)
+			=> constructedAmmoID >= 0 && constructedAmmoID < ConstructedAmmoRegistry.Count
+				? ConstructedAmmoRegistry.registeredIDs[constructedAmmoID].projectileType
 				: throw new Exception($"A constructed ammo type with ID {constructedAmmoID} does not exist");
 
 		/// <summary>
@@ -160,7 +235,7 @@ namespace TerrariansConstructLib {
 		/// <param name="tooltipForAllParts">The tooltip that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetTooltip(Material, int, string)"/></param>
 		/// <param name="partIDsToIgnore">The IDs to ignore when iterating to create the part items</param>
 		public static void AddAllPartsOfMaterial(Mod mod, Material material, ItemPartActionsBuilder actions, string tooltipForAllParts, params int[] partIDsToIgnore) {
-			for (int partID = 0; partID < MaterialPartID.TotalCount; partID++) {
+			for (int partID = 0; partID < PartRegistry.Count; partID++) {
 				if (Array.IndexOf(partIDsToIgnore, partID) > -1)
 					continue;
 

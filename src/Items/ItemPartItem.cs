@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using Terraria;
-using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
-using TerrariansConstructLib.ID;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
 
@@ -20,9 +17,9 @@ namespace TerrariansConstructLib.Items {
 			get {
 				StringBuilder asset = new();
 
-				if (part.partID >= 0 && part.partID < MaterialPartID.TotalCount) {
+				if (part.partID >= 0 && part.partID < PartRegistry.Count) {
 					//Modded part ID
-					asset.Append(MaterialPartID.registeredIDsToAssetFolders[part.partID]);
+					asset.Append(PartRegistry.registeredIDs[part.partID].assetFolder);
 				} else
 					throw new Exception("Part ID was invalid");
 
@@ -34,7 +31,7 @@ namespace TerrariansConstructLib.Items {
 					// Default to the "unknown" asset
 					string path = GetUnkownTexturePath(part.partID);
 
-					Mod.Logger.Warn($"Part texture (Material: \"{part.material.GetItemName()}\", Name: \"{MaterialPartID.registeredIDsToNames[part.partID]}\") could not be found." +
+					Mod.Logger.Warn($"Part texture (Material: \"{part.material.GetItemName()}\", Name: \"{PartRegistry.registeredIDs[part.partID].name}\") could not be found." +
 						"  Defaulting to Unknown texture path:\n" +
 						path);
 
@@ -46,7 +43,7 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public static string GetUnkownTexturePath(int partID)
-			=> $"{MaterialPartID.registeredIDsToAssetFolders[partID]}/{MaterialPartID.registeredIDsToInternalNames[partID]}/Unknown";
+			=> $"{PartRegistry.registeredIDs[partID].assetFolder}/{PartRegistry.registeredIDs[partID].internalName}/Unknown";
 
 		/// <summary>
 		/// The information for the item part
@@ -61,7 +58,7 @@ namespace TerrariansConstructLib.Items {
 				if (part is null)
 					part = registeredPartsByItemID[Type];
 
-				return $"ItemPart_{part.material.GetModName()}_{part.material.GetName()}_{MaterialPartID.registeredIDsToInternalNames[part.partID]}";
+				return $"ItemPart_{part.material.GetModName()}_{part.material.GetName()}_{PartRegistry.registeredIDs[part.partID].internalName}";
 			}
 		}
 
@@ -76,7 +73,7 @@ namespace TerrariansConstructLib.Items {
 				buildersByPartID = PartActions.builders[materialType] = new();
 
 			if (buildersByPartID.ContainsKey(partID))
-				throw new ArgumentException($"The part type \"{MaterialPartID.registeredIDsToNames[partID]}\" has already been assigned to the material type \"{material.GetItemName()}\" (ID: {materialType})");
+				throw new ArgumentException($"The part type \"{PartRegistry.registeredIDs[partID].name}\" has already been assigned to the material type \"{material.GetItemName()}\" (ID: {materialType})");
 
 			buildersByPartID[partID] = builder;
 
@@ -108,7 +105,7 @@ namespace TerrariansConstructLib.Items {
 			if (name.EndsWith(" Bar"))
 				name = name.AsSpan()[..^4].ToString();
 
-			DisplayName.SetDefault(name + " " + MaterialPartID.registeredIDsToNames[part.partID]);
+			DisplayName.SetDefault(name + " " + PartRegistry.registeredIDs[part.partID].name);
 
 			if (part.tooltip is not null)
 				Tooltip.SetDefault(part.tooltip);

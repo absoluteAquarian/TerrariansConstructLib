@@ -7,8 +7,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
-using TerrariansConstructLib.ID;
-using TerrariansConstructLib.Projectiles;
+using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.Items {
 	[Autoload(false)]
@@ -56,7 +55,7 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public void SetUseAmmo(int constructedAmmoID) {
-			Item.shoot = ConstructedAmmoID.GetProjectileType(constructedAmmoID);
+			Item.shoot = CoreLibMod.GetAmmoProjectileType(constructedAmmoID);
 			Item.useAmmo = CoreLibMod.GetAmmoID(constructedAmmoID);
 		}
 
@@ -89,7 +88,7 @@ namespace TerrariansConstructLib.Items {
 			SafeSetDefaults();
 
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].SetItemDefaults(parts[i].partID, Item);
+				parts[i].SetItemDefaults?.Invoke(parts[i].partID, Item);
 
 			Item.maxStack = 1;
 			Item.consumable = false;
@@ -116,7 +115,7 @@ namespace TerrariansConstructLib.Items {
 
 		public sealed override void ModifyWeaponDamage(Player player, ref StatModifier damage, ref float flat) {
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].ModifyWeaponDamage(parts[i].partID, player, ref damage, ref flat);
+				parts[i].ModifyWeaponDamage?.Invoke(parts[i].partID, player, ref damage, ref flat);
 
 			SafeModifyWeaponDamage(player, ref damage, ref flat);
 		}
@@ -126,7 +125,7 @@ namespace TerrariansConstructLib.Items {
 
 		public override void ModifyWeaponKnockback(Player player, ref StatModifier knockback, ref float flat) {
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].ModifyWeaponKnockback(parts[i].partID, player, ref knockback, ref flat);
+				parts[i].ModifyWeaponKnockback?.Invoke(parts[i].partID, player, ref knockback, ref flat);
 
 			SafeModifyWeaponKnockback(player, ref knockback, ref flat);
 		}
@@ -136,7 +135,7 @@ namespace TerrariansConstructLib.Items {
 
 		public sealed override void ModifyWeaponCrit(Player player, ref int crit) {
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].ModifyWeaponCrit(parts[i].partID, player, ref crit);
+				parts[i].ModifyWeaponCrit?.Invoke(parts[i].partID, player, ref crit);
 
 			SafeModifyWeaponCrit(player, ref crit);
 		}
@@ -158,7 +157,7 @@ namespace TerrariansConstructLib.Items {
 
 		public sealed override void HoldItem(Player player) {
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnHold(parts[i].partID, player, Item);
+				parts[i].OnHold?.Invoke(parts[i].partID, player, Item);
 
 			//Hardcoded here to make the ability only apply once, regardless of how many parts are Copper
 			// TODO: have a flag or something dictate if a part's ability should only activate once
@@ -194,7 +193,7 @@ namespace TerrariansConstructLib.Items {
 
 		public sealed override bool? UseItem(Player player) {
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnUse(parts[i].partID, player, Item);
+				parts[i].OnUse?.Invoke(parts[i].partID, player, Item);
 
 			SafeUseItem(player);
 
