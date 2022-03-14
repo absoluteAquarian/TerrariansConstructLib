@@ -48,20 +48,20 @@ namespace TerrariansConstructLib.ID {
 				[WeaponShortSwordGuard] = "Shortsword Guard"
 			};
 
-			string folder = "TerrariansConstruct/Assets/Parts/";
+			string assetFolder = "TerrariansConstruct/Assets/Parts/";
 
 			registeredIDsToAssetFolders = new(){
-				[ToolRod] =               folder + "ToolRod",
-				[ToolBinding] =           folder + "ToolBinding",
-				[ToolPickHead] =          folder + "ToolPickHead",
-				[ToolAxeHead] =           folder + "ToolAxeHead",
-				[ToolHammerHead] =        folder + "ToolHammerHead",
-				[WeaponSwordGuard] =      folder + "WeaponSwordGuard",
-				[WeaponLongSwordBlade] =  folder + "WeaponLongSwordBlade",
-				[WeaponShortSwordBlade] = folder + "WeaponShortSwordBlade",
-				[WeaponBowHead] =         folder + "WeaponBowHead",
-				[WeaponBowString] =       folder + "WeaponBowString",
-				[WeaponShortSwordGuard] = folder + "WeaponShortSwordGuard"
+				[ToolRod] =               assetFolder + "ToolRod",
+				[ToolBinding] =           assetFolder + "ToolBinding",
+				[ToolPickHead] =          assetFolder + "ToolPickHead",
+				[ToolAxeHead] =           assetFolder + "ToolAxeHead",
+				[ToolHammerHead] =        assetFolder + "ToolHammerHead",
+				[WeaponSwordGuard] =      assetFolder + "WeaponSwordGuard",
+				[WeaponLongSwordBlade] =  assetFolder + "WeaponLongSwordBlade",
+				[WeaponShortSwordBlade] = assetFolder + "WeaponShortSwordBlade",
+				[WeaponBowHead] =         assetFolder + "WeaponBowHead",
+				[WeaponBowString] =       assetFolder + "WeaponBowString",
+				[WeaponShortSwordGuard] = assetFolder + "WeaponShortSwordGuard"
 			};
 
 			registeredIDsToInternalNames = new();
@@ -85,5 +85,6 @@ namespace TerrariansConstructLib.ID {
 		internal static Dictionary<int, string> registeredIDsToNames;
 		internal static Dictionary<int, string> registeredIDsToAssetFolders;
 		internal static Dictionary<int, string> registeredIDsToInternalNames;
+		internal static Dictionary<int, string> registeredIDsToVisualFolders;
 	}
 }

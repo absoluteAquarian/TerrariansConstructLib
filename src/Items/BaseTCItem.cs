@@ -19,6 +19,12 @@ namespace TerrariansConstructLib.Items {
 
 		public virtual int PartsCount => 0;
 
+		/// <summary>
+		/// The location of the folder for this item's visuals (item part pieces used for constructing the texture) <br/>
+		/// Example: <c>"TerrariansConstruct/Assets/Visuals/Sword"</c>
+		/// </summary>
+		public virtual string VisualsFolderPath => null;
+
 		protected ReadOnlySpan<ItemPart> GetParts() => parts.ToArray();
 
 		protected ItemPart this[int index] {
