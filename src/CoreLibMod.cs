@@ -58,18 +58,15 @@ namespace TerrariansConstructLib {
 			isLoadingParts = false;
 		}
 
-		private static IEnumerable<Mod> FindDependents() {
-			Type BuildProperties = typeof(Mod).Assembly.GetType("Terraria.ModLoader.Core.BuildProperties");
-			MethodInfo BuildProperties_ReadModFile = BuildProperties.GetMethod("ReadModFile", BindingFlags.NonPublic | BindingFlags.Static);
-			FieldInfo BuildProperties_modReferences = BuildProperties.GetField("modReferences", BindingFlags.NonPublic | BindingFlags.Instance);
-			FieldInfo ModReference_mod = BuildProperties.GetNestedType("ModReference").GetField("mod", BindingFlags.Public | BindingFlags.Instance);
+		private static readonly Type BuildProperties = typeof(Mod).Assembly.GetType("Terraria.ModLoader.Core.BuildProperties");
+		private static readonly MethodInfo BuildProperties_ReadModFile = BuildProperties.GetMethod("ReadModFile", BindingFlags.NonPublic | BindingFlags.Static);
+		private static readonly MethodInfo BuildProperties_RefNames = BuildProperties.GetMethod("RefNames", BindingFlags.Public | BindingFlags.Instance);
 
-			IEnumerable<string> GetReferences(Mod mod) {
+		private static IEnumerable<Mod> FindDependents() {
+			static IEnumerable<string> GetReferences(Mod mod) {
 				TmodFile modFile = ReflectionHelperReturn<Mod, TmodFile>.InvokeMethod("get_File", mod);
-				object properties = BuildProperties_ReadModFile.Invoke(null, new object[]{ modFile });  //BuildProperties
-				object references = BuildProperties_modReferences.GetValue(properties);                 //BuildProperties+ModReference[]
-				IEnumerable<object> referencesArray = (references as Array).Cast<object>();
-				return referencesArray.Select(o => ModReference_mod.GetValue(o) as string);
+				object properties = BuildProperties_ReadModFile.Invoke(null, new object[]{ modFile });
+				return BuildProperties_RefNames.Invoke(properties, new object[]{ true }) as IEnumerable<string>;
 			}
 
 			foreach (Mod mod in ModLoader.Mods) {
