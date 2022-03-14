@@ -110,7 +110,8 @@ namespace TerrariansConstructLib.Items {
 			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TYPES>", i => "PartTooltip_" + i,
 				string.Join('\n', parts.Select(p => p.tooltip).Where(s => !string.IsNullOrWhiteSpace(s))));
 
-			// TODO: modifier strings
+			Utility.FindAndInsertLines(Mod, tooltips, "<MODIFIERS>", i => "Modifier_" + i,
+				string.Join('\n', parts.Select(p => p.modifierText).Where(s => !string.IsNullOrWhiteSpace(s))));
 
 			if (ammoReserveMax > 0)
 				Utility.FindAndModify(tooltips, "<AMMO_COUNT>", $"{ammoReserve}/{ammoReserveMax}");
