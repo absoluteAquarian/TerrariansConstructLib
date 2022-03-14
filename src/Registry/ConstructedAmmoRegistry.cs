@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Terraria.ID;
 using Terraria.ModLoader;
-using TerrariansConstructLib.Projectiles;
 
 namespace TerrariansConstructLib.Registry {
 	public static class ConstructedAmmoRegistry {
-		internal static int Register<T>(Mod mod, string name, int ammoID, T projectile) where T : BaseTCProjectile {
+		internal static int Register(Mod mod, string name, int ammoID, string projectileInternalName) {
 			if (name is null)
 				throw new ArgumentNullException(nameof(name));
 
@@ -22,7 +20,7 @@ namespace TerrariansConstructLib.Registry {
 				mod = mod,
 				name = name,
 				ammoID = ammoID,
-				projectileInternalName = projectile.Name
+				projectileInternalName = projectileInternalName
 			};
 
 			nextID++;

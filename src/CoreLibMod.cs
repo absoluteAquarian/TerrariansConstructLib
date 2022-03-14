@@ -173,18 +173,18 @@ namespace TerrariansConstructLib {
 		/// <param name="mod">The mod that the ammo belongs to</param>
 		/// <param name="name">The name of the constructed ammo type</param>
 		/// <param name="ammoID">The <seealso cref="ItemID"/>/<seealso cref="AmmoID"/> for the constructed ammo ID</param>
-		/// <param name="projectile">The projectile that this constructed ammo will shoot</param>
+		/// <param name="projectileInternalName">The projectile that this constructed ammo will shoot.  Use the string you'd use to access the projectile via <seealso cref="Mod.Find{T}(string)"/></param>
 		/// <typeparam name="T">The <see langword="class"/> of the <seealso cref="BaseTCProjectile"/> to spawn when using the ammo</typeparam>
 		/// <returns>The ID of the registered constructed ammo type</returns>
 		/// <remarks>Note: The returned ID does not correlate with <seealso cref="AmmoID"/> nor <seealso cref="ItemID"/></remarks>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentOutOfRangeException"/>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterAmmo<T>(Mod mod, string name, int ammoID, T projectile) where T : BaseTCProjectile {
+		public static int RegisterAmmo(Mod mod, string name, int ammoID, string projectileInternalName) {
 			if (!isLoadingParts)
 				throw new Exception(GetLateLoadReason("RegisterTCAmmunition"));
 
-			return ConstructedAmmoRegistry.Register(mod, name, ammoID, projectile);
+			return ConstructedAmmoRegistry.Register(mod, name, ammoID, projectileInternalName);
 		}
 
 		/// <summary>
@@ -194,17 +194,17 @@ namespace TerrariansConstructLib {
 		/// <param name="mod">The mod that the weapon belongs to</param>
 		/// <param name="internalName">The internal name of the weapon</param>
 		/// <param name="name">The default item type name used by <seealso cref="BaseTCItem.RegisteredItemTypeName"/></param>
-		/// <param name="item">The item type that this registered item ID will be applied to</param>
+		/// <param name="itemInternalName">The item type that this registered item ID will be applied to.  Use the string you'd use to access the item via <seealso cref="Mod.Find{T}(string)"/></param>
 		/// <param name="validPartIDs">The array of parts that comprise the weapon</param>
 		/// <returns>The ID of the registered item</returns>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterItem<T>(Mod mod, string internalName, string name, T item, params int[] validPartIDs) where T : BaseTCItem {
+		public static int RegisterItem(Mod mod, string internalName, string name, string itemInternalName, params int[] validPartIDs) {
 			if (!isLoadingParts)
 				throw new Exception(GetLateLoadReason("RegisterTCItems"));
 
-			return ItemRegistry.Register(mod, internalName, name, item, validPartIDs);
+			return ItemRegistry.Register(mod, internalName, name, itemInternalName, validPartIDs);
 		}
 
 		/// <summary>

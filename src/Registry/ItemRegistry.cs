@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Terraria.ModLoader;
-using TerrariansConstructLib.API.Reflection;
-using TerrariansConstructLib.Items;
 
 namespace TerrariansConstructLib.Registry {
 	public static class ItemRegistry {
-		internal static int Register<T>(Mod mod, string internalName, string name, T item, params int[] validPartIDs) where T : BaseTCItem {
+		internal static int Register(Mod mod, string internalName, string name, string itemInternalName, params int[] validPartIDs) {
 			if (mod is null)
 				throw new ArgumentNullException(nameof(mod));
 
@@ -39,7 +37,7 @@ namespace TerrariansConstructLib.Registry {
 				name = name,
 				internalName = internalName,
 				validPartIDs = validPartIDs,
-				itemInternalName = item.Name
+				itemInternalName = itemInternalName
 			};
 
 			nextID++;
