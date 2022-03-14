@@ -41,6 +41,11 @@ namespace TerrariansConstructLib.Items {
 		public BaseTCItem(int registeredItemID) {
 			int[] validPartIDs = CoreLibMod.GetItemValidPartIDs(registeredItemID);
 
+			var data = ItemRegistry.registeredIDs[registeredItemID];
+
+			if (data.mod != Mod || data.itemInternalName != Name)
+				throw new Exception($"Registered item ID {registeredItemID} was assigned to an item of type \"{data.mod.Name}:{data.internalName}\" and cannot be assigned to an item of type \"{Mod.Name}:{Name}\"");
+
 			this.registeredItemID = registeredItemID;
 
 			if (validPartIDs.Length != PartsCount)
