@@ -4,6 +4,7 @@ using System.Text;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using TerrariansConstructLib.API;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
 
@@ -51,6 +52,7 @@ namespace TerrariansConstructLib.Items {
 		public ItemPart part;
 
 		internal static Dictionary<int, ItemPart> registeredPartsByItemID;
+		internal static PartsDictionary<int> itemPartToItemID;
 
 		//Needed to allow multiple ItemParItem instances to be loaded
 		public override string Name {

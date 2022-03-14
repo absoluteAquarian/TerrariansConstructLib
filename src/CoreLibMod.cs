@@ -28,7 +28,7 @@ namespace TerrariansConstructLib {
 			if (!ModLoader.HasMod("TerrariansConstruct") || !(bool)ModLoader_IsEnabled.Invoke(null, new object[]{ "TerrariansConstruct" }))
 				throw new Exception(Language.GetTextValue("tModLoader.LoadErrorDependencyMissing", "TerrariansConstruct", Name));
 
-			isLoadingParts = false;
+			isLoadingParts = true;
 
 			ConstructedAmmoRegistry.Load();
 			PartRegistry.Load();
@@ -37,6 +37,7 @@ namespace TerrariansConstructLib {
 			PartActions.builders = new();
 			ItemPart.partData = new();
 			ItemPartItem.registeredPartsByItemID = new();
+			ItemPartItem.itemPartToItemID = new();
 
 			if (!Main.dedServ) {
 				ActivateAbility = KeybindLoader.RegisterKeybind(this, "Activate Tool Ability", Keys.G);
@@ -94,6 +95,7 @@ namespace TerrariansConstructLib {
 			PartActions.builders = null;
 			ItemPart.partData = null;
 			ItemPartItem.registeredPartsByItemID = null;
+			ItemPartItem.itemPartToItemID = null;
 		}
 
 		//No Mod.Call() implementation.  If people want to add content/add support for content to this mod, they better use a strong/weak reference
@@ -268,6 +270,17 @@ namespace TerrariansConstructLib {
 			=> ItemPart.partData.Get(material, partID);
 
 		/// <summary>
+		/// Gets an <seealso cref="ItemPartItem"/> item type from a material and part ID
+		/// </summary>
+		/// <param name="material">The material</param>
+		/// <param name="partID">The part ID</param>
+		/// <returns>The <seealso cref="ItemPartItem"/> item type</returns>
+		/// <exception cref="Exception"/>
+		/// <exception cref="ArgumentException"/>
+		public static int GetItemPartItemType(Material material, int partID)
+			=> ItemPartItem.itemPartToItemID.Get(material, partID);
+
+		/// <summary>
 		/// Registers the part items for the material, <paramref name="materialType"/>, with the given rarity, <paramref name="rarity"/>
 		/// </summary>
 		/// <param name="mod">The mod instance to add the part to</param>
@@ -317,6 +330,7 @@ namespace TerrariansConstructLib {
 
 			//ModItem.Type is only set after Mod.AddContent is called
 			ItemPartItem.registeredPartsByItemID[item.Type] = item.part;
+			ItemPartItem.itemPartToItemID.Set(material, partID, item.Type);
 
 			if (LogAddedParts)
 				Instance.Logger.Info($"Added item part \"{item.Name}\" (ID: {item.Type})");

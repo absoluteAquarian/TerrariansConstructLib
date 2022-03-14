@@ -35,7 +35,7 @@ namespace TerrariansConstructLib.Materials {
 		public virtual string GetItemName()
 			=> Lang.GetItemNameValue(type);
 
-		public Item AsItem() => new(type);
+		public Item AsItem() => this is UnloadedMaterial ? null : new(type);
 
 		public virtual TagCompound SerializeData() {
 			TagCompound tag = new();
