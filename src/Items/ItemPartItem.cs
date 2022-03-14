@@ -32,7 +32,7 @@ namespace TerrariansConstructLib.Items {
 
 				if (!ModContent.HasAsset(asset.ToString())) {
 					// Default to the "unknown" asset
-					string path = $"{MaterialPartID.registeredIDsToAssetFolders[part.partID]}/{MaterialPartID.registeredIDsToInternalNames[part.partID]}/Unknown";
+					string path = GetUnkownTexturePath(part.partID);
 
 					Mod.Logger.Warn($"Part texture (Material: \"{part.material.GetItemName()}\", Name: \"{MaterialPartID.registeredIDsToNames[part.partID]}\") could not be found." +
 						"  Defaulting to Unknown texture path:\n" +
@@ -44,6 +44,9 @@ namespace TerrariansConstructLib.Items {
 				return asset.ToString();
 			}
 		}
+
+		public static string GetUnkownTexturePath(int partID)
+			=> $"{MaterialPartID.registeredIDsToAssetFolders[partID]}/{MaterialPartID.registeredIDsToInternalNames[partID]}/Unknown";
 
 		/// <summary>
 		/// The information for the item part

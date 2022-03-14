@@ -1,7 +1,9 @@
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Reflection;
 using Terraria;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 using TerrariansConstructLib.API.Edits;
 using TerrariansConstructLib.ID;
@@ -21,6 +23,11 @@ namespace TerrariansConstructLib {
 		public static CoreLibMod Instance => ModContent.GetInstance<CoreLibMod>();
 
 		public override void Load() {
+			MethodInfo ModLoader_IsEnabled = typeof(ModLoader).GetMethod("IsEnabled", BindingFlags.NonPublic | BindingFlags.Static);
+
+			if (!ModLoader.HasMod("TerrariansConstruct") || !(bool)ModLoader_IsEnabled.Invoke(null, new object[]{ "TerrariansConstruct" }))
+				throw new Exception(Language.GetTextValue("tModLoader.LoadErrorDependencyMissing", "TerrariansConstruct", Name));
+
 			hasReachedPostSetupContent = false;
 
 			ConstructedAmmoID.Load();

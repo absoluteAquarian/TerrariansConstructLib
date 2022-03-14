@@ -8,6 +8,10 @@ using Terraria.UI;
 
 namespace TerrariansConstructLib.API.UI {
 	public class TCUIItemSlot : UIElement {
+		public static class SlotContexts {
+			public const int ForgeUI = -10413;
+		}
+
 		private int Context { get; set; }
 
 		public float Scale { get; private set; }

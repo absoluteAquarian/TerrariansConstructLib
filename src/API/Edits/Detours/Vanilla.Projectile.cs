@@ -4,7 +4,7 @@ using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Projectiles;
 
 namespace TerrariansConstructLib.API.Edits.Detours {
-	internal static class Vanilla {
+	internal static partial class Vanilla {
 		internal static int Hook_Projectile_NewProjectile(On.Terraria.Projectile.orig_NewProjectile_IEntitySource_float_float_float_float_int_int_float_int_float_float orig, IEntitySource spawnSource, float X, float Y, float SpeedX, float SpeedY, int Type, int Damage, float KnockBack, int Owner, float ai0, float ai1) {
 			int spawned = orig(spawnSource, X, Y, SpeedX, SpeedY, Type, Damage, KnockBack, Owner, ai0, ai1);
 
