@@ -21,13 +21,20 @@ namespace TerrariansConstructLib.Items {
 
 		protected ReadOnlySpan<ItemPart> GetParts() => parts.ToArray();
 
-		protected ItemPart GetPart(int index) => parts[index];
+		protected ItemPart this[int index] {
+			get => parts[index];
+			set => parts[index] = value;
+		}
 
-		public BaseTCItem(params ItemPart[] parts) {
-			if (parts.Length != PartsCount)
-				throw new ArgumentException($"Parts length ({parts.Length}) was not equal to the expected length of {PartsCount}");
+		private BaseTCItem() {
+			parts = new(Array.Empty<ItemPartSlot>());
+		}
 
-			this.parts = new(parts);
+		public BaseTCItem(params ItemPartSlot[] slots) {
+			if (slots.Length != PartsCount)
+				throw new ArgumentException($"Slots length ({slots.Length}) was not equal to the expected length of {PartsCount}");
+
+			parts = new(slots);
 		}
 
 		public void SetUseNoAmmo() {
@@ -40,18 +47,21 @@ namespace TerrariansConstructLib.Items {
 			Item.useAmmo = CoreLibMod.GetAmmoID(constructedAmmoID);
 		}
 
+		// TODO: move these to an Ability object maybe?
 		public float copperPartCharge;
 		public const float CopperPartChargeMax = 6f * 2.5f * 60 * 60;  //6 velocity for at least 2.5 minutes
 		public bool copperChargeActivated;
 
 		public bool CopperChargeReady => !copperChargeActivated && copperPartCharge >= CopperPartChargeMax;
 
+		public virtual string WeaponTypeName => "Weapon";
+
 		public virtual string TooltipText => null;
 
 		public sealed override void SetStaticDefaults() {
 			SafeSetStaticDefaults();
 
-			DisplayName.SetDefault("Constructed Weapon");
+			DisplayName.SetDefault("Constructed " + WeaponTypeName);
 			Tooltip.SetDefault((TooltipText is not null ? TooltipText + "\n" : "") +
 				"<PART_TYPES>\n" +
 				"<PART_TOOLTIPS>\n" +

@@ -29,7 +29,7 @@ namespace TerrariansConstructLib.API {
 		}
 
 		public ItemPartSlotCollection(params ItemPart[] parts) {
-			slots = parts.Select((p, i) => new ItemPartSlot(p, i)).ToArray();
+			slots = parts.Select((p, i) => new ItemPartSlot(i){ part = p }).ToArray();
 		}
 
 		public ItemPart this[int slot] {

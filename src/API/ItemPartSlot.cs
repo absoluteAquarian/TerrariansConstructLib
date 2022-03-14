@@ -12,10 +12,5 @@ namespace TerrariansConstructLib.API {
 		internal ItemPartSlot(int slot) {
 			this.slot = slot;
 		}
-
-		internal ItemPartSlot(ItemPart part, int slot) {
-			this.part = part;
-			this.slot = slot;
-		}
 	}
 }
