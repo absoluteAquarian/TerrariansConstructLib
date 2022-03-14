@@ -26,15 +26,8 @@ namespace TerrariansConstructLib.Items {
 			set => parts[index] = value;
 		}
 
-		private BaseTCItem() {
-			parts = new(Array.Empty<ItemPartSlot>());
-		}
-
-		public BaseTCItem(int count) {
-			if (count != PartsCount)
-				throw new ArgumentException($"Parts count ({count}) was not equal to the expected length of {PartsCount}");
-
-			parts = new(count);
+		protected BaseTCItem() {
+			parts = new(PartsCount);
 		}
 
 		public BaseTCItem(params ItemPartSlot[] slots) {
