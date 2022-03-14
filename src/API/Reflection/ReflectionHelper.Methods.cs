@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -73,7 +74,7 @@ namespace TerrariansConstructLib.API.Reflection {
 
 			ILGenerator il = dMethod.GetILGenerator();
 
-			if (!dMethod.IsStatic)
+			if (!methodInfo.IsStatic)
 				il.Emit(OpCodes.Ldarg_0);
 
 			il.Emit(OpCodes.Call, methodInfo);
@@ -161,7 +162,7 @@ namespace TerrariansConstructLib.API.Reflection {
 
 			ILGenerator il = dMethod.GetILGenerator();
 
-			if (!dMethod.IsStatic)
+			if (!methodInfo.IsStatic)
 				il.Emit(OpCodes.Ldarg_0);
 
 			il.Emit(OpCodes.Call, methodInfo);
@@ -255,7 +256,7 @@ namespace TerrariansConstructLib.API.Reflection {
 
 			il.Emit(OpCodes.Ldarg_0);
 
-			if (!dMethod.IsStatic)
+			if (!methodInfo.IsStatic)
 				il.Emit(OpCodes.Ldarg_1);
 
 			il.Emit(OpCodes.Call, methodInfo);
@@ -347,7 +348,7 @@ namespace TerrariansConstructLib.API.Reflection {
 
 			il.Emit(OpCodes.Ldarg_0);
 
-			if (!dMethod.IsStatic)
+			if (!methodInfo.IsStatic)
 				il.Emit(OpCodes.Ldarg_1);
 
 			il.Emit(OpCodes.Call, methodInfo);
@@ -444,7 +445,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			il.Emit(OpCodes.Ldarg_0);
 			il.Emit(OpCodes.Ldarg_1);
 
-			if (!dMethod.IsStatic)
+			if (!methodInfo.IsStatic)
 				il.Emit(OpCodes.Ldarg_2);
 
 			il.Emit(OpCodes.Call, methodInfo);
@@ -539,7 +540,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			il.Emit(OpCodes.Ldarg_0);
 			il.Emit(OpCodes.Ldarg_1);
 
-			if (!dMethod.IsStatic)
+			if (!methodInfo.IsStatic)
 				il.Emit(OpCodes.Ldarg_2);
 
 			il.Emit(OpCodes.Call, methodInfo);
@@ -639,7 +640,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			il.Emit(OpCodes.Ldarg_1);
 			il.Emit(OpCodes.Ldarg_2);
 
-			if (!dMethod.IsStatic)
+			if (!methodInfo.IsStatic)
 				il.Emit(OpCodes.Ldarg_3);
 
 			il.Emit(OpCodes.Call, methodInfo);
@@ -737,7 +738,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			il.Emit(OpCodes.Ldarg_1);
 			il.Emit(OpCodes.Ldarg_2);
 
-			if (!dMethod.IsStatic)
+			if (!methodInfo.IsStatic)
 				il.Emit(OpCodes.Ldarg_3);
 
 			il.Emit(OpCodes.Call, methodInfo);
