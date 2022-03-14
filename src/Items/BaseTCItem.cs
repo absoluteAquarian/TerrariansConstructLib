@@ -16,6 +16,8 @@ namespace TerrariansConstructLib.Items {
 
 		public int ammoReserve, ammoReserveMax;
 
+		public readonly int registeredItemID;
+
 		public virtual int PartsCount => 0;
 
 		/// <summary>
@@ -33,13 +35,16 @@ namespace TerrariansConstructLib.Items {
 
 		protected BaseTCItem() {
 			parts = new(PartsCount);
+			registeredItemID = -1;
 		}
 
 		public BaseTCItem(int registeredItemID) {
 			int[] validPartIDs = CoreLibMod.GetItemValidPartIDs(registeredItemID);
 
+			this.registeredItemID = registeredItemID;
+
 			if (validPartIDs.Length != PartsCount)
-				throw new ArgumentException($"Part IDs length ({validPartIDs.Length}) was not equal to the expected length of {PartsCount}");
+				throw new ArgumentException($"Part IDs length ({validPartIDs.Length}) for registered item ID \"{CoreLibMod.GetItemInternalName(registeredItemID)}\" ({registeredItemID}) was not equal to the expected length of {PartsCount}");
 
 			parts = new(validPartIDs.Select((p, i) => new ItemPartSlot(i){ isPartIDValid = id => id == p }).ToArray());
 		}
@@ -61,14 +66,14 @@ namespace TerrariansConstructLib.Items {
 
 		public bool CopperChargeReady => !copperChargeActivated && copperPartCharge >= CopperPartChargeMax;
 
-		public virtual string WeaponTypeName => "Weapon";
+		public virtual string RegisteredItemTypeName => CoreLibMod.GetItemInternalName(registeredItemID);
 
 		public virtual string TooltipText => null;
 
 		public sealed override void SetStaticDefaults() {
 			SafeSetStaticDefaults();
 
-			DisplayName.SetDefault("Constructed " + WeaponTypeName);
+			DisplayName.SetDefault("Constructed " + RegisteredItemTypeName);
 			Tooltip.SetDefault((TooltipText is not null ? TooltipText + "\n" : "") +
 				"<PART_TYPES>\n" +
 				"<PART_TOOLTIPS>\n" +

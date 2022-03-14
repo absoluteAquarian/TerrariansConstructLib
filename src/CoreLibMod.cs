@@ -141,16 +141,17 @@ namespace TerrariansConstructLib {
 		/// </summary>
 		/// <param name="mod">The mod that the weapon belongs to</param>
 		/// <param name="internalName">The internal name of the weapon</param>
+		/// <param name="name">The default item type name used by <seealso cref="BaseTCItem.RegisteredItemTypeName"/></param>
 		/// <param name="validPartIDs">The array of parts that comprise the weapon</param>
 		/// <returns>The ID of the registered item</returns>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterItem(Mod mod, string internalName, params int[] validPartIDs) {
+		public static int RegisterItem(Mod mod, string internalName, string name, params int[] validPartIDs) {
 			if (!isLoadingParts)
 				throw new Exception(GetLateLoadReason("RegisterTCItems"));
 
-			return ItemRegistry.Register(mod, internalName, validPartIDs);
+			return ItemRegistry.Register(mod, internalName, name, validPartIDs);
 		}
 
 		/// <summary>
