@@ -52,8 +52,6 @@ namespace TerrariansConstructLib {
 			}
 
 			//In order for all parts/ammos/etc. to be visible by all mods that use the library, we have to do some magic
-			AddAllPartsOfMaterial(this, new UnloadedMaterial(), PartActions.NoActions, "[c/fc51ff:Unloaded Part]", null);
-			AddAllPartsOfMaterial(this, new UnknownMaterial(), PartActions.NoActions, "[c/616161:Unknown Part]", null);
 			LoadAllOfTheThings("RegisterTCItemParts");
 
 			if (LogPreLoadLoading)
@@ -72,6 +70,14 @@ namespace TerrariansConstructLib {
 				foreach (var (id, data) in ItemRegistry.registeredIDs)
 					Logger.Debug($"Item Definition \"{data.name}\" (ID: {id}) added by {data.mod.Name}\n" +
 						$"  -- parts: {string.Join(", ", data.validPartIDs.Select(PartRegistry.IDToIdentifier))}");
+
+			//This needs to go here
+			LogAddedParts = true;
+
+			AddAllPartsOfMaterial(this, new UnloadedMaterial(), PartActions.NoActions, "[c/fc51ff:Unloaded Part]", null);
+			AddAllPartsOfMaterial(this, new UnknownMaterial(), PartActions.NoActions, "[c/616161:Unknown Part]", null);
+
+			LogAddedParts = false;
 
 			EditsLoader.Load();
 
