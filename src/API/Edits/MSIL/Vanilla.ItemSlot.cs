@@ -18,7 +18,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			MethodInfo Utils_Size_Texture2D = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Texture2D) });
 			MethodInfo Vector2_op_Multiply = typeof(Vector2).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(float) });
 			MethodInfo Vector2_op_Division = typeof(Vector2).GetMethod("op_Division", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(float) });
-			MethodInfo Vector2_op_Addition = typeof(Vector2).GetMethod("op_Addition", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(float) });
+			MethodInfo Vector2_op_Addition = typeof(Vector2).GetMethod("op_Addition", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(Vector2) });
 			MethodInfo Color_get_White = typeof(Color).GetProperty("White", BindingFlags.Public | BindingFlags.Static).GetGetMethod();
 			MethodInfo Color_op_Multiply = typeof(Color).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Color), typeof(float) });
 			MethodInfo Utils_Size_Rectangle = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Rectangle) });
@@ -28,8 +28,22 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			FieldInfo TextureAssets_Item = typeof(TextureAssets).GetField("Item", BindingFlags.Public | BindingFlags.Static);
 			MethodInfo Asset_Texture2D_get_Value = typeof(Asset<Texture2D>).GetProperty("Value", BindingFlags.Public | BindingFlags.Instance).GetGetMethod();
 
+			ILHelper.EnsureAreNotNull(
+				(Utils_Size_Texture2D, typeof(Utils).FullName + "::Size(Texture2D)"),
+				(Vector2_op_Multiply, typeof(Vector2).FullName + "::op_Multiply(Vector2, float)"),
+				(Vector2_op_Division, typeof(Vector2).FullName + "::op_Division(Vector2, float)"),
+				(Vector2_op_Addition, typeof(Vector2).FullName + "::op_Addition(Vector2, Vector2)"),
+				(Color_get_White, typeof(Color).FullName + "::get_White()"),
+				(Color_op_Multiply, typeof(Color).FullName + "::op_Multiply(Color, float)"),
+				(Utils_Size_Rectangle, typeof(Utils).FullName + "::Size(Rectangle)"),
+				(Item_type, typeof(Item).FullName + "::type"),
+				(Item_stack, typeof(Item).FullName + "::stack"),
+				(Main_LoadItem, typeof(Main).FullName + "::LoadItem(int)"),
+				(TextureAssets_Item, typeof(TextureAssets).FullName + "::Item"),
+				(Asset_Texture2D_get_Value, typeof(Asset<Texture2D>).GetSimplifiedGenericTypeName() + "::get_Value()"));
+
 			ILCursor c = new(il);
-			int patchNum = 0;
+			int patchNum = 1;
 
 			ILHelper.CompleteLog(CoreLibMod.Instance, c, beforeEdit: true);
 

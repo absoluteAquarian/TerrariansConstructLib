@@ -3,6 +3,7 @@ using MonoMod.Cil;
 using ReLogic.OS;
 using System;
 using System.IO;
+using System.Reflection;
 using Terraria.ModLoader;
 
 namespace TerrariansConstructLib.API.Edits {
@@ -123,6 +124,12 @@ namespace TerrariansConstructLib.API.Edits {
 			PrepareInstruction(c.Instrs[index], out string offset, out string opcode, out string operand);
 
 			return $"{offset} {opcode}   {operand}";
+		}
+
+		public static void EnsureAreNotNull(params (MemberInfo member, string identifier)[] memberInfos) {
+			foreach (var (member, identifier) in memberInfos)
+				if (member is null)
+					throw new NullReferenceException($"Member reference \"{identifier}\" is null");
 		}
 	}
 }
