@@ -5,7 +5,7 @@ using Terraria.ModLoader;
 
 namespace TerrariansConstructLib.Registry {
 	public static class ItemRegistry {
-		internal static int Register(Mod mod, string internalName, string name, string itemInternalName, params int[] validPartIDs) {
+		internal static int Register(Mod mod, string internalName, string name, string itemInternalName, string partVisualsFolder, params int[] validPartIDs) {
 			if (mod is null)
 				throw new ArgumentNullException(nameof(mod));
 
@@ -37,7 +37,8 @@ namespace TerrariansConstructLib.Registry {
 				name = name,
 				internalName = internalName,
 				validPartIDs = validPartIDs,
-				itemInternalName = itemInternalName
+				itemInternalName = itemInternalName,
+				partVisualsFolder = partVisualsFolder
 			};
 
 			nextID++;
@@ -79,6 +80,7 @@ namespace TerrariansConstructLib.Registry {
 			public string internalName;
 			public int[] validPartIDs;
 			public string itemInternalName;
+			public string partVisualsFolder;
 		}
 	}
 }

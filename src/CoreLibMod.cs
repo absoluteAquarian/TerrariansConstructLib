@@ -9,6 +9,7 @@ using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Core;
+using TerrariansConstructLib.API;
 using TerrariansConstructLib.API.Edits;
 using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.Items;
@@ -30,6 +31,8 @@ namespace TerrariansConstructLib {
 
 		public static readonly bool LogPreLoadLoading = true;
 
+		internal static CachedItemTexturesDictionary itemTextures;
+
 		public override void Load() {
 			MethodInfo ModLoader_IsEnabled = typeof(ModLoader).GetMethod("IsEnabled", BindingFlags.NonPublic | BindingFlags.Static);
 
@@ -46,6 +49,8 @@ namespace TerrariansConstructLib {
 			ItemPart.partData = new();
 			ItemPartItem.registeredPartsByItemID = new();
 			ItemPartItem.itemPartToItemID = new();
+
+			itemTextures = new();
 
 			if (!Main.dedServ) {
 				ActivateAbility = KeybindLoader.RegisterKeybind(this, "Activate Tool Ability", Keys.G);
@@ -151,6 +156,9 @@ namespace TerrariansConstructLib {
 			ItemPartItem.registeredPartsByItemID = null;
 			ItemPartItem.itemPartToItemID = null;
 
+			itemTextures.Clear();
+			itemTextures = null;
+
 			Interlocked.Exchange(ref UnloadReflection, null)?.Invoke();
 		}
 
@@ -203,16 +211,17 @@ namespace TerrariansConstructLib {
 		/// <param name="internalName">The internal name of the weapon</param>
 		/// <param name="name">The default item type name used by <seealso cref="BaseTCItem.RegisteredItemTypeName"/></param>
 		/// <param name="itemInternalName">The item type that this registered item ID will be applied to.  Use the string you'd use to access the item via <seealso cref="Mod.Find{T}(string)"/></param>
+		/// <param name="partVisualsFolder">The folder where the item's part visuals is located</param>
 		/// <param name="validPartIDs">The array of parts that comprise the weapon</param>
 		/// <returns>The ID of the registered item</returns>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterItem(Mod mod, string internalName, string name, string itemInternalName, params int[] validPartIDs) {
+		public static int RegisterItem(Mod mod, string internalName, string name, string itemInternalName, string partVisualsFolder, params int[] validPartIDs) {
 			if (!isLoadingParts)
 				throw new Exception(GetLateLoadReason("RegisterTCItems"));
 
-			return ItemRegistry.Register(mod, internalName, name, itemInternalName, validPartIDs);
+			return ItemRegistry.Register(mod, internalName, name, itemInternalName, partVisualsFolder, validPartIDs);
 		}
 
 		/// <summary>

@@ -27,7 +27,10 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 			MethodInfo Color_op_Multiply = typeof(Color).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Color), typeof(float) });
 			MethodInfo Utils_Size_Rectangle = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Rectangle) });
 			FieldInfo Item_type = typeof(Item).GetField("type", BindingFlags.Public | BindingFlags.Instance);
-			FieldInfo Item_stack= typeof(Item).GetField("stack", BindingFlags.Public | BindingFlags.Instance);
+			FieldInfo Item_stack = typeof(Item).GetField("stack", BindingFlags.Public | BindingFlags.Instance);
+			MethodInfo Main_LoadItem = typeof(Main).GetMethod("LoadItem", BindingFlags.Public | BindingFlags.Instance);
+			FieldInfo TextureAssets_Item = typeof(TextureAssets).GetField("Item", BindingFlags.Public | BindingFlags.Static);
+			MethodInfo Asset_Texture2D_get_Value = typeof(Asset<Texture2D>).GetProperty("Value", BindingFlags.Public | BindingFlags.Instance).GetGetMethod();
 
 			ILCursor c = new(il);
 
@@ -190,6 +193,34 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 					texture = value6;
 
 				Main.spriteBatch.Draw(texture, position, rectangle, color, rotation, origin, scale, effects, layerDepth);
+			});
+
+			/*   IL_08E1: ldfld     int32 Terraria.Item::'type'
+			 *   IL_08E6: callvirt  instance void Terraria.Main::LoadItem(int32)
+			 *   IL_08EB: ldsfld    class [ReLogic]ReLogic.Content.Asset`1<class [FNA]Microsoft.Xna.Framework.Graphics.Texture2D>[] Terraria.GameContent.TextureAssets::Item
+			 *   IL_08F0: ldloc.1
+			 *   IL_08F1: ldfld     int32 Terraria.Item::'type'
+			 *   IL_08F6: ldelem.ref
+			 *   IL_08F7: callvirt  instance !0 class [ReLogic]ReLogic.Content.Asset`1<class [FNA]Microsoft.Xna.Framework.Graphics.Texture2D>::get_Value()
+			 *      <== NEED TO END UP HERE
+			 */
+			if(!c.TryGotoNext(MoveType.After, i => i.MatchLdfld(Item_type),
+				i => i.MatchCallvirt(Main_LoadItem),
+				i => i.MatchLdsfld(TextureAssets_Item),
+				i => i.MatchLdloc(1),
+				i => i.MatchLdfld(Item_type),
+				i => i.MatchLdelemRef(),
+				i => i.MatchCallvirt(Asset_Texture2D_get_Value)))
+				goto bad_il;
+
+			c.Emit(OpCodes.Ldloc_1);
+			c.EmitDelegate<Func<Texture2D, Item, Texture2D>>((texture, item) => {
+				if (item.ModItem is BaseTCItem) {
+					
+				}
+
+				//Return the intended texture
+				return texture;
 			});
 
 			ILHelper.UpdateInstructionOffsets(c);

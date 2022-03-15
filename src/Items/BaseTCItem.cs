@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -63,7 +64,7 @@ namespace TerrariansConstructLib.Items {
 			if (validPartIDs.Length != PartsCount)
 				throw new ArgumentException($"Part IDs length ({validPartIDs.Length}) for registered item ID \"{CoreLibMod.GetItemInternalName(registeredItemID)}\" ({registeredItemID}) was not equal to the expected length of {PartsCount}");
 
-			parts = new(validPartIDs.Select((p, i) => new ItemPartSlot(i){ isPartIDValid = id => id == p }).ToArray());
+			parts = new(validPartIDs.Select((p, i) => new ItemPartSlot(i){ part = new(){ material = new UnknownMaterial(), partID = i }, isPartIDValid = id => id == p }).ToArray());
 		}
 
 		public void SetUseNoAmmo() {
@@ -268,6 +269,14 @@ namespace TerrariansConstructLib.Items {
 			recipe.AddCondition(NetworkText.FromLiteral("Must be crafted from the Forge UI"), r => false);
 
 			recipe.Register();
+		}
+
+		public sealed override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale) {
+			Texture2D texture = CoreLibMod.itemTextures.Get(registeredItemID, parts);
+
+			spriteBatch.Draw(texture, position, frame, itemColor, 0f, origin, scale, SpriteEffects.None, 0);
+
+			return false;
 		}
 	}
 }
