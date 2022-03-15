@@ -4,6 +4,9 @@ using Terraria.ModLoader;
 using TerrariansConstructLib.Items;
 
 namespace TerrariansConstructLib.Projectiles {
+	/// <summary>
+	/// The base projectile class for any projectiles fired from Terrarians' Construct weapons
+	/// </summary>
 	[Autoload(false)]
 	public class BaseTCProjectile : ModProjectile {
 		internal ItemPart[] parts = Array.Empty<ItemPart>();
@@ -12,10 +15,16 @@ namespace TerrariansConstructLib.Projectiles {
 
 		protected ItemPart GetPart(int index) => parts[index];
 
+		/// <summary>
+		/// The name for the projectile, used in <see cref="SetStaticDefaults"/><br/>
+		/// Defaults to: <c>"Projectile"</c>
+		/// </summary>
+		public virtual string ProjectileTypeName => "Projectile";
+
 		public sealed override void SetStaticDefaults() {
 			SafeSetStaticDefaults();
 
-			DisplayName.SetDefault("Constructed Projectile");
+			DisplayName.SetDefault("Constructed " + ProjectileTypeName);
 		}
 
 		/// <inheritdoc cref="SetStaticDefaults"/>

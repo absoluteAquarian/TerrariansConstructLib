@@ -79,6 +79,12 @@ namespace TerrariansConstructLib {
 				tooltips[searchIndex].text = tooltips[searchIndex].text.Replace(searchPhrase, replacePhrase);
 		}
 
+		public static void FindAndRemoveLine(List<TooltipLine> tooltips, string fullLine){
+			int searchIndex = tooltips.FindIndex(t => t.text == fullLine);
+			if(searchIndex >= 0)
+				tooltips.RemoveAt(searchIndex);
+		}
+
 		public static void FindAndInsertLines(Mod mod, List<TooltipLine> tooltips, string searchLine, Func<int, string> lineNames, string replaceLines){
 			int searchIndex = tooltips.FindIndex(t => t.text == searchLine);
 			if(searchIndex >= 0){

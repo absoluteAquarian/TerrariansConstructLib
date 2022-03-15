@@ -11,6 +11,9 @@ using TerrariansConstructLib.API;
 using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.Items {
+	/// <summary>
+	/// The base item class for any items that can be created by the Terrarians' Construct Forge UI
+	/// </summary>
 	[Autoload(false)]
 	public class BaseTCItem : ModItem {
 		internal ItemPartSlotCollection parts;
@@ -39,6 +42,12 @@ namespace TerrariansConstructLib.Items {
 			registeredItemID = -1;
 		}
 
+		/// <summary>
+		/// Creates an instance of a <see cref="BaseTCItem"/> using the data from a registered item ID
+		/// </summary>
+		/// <param name="registeredItemID">The registered item ID</param>
+		/// <exception cref="Exception"></exception>
+		/// <exception cref="ArgumentException"></exception>
 		public BaseTCItem(int registeredItemID) {
 			int[] validPartIDs = CoreLibMod.GetItemValidPartIDs(registeredItemID);
 
@@ -72,8 +81,15 @@ namespace TerrariansConstructLib.Items {
 
 		public bool CopperChargeReady => !copperChargeActivated && copperPartCharge >= CopperPartChargeMax;
 
+		/// <summary>
+		/// The name for the item, used in <see cref="SetStaticDefaults"/><br/>
+		/// Defaults to:  <c>CoreLibMod.GetItemInternalName(registeredItemID)</c>
+		/// </summary>
 		public virtual string RegisteredItemTypeName => CoreLibMod.GetItemInternalName(registeredItemID);
 
+		/// <summary>
+		/// The tooltip for the item
+		/// </summary>
 		public virtual string TooltipText => null;
 
 		public sealed override void SetStaticDefaults() {
@@ -115,6 +131,8 @@ namespace TerrariansConstructLib.Items {
 
 			if (ammoReserveMax > 0)
 				Utility.FindAndModify(tooltips, "<AMMO_COUNT>", $"{ammoReserve}/{ammoReserveMax}");
+			else
+				Utility.FindAndRemoveLine(tooltips, "<AMMO_COUNT>");
 		}
 
 		/// <inheritdoc cref="ModifyTooltips(List{TooltipLine})"/>
