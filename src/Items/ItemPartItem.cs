@@ -95,9 +95,9 @@ namespace TerrariansConstructLib.Items {
 			=> CanStack(item2);
 
 		public override ModItem Clone(Item item) {
-			ItemPartItem source = item.ModItem as ItemPartItem;
-			
-			return new ItemPartItem(source.part);
+			ModItem clone = base.Clone(item);
+			(clone as ItemPartItem).part = part.Clone();
+			return clone;
 		}
 
 		public override void SetStaticDefaults() {
