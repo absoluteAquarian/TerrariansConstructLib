@@ -156,7 +156,7 @@ namespace TerrariansConstructLib {
 			ItemPartItem.registeredPartsByItemID = null;
 			ItemPartItem.itemPartToItemID = null;
 
-			itemTextures.Clear();
+			itemTextures?.Clear();
 			itemTextures = null;
 
 			Interlocked.Exchange(ref UnloadReflection, null)?.Invoke();
