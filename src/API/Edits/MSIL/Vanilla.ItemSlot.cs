@@ -87,7 +87,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			 */
 			if(!c.TryGotoNext(MoveType.Before, i => i.MatchLdloc(7),
 				i => i.MatchCall(Utils_Size_Texture2D),
-				i => i.MatchLdloc(7),
+				i => i.MatchLdloc(2),
 				i => i.MatchCall(Vector2_op_Multiply),
 				i => i.MatchStloc(12)))
 				goto bad_il;
@@ -220,7 +220,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 
 			return;
 			bad_il:
-			CoreLibMod.Instance.Logger.Error("Unable to fully patch " + il.Method.DeclaringType.FullName + "::" + il.Method.Name + "()\n" +
+			CoreLibMod.Instance.Logger.Error("Unable to fully patch " + il.Method.Name + "()\n" +
 				"  Reason: Could not find instruction sequence for patch #" + patchNum);
 		}
 	}
