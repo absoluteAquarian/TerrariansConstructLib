@@ -220,8 +220,8 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 
 			return;
 			bad_il:
-			CoreLibMod.Instance.Logger.Error("Unable to fully patch " + il.Method.Name + "()\n" +
-				"  Reason: Could not find instruction sequence for patch #" + patchNum);
+			throw new Exception("Unable to fully patch " + il.Method.Name + "()\n" +
+				"Reason: Could not find instruction sequence for patch #" + patchNum);
 		}
 	}
 }
