@@ -17,9 +17,12 @@ namespace TerrariansConstructLib.API.Edits {
 			
 			if(instr.Operand is null)
 				operand = "";
-			else if(instr.Operand is ILLabel label)
-				operand = $"IL_{label.Target.Offset :X4}";
-			else
+			else if(instr.Operand is ILLabel label) {
+				if (label.Target is not null)
+					operand = $"IL_{label.Target.Offset :X6}";
+				else
+					operand = "<invalid label target>";
+			} else
 				operand = instr.Operand.ToString();
 		}
 
