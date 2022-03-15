@@ -12,9 +12,9 @@ using TerrariansConstructLib.API.UI;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Registry;
 
-namespace TerrariansConstructLib.API.Edits.Detours {
+namespace TerrariansConstructLib.API.Edits.MSIL {
 	partial class Vanilla {
-		internal static void Hook_ItemSlot_Draw(ILContext il) {
+		internal static void Patch_ItemSlot_Draw(ILContext il) {
 			MethodInfo Utils_Size_Texture2D = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Texture2D) });
 			MethodInfo Vector2_op_Multiply = typeof(Vector2).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(float) });
 			MethodInfo Vector2_op_Division = typeof(Vector2).GetMethod("op_Division", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(float) });
@@ -29,6 +29,7 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 			MethodInfo Asset_Texture2D_get_Value = typeof(Asset<Texture2D>).GetProperty("Value", BindingFlags.Public | BindingFlags.Instance).GetGetMethod();
 
 			ILCursor c = new(il);
+			int patchNum = 0;
 
 			ILHelper.CompleteLog(CoreLibMod.Instance, c, beforeEdit: true);
 
@@ -45,6 +46,8 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 				i => i.MatchLdcI4(2),
 				i => i.MatchBneUn(out _)))
 				goto bad_il;
+
+			patchNum++;
 
 			c.Index++;
 
@@ -74,6 +77,8 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 				i => i.MatchCall(Vector2_op_Multiply),
 				i => i.MatchStloc(12)))
 				goto bad_il;
+
+			patchNum++;
 
 			c.Index++;
 
@@ -195,41 +200,14 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 				Main.spriteBatch.Draw(texture, position, rectangle, color, rotation, origin, scale, effects, layerDepth);
 			});
 
-			/*   IL_08E1: ldfld     int32 Terraria.Item::'type'
-			 *   IL_08E6: callvirt  instance void Terraria.Main::LoadItem(int32)
-			 *   IL_08EB: ldsfld    class [ReLogic]ReLogic.Content.Asset`1<class [FNA]Microsoft.Xna.Framework.Graphics.Texture2D>[] Terraria.GameContent.TextureAssets::Item
-			 *   IL_08F0: ldloc.1
-			 *   IL_08F1: ldfld     int32 Terraria.Item::'type'
-			 *   IL_08F6: ldelem.ref
-			 *   IL_08F7: callvirt  instance !0 class [ReLogic]ReLogic.Content.Asset`1<class [FNA]Microsoft.Xna.Framework.Graphics.Texture2D>::get_Value()
-			 *      <== NEED TO END UP HERE
-			 */
-			if(!c.TryGotoNext(MoveType.After, i => i.MatchLdfld(Item_type),
-				i => i.MatchCallvirt(Main_LoadItem),
-				i => i.MatchLdsfld(TextureAssets_Item),
-				i => i.MatchLdloc(1),
-				i => i.MatchLdfld(Item_type),
-				i => i.MatchLdelemRef(),
-				i => i.MatchCallvirt(Asset_Texture2D_get_Value)))
-				goto bad_il;
-
-			c.Emit(OpCodes.Ldloc_1);
-			c.EmitDelegate<Func<Texture2D, Item, Texture2D>>((texture, item) => {
-				if (item.ModItem is BaseTCItem) {
-					
-				}
-
-				//Return the intended texture
-				return texture;
-			});
-
 			ILHelper.UpdateInstructionOffsets(c);
 
 			ILHelper.CompleteLog(CoreLibMod.Instance, c, beforeEdit: false);
 
 			return;
 			bad_il:
-			CoreLibMod.Instance.Logger.Error("Unable to fully patch " + il.Method.FullName);
+			CoreLibMod.Instance.Logger.Error("Unable to fully patch " + il.Method.DeclaringType.FullName + "::" + il.Method.Name + "()\n" +
+				"  Reason: Could not find instruction sequence for patch #" + patchNum);
 		}
 	}
 }

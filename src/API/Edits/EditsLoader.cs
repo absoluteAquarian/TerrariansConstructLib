@@ -7,7 +7,7 @@
 
 			ILHelper.InitMonoModDumps();
 
-			IL.Terraria.UI.ItemSlot.Draw_SpriteBatch_ItemArray_int_int_Vector2_Color += Detours.Vanilla.Hook_ItemSlot_Draw;
+			IL.Terraria.UI.ItemSlot.Draw_SpriteBatch_ItemArray_int_int_Vector2_Color += MSIL.Vanilla.Patch_ItemSlot_Draw;
 
 			ILHelper.DeInitMonoModDumps();
 
