@@ -14,10 +14,6 @@ using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.API.Edits.Detours {
 	partial class Vanilla {
-		//Must use a delegate since generic types can't have "ref type"
-		public delegate void Hook_ItemSlot_TextureModificationFunc(int context, ref Texture2D value);
-		public delegate void Hook_ItemSlot_DrawExtra(Texture2D value6, Vector2 position, Rectangle rectangle, Color color, float rotation, Vector2 origin, float scale, SpriteEffects effects, float layerDepth, int slot, int context);
-
 		internal static void Hook_ItemSlot_Draw(ILContext il) {
 			MethodInfo Utils_Size_Texture2D = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Texture2D) });
 			MethodInfo Vector2_op_Multiply = typeof(Vector2).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(float) });
@@ -54,12 +50,16 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 
 			//  ldarg.2
 			c.Emit(OpCodes.Ldarg_2);
-			//  ldloca     'value'
-			c.Emit(OpCodes.Ldloca, 7);
-			c.EmitDelegate<Hook_ItemSlot_TextureModificationFunc>((int context, ref Texture2D value) => {
+			//  ldloc     'value'
+			c.Emit(OpCodes.Ldloc, 7);
+			c.EmitDelegate<Func<int, Texture2D, Texture2D>>((context, value) => {
 				if (context >= TCUIItemSlot.SlotContexts.ForgeUI && context < TCUIItemSlot.SlotContexts.ForgeUI + PartRegistry.Count)
 					value = TextureAssets.InventoryBack5.Value;
+
+				return value;
 			});
+			//  stloc     'value'
+			c.Emit(OpCodes.Stloc, 7);
 
 			/*   IL_08B4: ldloc.s   'value'
 			 *      <== NEED TO END UP HERE
@@ -97,7 +97,7 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 			c.Emit(OpCodes.Ldfld, Item_stack);
 			//  ldc.i4.0
 			c.Emit(OpCodes.Ldc_I4_0);
-			//  ble.s    postContentCheck
+			//  ble.s     postContentCheck
 			c.Emit(OpCodes.Ble_S, postContextCheck);
 			//  ldarg.2
 			c.Emit(OpCodes.Ldarg_2);
@@ -109,7 +109,7 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 			c.Emit(OpCodes.Ldarg_2);
 			//  ldc.i4    TCUIItemSlot.SlotContexts.ForgeUI
 			c.Emit(OpCodes.Ldc_I4, TCUIItemSlot.SlotContexts.ForgeUI);
-			c.EmitDelegate<Func<int>>(() => PartRegistry.Count);
+			c.EmitDelegate(() => PartRegistry.Count);
 			//  add
 			c.Emit(OpCodes.Add);
 			//  bge.s     postContentCheck
@@ -180,7 +180,7 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 			/*   Invokes the delegate
 			 */
 
-			c.EmitDelegate<Hook_ItemSlot_DrawExtra>((value6, position, rectangle, color, rotation, origin, scale, effects, layerDepth, slot, context) => {
+			c.EmitDelegate<Action<Texture2D, Vector2, Rectangle, Color, float, Vector2, float, SpriteEffects, float, int, int>>((value6, position, rectangle, color, rotation, origin, scale, effects, layerDepth, slot, context) => {
 				Texture2D texture = null;
 
 				int partID = context - TCUIItemSlot.SlotContexts.ForgeUI;
