@@ -2,8 +2,11 @@
 using Terraria.ModLoader.IO;
 
 namespace TerrariansConstructLib.Materials {
-	public sealed class UnknownMaterial : UnloadedMaterial {
-		public override string GetModName() => nameof(TerrariansConstructLib);
+	/// <summary>
+	/// Represents an unknown material
+	/// </summary>
+	public sealed class UnknownMaterial : Material {
+		public override string GetModName() => "TerrariansConstruct";
 
 		public override string GetName() => "Unknown";
 
@@ -14,8 +17,6 @@ namespace TerrariansConstructLib.Materials {
 		}
 
 		public override Material Clone() => new UnknownMaterial() {
-			modName = modName,
-			itemName = itemName,
 			type = type,
 			rarity = rarity
 		};
@@ -36,8 +37,6 @@ namespace TerrariansConstructLib.Materials {
 			int rarity = tag.GetInt("rarity");
 
 			return new UnknownMaterial(){
-				modName = mod,
-				itemName = name,
 				rarity = rarity,
 				type = -100612
 			};

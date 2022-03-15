@@ -25,7 +25,8 @@ namespace TerrariansConstructLib.Items {
 			=> SetGlobalTooltip(material, partID, tooltip);
 
 		public static void SetGlobalTooltip(Material material, int partID, string tooltip) {
-			if (material is not UnloadedMaterial)
+			//Unloaded/Unknown material should not be tampered with
+			if (material is not UnloadedMaterial or UnknownMaterial)
 				partData.Get(material, partID).tooltip = tooltip;
 		}
 
@@ -33,7 +34,8 @@ namespace TerrariansConstructLib.Items {
 			=> SetGlobalModifierText(material, partID, modifierText);
 
 		public static void SetGlobalModifierText(Material material, int partID, string modifierText) {
-			if (material is not UnloadedMaterial)
+			//Unloaded/Unknown material should not be tampered with
+			if (material is not UnloadedMaterial or UnknownMaterial)
 				partData.Get(material, partID).tooltip = modifierText;
 		}
 

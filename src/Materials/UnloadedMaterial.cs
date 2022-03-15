@@ -2,10 +2,13 @@
 using Terraria.ModLoader.IO;
 
 namespace TerrariansConstructLib.Materials {
+	/// <summary>
+	/// Represents a material that used to be loaded, but no longer is
+	/// </summary>
 	public class UnloadedMaterial : Material {
 		public string modName, itemName;
 
-		public override string GetModName() => nameof(TerrariansConstructLib);
+		public override string GetModName() => "TerrariansConstruct";
 
 		public override string GetName() => "Unloaded";
 

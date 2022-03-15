@@ -5,9 +5,11 @@ using System.IO;
 using System.Linq;
 using Terraria;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
+using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.Items {
@@ -253,6 +255,19 @@ namespace TerrariansConstructLib.Items {
 
 			if (parts.Length != PartsCount)
 				throw new IOException($"Saved parts list length ({parts.Length}) was not equal to the expected length of {PartsCount}");
+		}
+
+		public sealed override void AddRecipes() {
+			Recipe recipe = CreateRecipe();
+
+			for (int i = 0; i < parts.Length; i++)
+				recipe.AddIngredient(CoreLibMod.GetItemPartItemType(new UnknownMaterial(), parts[i].partID));
+
+			// TODO: forge tile?
+
+			recipe.AddCondition(NetworkText.FromLiteral("Must be crafted from the Forge UI"), r => false);
+
+			recipe.Register();
 		}
 	}
 }

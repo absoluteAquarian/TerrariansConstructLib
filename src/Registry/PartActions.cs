@@ -9,7 +9,7 @@ namespace TerrariansConstructLib.Registry {
 		internal static PartsDictionary<ItemPartActionsBuilder> builders;
 
 		public static ItemPartActionsBuilder GetPartActions(Material material, int partID)
-			=> material is UnloadedMaterial ? NoActions : builders.Get(material, partID);
+			=> builders.Get(material, partID);
 
 		public static readonly ItemPartActionsBuilder NoActions = new(isReadonly: true);
 	}

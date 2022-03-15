@@ -34,10 +34,17 @@ namespace TerrariansConstructLib.Materials {
 			throw new Exception("Invalid material type ID");
 		}
 
+		/// <summary>
+		/// Gets the name for this material
+		/// </summary>
 		public virtual string GetItemName()
 			=> Lang.GetItemNameValue(type);
 
-		public Item AsItem() => this is UnloadedMaterial ? null : new(type);
+		/// <summary>
+		/// Gets an instance of the item this material references
+		/// </summary>
+		/// <returns>A new <see cref="Item"/> instance, or <see langword="null"/> if this material is an <seealso cref="UnloadedMaterial"/> or <seealso cref="UnknownMaterial"/></returns>
+		public Item AsItem() => this is UnloadedMaterial or UnknownMaterial ? null : new(type);
 
 		public virtual TagCompound SerializeData() {
 			TagCompound tag = new();

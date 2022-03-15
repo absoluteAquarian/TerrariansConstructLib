@@ -24,7 +24,7 @@ namespace TerrariansConstructLib {
 			return value;
 		}
 
-		public static void SetValueInPartDictionary<T>(this Dictionary<int, Dictionary<int, T>> partDictionary, Material material, int partID, T value) {
+		public static void ReplaceExistingValueInPartDictionary<T>(this Dictionary<int, Dictionary<int, T>> partDictionary, Material material, int partID, T value) {
 			int materialType = material.type;
 			if (!partDictionary.TryGetValue(materialType, out var dictByPartID))
 				throw new ArgumentException($"Unknown material type: \"{material.GetItemName()}\" (ID: {material})");

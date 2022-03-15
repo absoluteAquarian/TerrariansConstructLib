@@ -52,6 +52,8 @@ namespace TerrariansConstructLib {
 			}
 
 			//In order for all parts/ammos/etc. to be visible by all mods that use the library, we have to do some magic
+			AddAllPartsOfMaterial(this, new UnloadedMaterial(), PartActions.NoActions, "[c/fc51ff:Unloaded Part]", null);
+			AddAllPartsOfMaterial(this, new UnknownMaterial(), PartActions.NoActions, "[c/616161:Unknown Part]", null);
 			LoadAllOfTheThings("RegisterTCItemParts");
 
 			if (LogPreLoadLoading)
