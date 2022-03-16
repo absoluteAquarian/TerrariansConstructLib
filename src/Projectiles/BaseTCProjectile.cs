@@ -7,13 +7,15 @@ namespace TerrariansConstructLib.Projectiles {
 	/// <summary>
 	/// The base projectile class for any projectiles fired from Terrarians' Construct weapons
 	/// </summary>
-	[Autoload(false)]
 	public class BaseTCProjectile : ModProjectile {
 		internal ItemPart[] parts = Array.Empty<ItemPart>();
 
 		protected ReadOnlySpan<ItemPart> GetParts() => parts;
 
 		protected ItemPart GetPart(int index) => parts[index];
+
+		//Can't use [Autoload(false)] lest deriving types not get added
+		public override bool IsLoadingEnabled(Mod mod) => false;
 
 		/// <summary>
 		/// The name for the projectile, used in <see cref="SetStaticDefaults"/><br/>

@@ -17,7 +17,6 @@ namespace TerrariansConstructLib.Items {
 	/// <summary>
 	/// The base item class for any items that can be created by the Terrarians' Construct Forge UI
 	/// </summary>
-	[Autoload(false)]
 	public class BaseTCItem : ModItem {
 		internal ItemPartSlotCollection parts;
 
@@ -66,6 +65,9 @@ namespace TerrariansConstructLib.Items {
 
 			parts = new(validPartIDs.Select((p, i) => new ItemPartSlot(i){ part = new(){ material = new UnknownMaterial(), partID = i }, isPartIDValid = id => id == p }).ToArray());
 		}
+
+		//Can't use [Autoload(false)] lest deriving types not get added
+		public override bool IsLoadingEnabled(Mod mod) => false;
 
 		public void SetUseNoAmmo() {
 			Item.shoot = ProjectileID.None;
