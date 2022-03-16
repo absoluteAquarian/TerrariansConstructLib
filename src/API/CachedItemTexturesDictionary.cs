@@ -3,7 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using Terraria;
 using Terraria.ModLoader;
 using TerrariansConstructLib.Items;
@@ -15,6 +17,8 @@ namespace TerrariansConstructLib.API {
 	/// A collection of textures indexed by registered item type and item parts
 	/// </summary>
 	internal class CachedItemTexturesDictionary {
+		internal static bool SaveGeneratedTexturesToFiles = true;
+
 		private readonly Dictionary<int, PartsDictionary<object>> dictionary = new();
 
 		public Texture2D Get(int registeredItemID, ItemPartSlotCollection partsCollection) {
@@ -40,8 +44,18 @@ namespace TerrariansConstructLib.API {
 			//"partsDictionary" is now set to the final step in the tree.  Initialize it if necessary
 			material = parts[^1].material;
 			partID = parts[^1].partID;
-			if (!partsDictionary.TryGet(material, partID, out object texture))
-				partsDictionary.Set(material, partID, texture = BuildTexture(registeredItemID, parts));
+			if (!partsDictionary.TryGet(material, partID, out object texture)) {
+				using ManualResetEvent evt = new(false);
+				
+				Main.QueueMainThreadAction(() => {
+					texture = BuildTexture(registeredItemID, parts);
+					evt.Set();
+				});
+
+				evt.WaitOne();
+
+				partsDictionary.Set(material, partID, texture);
+			}
 
 			return texture as Texture2D;
 		}
@@ -80,6 +94,21 @@ namespace TerrariansConstructLib.API {
 				partTexture = GetVisualTexture(visualsFolder, parts[i]);
 
 				ApplyPixels(registeredItemID, texture, partTexture);
+			}
+
+			if (SaveGeneratedTexturesToFiles) {
+				string textureImage = ItemRegistry.registeredIDs[registeredItemID].internalName + "_"
+					+ string.Join("_", parts.Select(p => "M" + (p.material is UnloadedMaterial ? "U" : p.material is UnknownMaterial ? "K" : p.material.type.ToString())
+						+ "+P" + p.partID));
+
+				string path = Program.SavePath;
+				path = Path.Combine(path, "aA Mods", ItemRegistry.registeredIDs[registeredItemID].mod.Name, "Generated Textures");
+
+				Directory.CreateDirectory(path);
+
+				path = Path.Combine(path, textureImage + ".png");
+
+				texture.SaveAsPng(File.Open(path, FileMode.Create), texture.Width, texture.Height);
 			}
 
 			return texture;

@@ -9,6 +9,7 @@ using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Core;
+using Terraria.ModLoader.Exceptions;
 using TerrariansConstructLib.API;
 using TerrariansConstructLib.API.Edits;
 using TerrariansConstructLib.API.Reflection;
@@ -141,6 +142,31 @@ namespace TerrariansConstructLib {
 					throw new Exception($"Method {methodDescriptor} did not have its parameter be of type \"{typeof(Mod).FullName}\"");
 
 				method.Invoke(null, new object[]{ mod });
+			}
+		}
+
+		public override void AddRecipes() {
+			//Make a recipe for each item definition
+
+			foreach (var (id, data) in ItemRegistry.registeredIDs) {
+				if (!data.mod.TryFind<ModItem>(data.itemInternalName, out var item))
+					throw new RecipeException($"Registered item #{id} (source mod: {data.mod.Name}) was assigned an invalid internal BaseTCItem.Name value: {data.itemInternalName}");
+
+				if (item is not BaseTCItem)
+					throw new Exception($"Registered item #{id} (source mod: {data.mod.Name}) was assigned a ModItem that doesn't inherit from BaseTCItem");
+
+				Recipe recipe = item.Mod.CreateRecipe(item.Type);
+
+				foreach (int part in data.validPartIDs)
+					recipe.AddIngredient(GetItemPartItemType(new UnknownMaterial(), part));
+
+				// TODO: forge tile?
+
+				recipe.AddCondition(NetworkText.FromLiteral("Must be crafted from the Forge UI"), r => false);
+
+				recipe.Register();
+
+				Logger.Debug($"Created recipe for BaseTCItem \"{item.GetType().GetSimplifiedGenericTypeName()}\"");
 			}
 		}
 

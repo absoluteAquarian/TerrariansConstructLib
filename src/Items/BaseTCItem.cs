@@ -1,15 +1,20 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ReLogic.Content;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Terraria;
+using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
+using Terraria.ModLoader.Core;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
+using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
 
@@ -46,19 +51,7 @@ namespace TerrariansConstructLib.Items {
 		/// <exception cref="Exception"></exception>
 		/// <exception cref="ArgumentException"></exception>
 		public BaseTCItem(int registeredItemID) {
-			int[] validPartIDs = CoreLibMod.GetItemValidPartIDs(registeredItemID);
-
-			var data = ItemRegistry.registeredIDs[registeredItemID];
-
-			if (data.mod != Mod || data.itemInternalName != Name)
-				throw new Exception($"Registered item ID {registeredItemID} was assigned to an item of type \"{data.mod.Name}:{data.internalName}\" and cannot be assigned to an item of type \"{Mod.Name}:{Name}\"");
-
 			this.registeredItemID = registeredItemID;
-
-			if (validPartIDs.Length != PartsCount)
-				throw new ArgumentException($"Part IDs length ({validPartIDs.Length}) for registered item ID \"{CoreLibMod.GetItemInternalName(registeredItemID)}\" ({registeredItemID}) was not equal to the expected length of {PartsCount}");
-
-			parts = new(validPartIDs.Select((p, i) => new ItemPartSlot(i){ part = new(){ material = new UnknownMaterial(), partID = i }, isPartIDValid = id => id == p }).ToArray());
 		}
 
 		//Can't use [Autoload(false)] lest deriving types not get added
@@ -99,6 +92,8 @@ namespace TerrariansConstructLib.Items {
 		/// </summary>
 		public virtual string TooltipText => null;
 
+		public sealed override string Texture => "TerrariansConstructLib/Assets/DummyItem";
+
 		public sealed override void SetStaticDefaults() {
 			SafeSetStaticDefaults();
 
@@ -114,6 +109,21 @@ namespace TerrariansConstructLib.Items {
 		public virtual void SafeSetStaticDefaults() { }
 
 		public sealed override void SetDefaults() {
+			int[] validPartIDs = CoreLibMod.GetItemValidPartIDs(registeredItemID);
+
+			var data = ItemRegistry.registeredIDs[registeredItemID];
+
+			if (Mod is null)
+				throw new Exception("Mod was null... wait what?");
+
+			if (data.mod != Mod || data.itemInternalName != Name)
+				throw new Exception($"Registered item ID {registeredItemID} was assigned to an item of type \"{data.mod.Name}:{data.internalName}\" and cannot be assigned to an item of type \"{Mod.Name}:{Name}\"");
+
+			if (validPartIDs.Length != PartsCount)
+				throw new ArgumentException($"Part IDs length ({validPartIDs.Length}) for registered item ID \"{CoreLibMod.GetItemInternalName(registeredItemID)}\" ({registeredItemID}) was not equal to the expected length of {PartsCount}");
+
+			parts = new(validPartIDs.Select((p, i) => new ItemPartSlot(i){ part = new(){ material = new UnknownMaterial(), partID = p }, isPartIDValid = id => id == p }).ToArray());
+
 			SafeSetDefaults();
 
 			for (int i = 0; i < parts.Length; i++)
@@ -126,11 +136,26 @@ namespace TerrariansConstructLib.Items {
 		/// <inheritdoc cref="SetDefaults"/>
 		public virtual void SafeSetDefaults() { }
 
+		public sealed override void AutoStaticDefaults() {
+			//Need to get an asset instance just so that we can replace the texture...
+			Asset<Texture2D> asset = TextureAssets.Item[Item.type] = CoreLibMod.Instance.Assets.Request<Texture2D>("Assets/DummyItem", AssetRequestMode.ImmediateLoad);
+
+			ReflectionHelper<Asset<Texture2D>>.InvokeSetterFunction("ownValue", asset, CoreLibMod.itemTextures.Get(registeredItemID,
+				new(CoreLibMod.GetItemValidPartIDs(registeredItemID)
+					.Select((p, i) => new ItemPartSlot(i){ part = new(){ material = new UnknownMaterial(), partID = p }, isPartIDValid = id => id == p })
+					.ToArray())));
+
+			if (DisplayName.IsDefault())
+				DisplayName.SetDefault(Regex.Replace(Name, "([A-Z])", " $1").Trim());
+		}
+
 		public sealed override void ModifyTooltips(List<TooltipLine> tooltips) {
 			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TYPES>", i => "PartType_" + i,
 				string.Join('\n', parts.Select(p => p.material.GetItemName())));
 
-			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TYPES>", i => "PartTooltip_" + i,
+			// TODO: detecting duplicate tooltips/modifiers and merging them into one line
+
+			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TOOLTIPS>", i => "PartTooltip_" + i,
 				string.Join('\n', parts.Select(p => p.tooltip).Where(s => !string.IsNullOrWhiteSpace(s))));
 
 			Utility.FindAndInsertLines(Mod, tooltips, "<MODIFIERS>", i => "Modifier_" + i,
@@ -146,18 +171,15 @@ namespace TerrariansConstructLib.Items {
 		public virtual void SafeModifyTooltips(List<TooltipLine> tooltips) { }
 
 		public sealed override ModItem Clone(Item item) {
-			BaseTCItem source = item.ModItem as BaseTCItem;
-			BaseTCItem clone = new(source.registeredItemID);
+			BaseTCItem clone = base.Clone(item) as BaseTCItem;
 
-			Clone(source, clone);
-
-			clone.parts = new(source.parts.ToArray());
+			Clone(item, clone);
 
 			return clone;
 		}
 
 		/// <inheritdoc cref="Clone(Item)"/>
-		public virtual void Clone(BaseTCItem source, BaseTCItem clone) { }
+		public virtual void Clone(Item item, BaseTCItem clone) { }
 
 		public sealed override bool CanBeConsumedAsAmmo(Player player) => false;
 
@@ -263,22 +285,13 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public sealed override void AddRecipes() {
-			Recipe recipe = CreateRecipe();
-
-			for (int i = 0; i < parts.Length; i++)
-				recipe.AddIngredient(CoreLibMod.GetItemPartItemType(new UnknownMaterial(), parts[i].partID));
-
-			// TODO: forge tile?
-
-			recipe.AddCondition(NetworkText.FromLiteral("Must be crafted from the Forge UI"), r => false);
-
-			recipe.Register();
+			// Recipes are added in CoreLibMod.AddRecipes
 		}
 
 		public sealed override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale) {
 			Texture2D texture = CoreLibMod.itemTextures.Get(registeredItemID, parts);
 
-			spriteBatch.Draw(texture, position, frame, itemColor, 0f, origin, scale, SpriteEffects.None, 0);
+			spriteBatch.Draw(texture, position, frame, drawColor, 0f, origin, scale, SpriteEffects.None, 0);
 
 			return false;
 		}
