@@ -3,7 +3,9 @@ using MonoMod.Cil;
 using ReLogic.OS;
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using Terraria;
 using Terraria.ModLoader;
 
 namespace TerrariansConstructLib.API.Edits {
@@ -11,18 +13,17 @@ namespace TerrariansConstructLib.API.Edits {
 		public static bool LogILEdits { get; set; }
 
 		private static void PrepareInstruction(Instruction instr, out string offset, out string opcode, out string operand){
-			offset = $"IL_{instr.Offset :X4}:";
+			offset = $"IL_{instr.Offset :X5}:";
 
 			opcode = instr.OpCode.Name;
 			
 			if(instr.Operand is null)
 				operand = "";
-			else if(instr.Operand is ILLabel label) {
-				if (label.Target is not null)
-					operand = $"IL_{label.Target.Offset :X6}";
-				else
-					operand = "<invalid label target>";
-			} else
+			else if(instr.Operand is ILLabel label)  //This label's target should NEVER be null!  If it is, the IL edit wouldn't load anyway
+				operand = $"IL_{label.Target.Offset :X5}";
+			else if(instr.OpCode == OpCodes.Switch)
+				operand = "(" + string.Join(", ", (instr.Operand as ILLabel[]).Select(l => $"IL_{l.Target.Offset :X5}")) + ")";
+			else
 				operand = instr.Operand.ToString();
 		}
 
@@ -45,8 +46,8 @@ namespace TerrariansConstructLib.API.Edits {
 				method += " - After";
 
 			//And the storage path
-			string path = Platform.Get<IPathService>().GetStoragePath();
-			path = Path.Combine(path, "Terraria", "ModLoader", "Beta", "aA Mods", mod.Name);
+			string path = Program.SavePath;
+			path = Path.Combine(path, "aA Mods", mod.Name);
 			Directory.CreateDirectory(path);
 
 			//Get the class name
@@ -59,7 +60,20 @@ namespace TerrariansConstructLib.API.Edits {
 			using StreamWriter writer = new(file);
 			
 			writer.WriteLine(DateTime.Now.ToString("'['ddMMMyyyy '-' HH:mm:ss']'"));
-			writer.WriteLine($"// ILCursor: {c.Method}");
+			writer.WriteLine($"// ILCursor: {c.Method.Name}\n");
+
+			if (c.Body.HasVariables) {
+				writer.WriteLine("// Locals:");
+
+				foreach (var local in c.Body.Variables) {
+					string localIndex = $"[{local.Index}] ";
+					writer.WriteLine($"{localIndex,-8}{local.VariableType.FullName} V_{local.Index}");
+				}
+
+				writer.WriteLine();
+			}
+			
+			writer.WriteLine("// Body:");
 			do {
 				PrepareInstruction(c.Instrs[index], out string offset, out string opcode, out string operand);
 
@@ -100,11 +114,14 @@ namespace TerrariansConstructLib.API.Edits {
 		}
 
 		public static void InitMonoModDumps(){
-			if(!LogILEdits)
+			//Disable assembly dumping until this bug is fixed by MonoMod
+			//see: https://discord.com/channels/103110554649894912/445276626352209920/953380019072270419
+			bool noLog = false;
+			if(!LogILEdits || noLog)
 				return;
 
-			Environment.SetEnvironmentVariable("MONOMOD_DMD_TYPE","Auto");
-			Environment.SetEnvironmentVariable("MONOMOD_DMD_DEBUG","1");
+			//Environment.SetEnvironmentVariable("MONOMOD_DMD_TYPE","Auto");
+			//Environment.SetEnvironmentVariable("MONOMOD_DMD_DEBUG","1");
 
 			string dumpDir = Path.GetFullPath("MonoModDump");
 
@@ -114,7 +131,8 @@ namespace TerrariansConstructLib.API.Edits {
 		}
 
 		public static void DeInitMonoModDumps(){
-			if(!LogILEdits)
+			bool noLog = false;
+			if(!LogILEdits || noLog)
 				return;
 
 			Environment.SetEnvironmentVariable("MONOMOD_DMD_DEBUG","0");

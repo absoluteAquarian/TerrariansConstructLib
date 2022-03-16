@@ -67,7 +67,7 @@ namespace TerrariansConstructLib.API {
 			}
 		}
 
-		private Texture2D BuildTexture(int registeredItemID, ItemPart[] parts) {
+		private static Texture2D BuildTexture(int registeredItemID, ItemPart[] parts) {
 			string visualsFolder = ItemRegistry.registeredIDs[registeredItemID].partVisualsFolder;
 
 			Texture2D partTexture = GetVisualTexture(visualsFolder, parts[^1]);
