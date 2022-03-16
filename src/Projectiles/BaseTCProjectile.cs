@@ -15,7 +15,14 @@ namespace TerrariansConstructLib.Projectiles {
 		protected ItemPart GetPart(int index) => parts[index];
 
 		//Can't use [Autoload(false)] lest deriving types not get added
-		public override bool IsLoadingEnabled(Mod mod) => false;
+		public sealed override bool IsLoadingEnabled(Mod mod) => SafeIsLoadingEnabled(mod) ?? false;
+
+		/// <summary>
+		/// Allows you to safely request whether this projectile should be autoloaded
+		/// </summary>
+		/// <param name="mod">The mod adding this projectile</param>
+		/// <returns><see langword="null"/> for the default behaviour (don't autoload projectile), <see langword="true"/> to let the projectile autoload or <see langword="false"/> to prevent the projectile from autoloading</returns>
+		public virtual bool? SafeIsLoadingEnabled(Mod mod) => null;
 
 		/// <summary>
 		/// The name for the projectile, used in <see cref="SetStaticDefaults"/><br/>
