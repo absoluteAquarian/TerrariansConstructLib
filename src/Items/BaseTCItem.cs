@@ -18,11 +18,11 @@ namespace TerrariansConstructLib.Items {
 	/// The base item class for any items that can be created by the Terrarians' Construct Forge UI
 	/// </summary>
 	public class BaseTCItem : ModItem {
-		internal ItemPartSlotCollection parts;
+		internal ItemPartSlotCollection parts = new(2);
 
 		public int ammoReserve, ammoReserveMax;
 
-		public readonly int registeredItemID;
+		public readonly int registeredItemID = -1;
 
 		public virtual int PartsCount => 0;
 
@@ -37,11 +37,6 @@ namespace TerrariansConstructLib.Items {
 		protected ItemPart this[int index] {
 			get => parts[index];
 			set => parts[index] = value;
-		}
-
-		public BaseTCItem() {
-			parts = new(PartsCount);
-			registeredItemID = -1;
 		}
 
 		/// <summary>
