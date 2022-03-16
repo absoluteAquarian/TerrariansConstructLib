@@ -147,7 +147,7 @@ namespace TerrariansConstructLib.Items {
 
 		public sealed override ModItem Clone(Item item) {
 			BaseTCItem source = item.ModItem as BaseTCItem;
-			BaseTCItem clone = new();
+			BaseTCItem clone = new(source.registeredItemID);
 
 			Clone(source, clone);
 
