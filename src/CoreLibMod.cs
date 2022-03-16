@@ -36,8 +36,8 @@ namespace TerrariansConstructLib {
 		public override void Load() {
 			MethodInfo ModLoader_IsEnabled = typeof(ModLoader).GetMethod("IsEnabled", BindingFlags.NonPublic | BindingFlags.Static);
 
-			//if (!ModLoader.HasMod("TerrariansConstruct") || !(bool)ModLoader_IsEnabled.Invoke(null, new object[]{ "TerrariansConstruct" }))
-			//	throw new Exception(Language.GetTextValue("tModLoader.LoadErrorDependencyMissing", "TerrariansConstruct", Name));
+			if(!ModLoader.HasMod("TerrariansConstruct") || !(bool)ModLoader_IsEnabled.Invoke(null, new object[] { "TerrariansConstruct" }))
+				throw new Exception(Language.GetTextValue("tModLoader.LoadErrorDependencyMissing", "TerrariansConstruct", Name));
 
 			isLoadingParts = true;
 
