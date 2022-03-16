@@ -12,8 +12,10 @@ namespace TerrariansConstructLib.Materials {
 
 		public override string GetItemName() => GetName();
 
+		public static readonly int StaticType = -100612;
+
 		public UnknownMaterial() {
-			type = -100612;
+			type = StaticType;
 		}
 
 		public override Material Clone() => new UnknownMaterial() {
@@ -38,7 +40,7 @@ namespace TerrariansConstructLib.Materials {
 
 			return new UnknownMaterial(){
 				rarity = rarity,
-				type = -100612
+				type = StaticType
 			};
 		};
 	}

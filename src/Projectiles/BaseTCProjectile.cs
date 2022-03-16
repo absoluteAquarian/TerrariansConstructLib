@@ -30,6 +30,9 @@ namespace TerrariansConstructLib.Projectiles {
 		/// </summary>
 		public virtual string ProjectileTypeName => "Projectile";
 
+		// TODO: projectile drawing
+		public sealed override string Texture => "TerrariansConstructLib/Assets/DummyProjectile";
+
 		public sealed override void SetStaticDefaults() {
 			SafeSetStaticDefaults();
 

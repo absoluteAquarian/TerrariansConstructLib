@@ -57,8 +57,7 @@ namespace TerrariansConstructLib.Items {
 		//Needed to allow multiple ItemParItem instances to be loaded
 		public override string Name {
 			get {
-				if (part is null)
-					part = registeredPartsByItemID[Type];
+				part ??= registeredPartsByItemID[Type];
 
 				return $"ItemPart_{part.material.GetModName()}_{part.material.GetName()}_{PartRegistry.registeredIDs[part.partID].internalName}";
 			}

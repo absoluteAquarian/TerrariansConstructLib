@@ -45,13 +45,27 @@ namespace TerrariansConstructLib.API {
 		}
 
 		public bool TrySetItemPartSlot(int slot, ItemPart part) {
-			if (slots[slot]?.isPartIDValid(part.partID) ?? true) {
-				slots[slot].part = part;
+			if (slots[slot]?.isPartIDValid?.Invoke(part.partID) ?? true) {
+				(slots[slot] ??= new(slot)).part = part;
 				return true;
 			}
 
 			return false;
 		}
+
+		public bool IsPartIDValidForAnySlot(int partID) {
+			for (int i = 0; i < slots.Length; i++)
+				if (slots[i]?.isPartIDValid?.Invoke(partID) ?? true)
+					return true;
+
+			return false;
+		}
+
+		public bool IsPartIDValidForSlot(int partID, int slot)
+			=> slots[slot]?.isPartIDValid?.Invoke(partID) ?? true;
+
+		public void SetValidFunc(int slot, Func<int, bool> func)
+			=> (slots[slot] ??= new(slot)).isPartIDValid = func;
 
 		public IEnumerator<ItemPart> GetEnumerator()
 			=> slots.Select(s => s.part).GetEnumerator();

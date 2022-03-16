@@ -122,7 +122,19 @@ namespace TerrariansConstructLib.Items {
 			if (validPartIDs.Length != PartsCount)
 				throw new ArgumentException($"Part IDs length ({validPartIDs.Length}) for registered item ID \"{CoreLibMod.GetItemInternalName(registeredItemID)}\" ({registeredItemID}) was not equal to the expected length of {PartsCount}");
 
-			parts = new(validPartIDs.Select((p, i) => new ItemPartSlot(i){ part = new(){ material = new UnknownMaterial(), partID = p }, isPartIDValid = id => id == p }).ToArray());
+			ItemPartSlot CreateSlot(int partID, int slot) {
+				ItemPart part = new(){
+					material = new UnknownMaterial(),
+					partID = partID
+				};
+
+				return new ItemPartSlot(slot){
+					part = part,
+					isPartIDValid = id => id == partID
+				};
+			}
+
+			parts = new(validPartIDs.Select(CreateSlot).ToArray());
 
 			SafeSetDefaults();
 
@@ -292,6 +304,20 @@ namespace TerrariansConstructLib.Items {
 			Texture2D texture = CoreLibMod.itemTextures.Get(registeredItemID, parts);
 
 			spriteBatch.Draw(texture, position, frame, drawColor, 0f, origin, scale, SpriteEffects.None, 0);
+
+			return false;
+		}
+
+		public sealed override bool PreDrawInWorld(SpriteBatch spriteBatch, Color lightColor, Color alphaColor, ref float rotation, ref float scale, int whoAmI) {
+			Texture2D texture = CoreLibMod.itemTextures.Get(registeredItemID, parts);
+
+			Rectangle frame = texture.Frame();
+
+			Vector2 vector = frame.Size() / 2f;
+			Vector2 value = new(Item.width / 2 - vector.X, Item.height - frame.Height);
+			Vector2 vector2 = Item.position - Main.screenPosition + vector + value;
+
+			spriteBatch.Draw(texture, vector2, frame, lightColor, rotation, vector, scale, SpriteEffects.None, 0);
 
 			return false;
 		}
