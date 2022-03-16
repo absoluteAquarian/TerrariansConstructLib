@@ -35,9 +35,7 @@ namespace TerrariansConstructLib {
 		internal static CachedItemTexturesDictionary itemTextures;
 
 		public override void Load() {
-			MethodInfo ModLoader_IsEnabled = typeof(ModLoader).GetMethod("IsEnabled", BindingFlags.NonPublic | BindingFlags.Static);
-
-			if(!ModLoader.HasMod("TerrariansConstruct") || !(bool)ModLoader_IsEnabled.Invoke(null, new object[] { "TerrariansConstruct" }))
+			if(!ModLoader.HasMod("TerrariansConstruct"))
 				throw new Exception(Language.GetTextValue("tModLoader.LoadErrorDependencyMissing", "TerrariansConstruct", Name));
 
 			isLoadingParts = true;
