@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Terraria.ID;
 using Terraria.ModLoader;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
@@ -15,11 +17,17 @@ namespace TerrariansConstructLib.Rarities {
 
 		internal static void Load() {
 			rarities = new();
+
+			for (int i = ItemRarityID.Gray; i < ItemRarityID.Count; i++)
+				rarities[i] = i;
 		}
 
 		internal static void Unload() {
 			rarities = null;
 		}
+
+		internal static IEnumerable<int> GetRaritiesBelowOrAt(int rarity)
+			=> rarities.Where(kvp => kvp.Value <= rarities[rarity]).Select(kvp => kvp.Key);
 
 		public static bool TryGetRarityLocation(int rarity, out float location)
 			=> rarities.TryGetValue(rarity, out location);
@@ -29,6 +37,9 @@ namespace TerrariansConstructLib.Rarities {
 
 		public static void SetRarityLocation(int rarity, float location)
 			=> rarities[rarity] = location;
+
+		public static void SetRarityLocation<T>(float location) where T : ModRarity
+			=> rarities[ModContent.RarityType<T>()] = location;
 
 		public static bool CanUseMaterial(int moldTier, Material material) {
 			if (moldTier < 0 || moldTier >= PartMoldTierRegistry.Count)

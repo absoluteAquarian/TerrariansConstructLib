@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
+using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Rarities;
 using TerrariansConstructLib.Registry;
@@ -106,7 +109,9 @@ namespace TerrariansConstructLib.Items {
 
 			DisplayName.SetDefault(PartRegistry.registeredIDs[mold.partID].name + " Mold");
 			Tooltip.SetDefault("Tier: <MOLD_TIER>\n" +
-				"Material cost: <MATERIAL_COST>");
+				"Material cost: <MATERIAL_COST>\n" +
+				"Can use materials of the following rarities:\n" +
+				"<LIST_RARITIES>");
 		}
 
 		public override void SetDefaults() {
@@ -128,6 +133,25 @@ namespace TerrariansConstructLib.Items {
 			Utility.FindAndModify(tooltips, "<MOLD_TIER>", $"[c/{tier.color.Hex3()}:{tier.name}]");
 
 			Utility.FindAndModify(tooltips, "<MATERIAL_COST>", $"{(CoreLibMod.TryGetMoldCost(material, partID, moldTier, out int cost) ? $"{cost / 2f}" : "<invalid>")}");
+
+			Utility.FindAndInsertLines(Mod, tooltips, "<LIST_RARITIES>", i => "ValidMaterialRarity_" + i, GetValidRarities(tier));
+		}
+
+		private string GetValidRarities(PartMoldTierRegistry.Data data) {
+			if (!CoreLibMod.TryGetRarityLocation(data.tierRarity, out _))
+				return "Cannot determine." +
+					$"\nMold tier's rarity was not registered via [c/dddd00:{nameof(TerrariansConstructLib)}.{nameof(CoreLibMod)}.{nameof(CoreLibMod.SetRarityLocation)}()]";
+
+			string GetModRarityName(int rarity)
+				=> ReflectionHelperReturn<ModRarity, string>.InvokeMethod("get_Name", typeof(RarityLoader).GetCachedMethod("GetRarity").Invoke(null, new object[]{ rarity }) as ModRarity);
+
+			string GetRarityString(int rarity) {
+				string name = rarity < ItemRarityID.Count ? ItemRarityID.Search.GetName(rarity) : GetModRarityName(rarity);
+
+				return $"[c/{Utility.GetRarityColor(Item).Hex3()}:{name}]";
+			}
+
+			return "  " + string.Join("\n  ", CoreLibMod.GetRaritiesBelowOrAt(data.tierRarity).Select(GetRarityString).Where(s => s is not null));
 		}
 
 		public override void AddRecipes() {

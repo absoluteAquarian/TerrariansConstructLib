@@ -563,8 +563,53 @@ namespace TerrariansConstructLib {
 		public static ItemPartItem GetItemPartItem(Material material, int partID)
 			=> ModContent.GetModItem(GetItemPartItemType(material, partID)) as ItemPartItem;
 
+		/// <summary>
+		/// Gets the item rarity ID associated with the mold tier
+		/// </summary>
+		/// <param name="moldTier">The mold tier</param>
 		public static int GetMoldTierRarityType(int moldTier)
 			=> BasePartMoldRarity.GetInstance(moldTier)?.Type ?? 0;
+
+		/// <summary>
+		/// Returns an enumeration of item rarity IDs which are considered at the same or below the "rarity" for mold tier materials
+		/// </summary>
+		/// <param name="rarity">The item rarity</param>
+		public static IEnumerable<int> GetRaritiesBelowOrAt(int rarity)
+			=> RarityClassification.GetRaritiesBelowOrAt(rarity);
+
+		/// <summary>
+		/// Attempts to get the rarity location for mold tier materials
+		/// </summary>
+		/// <param name="rarity">The item rarity ID</param>
+		/// <param name="location">The location.  For reference, the location for all <seealso cref="ItemRarityID"/> IDs (except for <seealso cref="ItemRarityID.Quest"/>, <seealso cref="ItemRarityID.Expert"/> and <seealso cref="ItemRarityID.Master"/>) are set to the ID itself</param>
+		/// <returns><see langword="true"/> if the rarity has been registered to the <seealso cref="RarityClassification"/> collection, <see langword="false"/> otherwise</returns>
+		public static bool TryGetRarityLocation(int rarity, out float location)
+			=> RarityClassification.TryGetRarityLocation(rarity, out location);
+
+		/// <summary>
+		/// Attempts to get the rarity location for mold tier materials
+		/// </summary>
+		/// <typeparam name="T">The <seealso cref="ModRarity"/> class</typeparam>
+		/// <param name="location">The location.  For reference, the location for all <seealso cref="ItemRarityID"/> IDs (except for <seealso cref="ItemRarityID.Quest"/>, <seealso cref="ItemRarityID.Expert"/> and <seealso cref="ItemRarityID.Master"/>) are set to the ID itself</param>
+		/// <returns><see langword="true"/> if the rarity has been registered to the <seealso cref="RarityClassification"/> collection, <see langword="false"/> otherwise</returns>
+		public static bool TryGetRarityLocation<T>(out float location) where T : ModRarity
+			=> RarityClassification.TryGetRarityLocation<T>(out location);
+
+		/// <summary>
+		/// Sets the rarity location for an item rarity ID in regard to mold tier materials
+		/// </summary>
+		/// <param name="rarity">The item rarity ID</param>
+		/// <param name="location">The location.  For reference, the location for all <seealso cref="ItemRarityID"/> IDs (except for <seealso cref="ItemRarityID.Quest"/>, <seealso cref="ItemRarityID.Expert"/> and <seealso cref="ItemRarityID.Master"/>) are set to the ID itself</param>
+		public static void SetRarityLocation(int rarity, float location)
+			=> RarityClassification.SetRarityLocation(rarity, location);
+
+		/// <summary>
+		/// Sets the rarity location for an item rarity ID in regard to mold tier materials
+		/// </summary>
+		/// <typeparam name="T">The <seealso cref="ModRarity"/> class</typeparam>
+		/// <param name="location">The location.  For reference, the location for all <seealso cref="ItemRarityID"/> IDs (except for <seealso cref="ItemRarityID.Quest"/>, <seealso cref="ItemRarityID.Expert"/> and <seealso cref="ItemRarityID.Master"/>) are set to the ID itself</param>
+		public static void SetRarityLocation<T>(float location) where T : ModRarity
+			=> RarityClassification.SetRarityLocation<T>(location);
 
 		/// <summary>
 		/// Registers the part items for the material, <paramref name="materialType"/>, with the given rarity, <paramref name="rarity"/>
