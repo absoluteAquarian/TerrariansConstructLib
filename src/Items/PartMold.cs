@@ -97,7 +97,7 @@ namespace TerrariansConstructLib.Items {
 
 				PartMold mold = registeredMolds[Type];
 
-				return Path.Combine(Mod.Name, rootFolderForAssets, CoreLibMod.GetPartName(partID), "Tier_" + PartMoldTierRegistry.registeredIDs[moldTier].internalName + "_Mold");
+				return Path.Combine(Mod.Name, rootFolderForAssets, CoreLibMod.GetPartName(partID), "Molds", "Tier_" + PartMoldTierRegistry.registeredIDs[mold.moldTier].internalName + "_Mold");
 			}
 		}
 
