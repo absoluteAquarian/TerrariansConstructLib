@@ -81,7 +81,7 @@ namespace TerrariansConstructLib {
 					Logger.Debug($"Item Definition \"{data.name}\" (ID: {id}) added by {data.mod.Name}\n" +
 						$"  -- parts: {string.Join(", ", data.validPartIDs.Select(PartRegistry.IDToIdentifier))}");
 
-			LoadAllOfTheThings("RegisterTCMoldTier");
+			LoadAllOfTheThings("RegisterTCMoldTiers");
 
 			if (LogPreLoadLoading)
 				foreach (var (id, data) in PartMoldTierRegistry.registeredIDs)
