@@ -37,6 +37,14 @@ namespace TerrariansConstructLib {
 
 		internal static CachedItemTexturesDictionary itemTextures;
 
+		internal static CoreLibMod directDetourInstance;
+
+		public CoreLibMod() {
+			directDetourInstance = this;
+
+			DirectDetourManager.ModCtorLoad();
+		}
+
 		public override void Load() {
 			if(!ModLoader.HasMod("TerrariansConstruct"))
 				throw new Exception(Language.GetTextValue("tModLoader.LoadErrorDependencyMissing", "TerrariansConstruct", Name));
@@ -81,18 +89,6 @@ namespace TerrariansConstructLib {
 					Logger.Debug($"Item Definition \"{data.name}\" (ID: {id}) added by {data.mod.Name}\n" +
 						$"  -- parts: {string.Join(", ", data.validPartIDs.Select(PartRegistry.IDToIdentifier))}");
 
-			LoadAllOfTheThings("RegisterTCMoldTiers");
-
-			if (LogPreLoadLoading)
-				foreach (var (id, data) in PartMoldTierRegistry.registeredIDs)
-					Logger.Debug($"Part Mold Tier \"{data.name}\" (ID: {id}) added by {data.mod.Name}");
-
-			LoadAllOfTheThings("RegisterTCPartMolds");
-
-			if (LogPreLoadLoading)
-				foreach (var (id, data) in PartMold.registeredMolds)
-					Logger.Debug($"Part Mold \"{data.Name}\" (ID: {id}) added by {data.Mod.Name}");
-
 			//This needs to go here
 			LogAddedParts = true;
 
@@ -104,6 +100,24 @@ namespace TerrariansConstructLib {
 			EditsLoader.Load();
 
 			DirectDetourManager.Load();
+
+			isLoadingParts = false;
+		}
+
+		internal void LoadMolds() {
+			isLoadingParts = true;
+
+			LoadAllOfTheThings("RegisterTCMoldTiers");
+
+			if (LogPreLoadLoading)
+				foreach (var (id, data) in PartMoldTierRegistry.registeredIDs)
+					Logger.Debug($"Part Mold Tier \"{data.name}\" (ID: {id}) added by {data.mod.Name}");
+
+			LoadAllOfTheThings("RegisterTCPartMolds");
+
+			if (LogPreLoadLoading)
+				foreach (var (id, data) in PartMold.registeredMolds)
+					Logger.Debug($"Part Mold \"{data.Name}\" (ID: {id}) added by {data.Mod.Name}");
 
 			isLoadingParts = false;
 		}
@@ -132,6 +146,8 @@ namespace TerrariansConstructLib {
 		}
 
 		private static void LoadAllOfTheThings(string methodToInvoke) {
+			Type MemoryTracking = typeof(Mod).Assembly.GetType("Terraria.ModLoader.Core.MemoryTracking");
+
 			foreach (var (mod, method) in FindDependents().Select(m => (m, m.GetType().GetMethod(methodToInvoke, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)))) {
 				if (method is null) {
 					Instance.Logger.Warn($"Mod \"{mod.Name}\" does not have a \"public static {methodToInvoke}(Mod mod)\" method declared in its Mod class");
@@ -157,7 +173,16 @@ namespace TerrariansConstructLib {
 				if (parameters[0].ParameterType != typeof(Mod))
 					throw new Exception($"Method {methodDescriptor} did not have its parameter be of type \"{typeof(Mod).FullName}\"");
 
-				method.Invoke(null, new object[]{ mod });
+				MemoryTracking.GetCachedMethod("Checkpoint").Invoke(null, null);
+
+				try {
+					method.Invoke(null, new object[]{ mod });
+				} catch (Exception ex) {
+					ex.Data["mod"] = mod.Name;
+					throw;
+				} finally {
+					MemoryTracking.GetCachedMethod("Update").Invoke(null, new object[]{ mod.Name });
+				}
 			}
 		}
 
@@ -301,15 +326,15 @@ namespace TerrariansConstructLib {
 		/// <param name="internalName">The internal name for the mold tier</param>
 		/// <param name="name">The display name for the mold tier used in the mold item's tooltip</param>
 		/// <param name="tooltipColor">The color of the mold item's name</param>
-		/// <param name="initialValidMaterials">The initial list of valid material types (<seealso cref="Material.type"/>).  This collection can be modified via <seealso cref="PartMoldTierRegistry.SetAsValidMaterial(Material, int)"/></param>
+		/// <param name="tierRarity">The rarity (<seealso cref="ItemRarityID"/> or <seealso cref="ModRarity"/>) for the mold tier</param>
 		/// <returns>The registered mold tier ID</returns>
 		/// <exception cref="Exception"></exception>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterMoldTier(Mod mod, string internalName, string name, Color tooltipColor, params int[] initialValidMaterials) {
+		public static int RegisterMoldTier(Mod mod, string internalName, string name, Color tooltipColor, int tierRarity) {
 			if (!isLoadingParts)
 				throw new Exception(GetLateLoadReason("RegisterTCMoldTier"));
 
-			int id = PartMoldTierRegistry.Register(mod, internalName, name, tooltipColor, initialValidMaterials.ToList());
+			int id = PartMoldTierRegistry.Register(mod, internalName, name, tooltipColor, tierRarity);
 
 			ReflectionHelper<Mod>.InvokeSetterFunction("loading", mod, true);
 

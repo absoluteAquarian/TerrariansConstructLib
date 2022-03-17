@@ -7,7 +7,7 @@ using TerrariansConstructLib.Rarities;
 
 namespace TerrariansConstructLib.Registry {
 	public static class PartMoldTierRegistry {
-		internal static int Register(Mod mod, string internalName, string name, Color tooltipColor, List<int> validMaterials) {
+		internal static int Register(Mod mod, string internalName, string name, Color tooltipColor, int tierRarity) {
 			if (mod is null)
 				throw new ArgumentNullException(nameof(mod));
 
@@ -24,7 +24,7 @@ namespace TerrariansConstructLib.Registry {
 				name = name,
 				internalName = internalName,
 				color = tooltipColor,
-				validMaterials = new(validMaterials)
+				tierRarity = tierRarity
 			};
 
 			nextID++;
@@ -63,7 +63,7 @@ namespace TerrariansConstructLib.Registry {
 		}
 
 		public static bool IsValidMaterial(Material material, int moldTier)
-			=> material is UnloadedMaterial or UnknownMaterial && registeredIDs[moldTier].validMaterials.Contains(material.type);
+			=> material is UnloadedMaterial or UnknownMaterial && RarityClassification.CanUseMaterial(moldTier, material);
 
 		public static void SetAsValidMaterial(Material material, int moldTier) {
 			if (material is UnloadedMaterial or UnknownMaterial)
@@ -74,6 +74,7 @@ namespace TerrariansConstructLib.Registry {
 
 		internal class Data {
 			public Mod mod;
+			public int tierRarity;
 			public string name;
 			public string internalName;
 			public Color color;
