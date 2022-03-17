@@ -305,11 +305,11 @@ namespace TerrariansConstructLib {
 		/// <returns>The registered mold tier ID</returns>
 		/// <exception cref="Exception"></exception>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterMoldTier(Mod mod, string internalName, string name, Color tooltipColor, List<int> initialValidMaterials) {
+		public static int RegisterMoldTier(Mod mod, string internalName, string name, Color tooltipColor, params int[] initialValidMaterials) {
 			if (!isLoadingParts)
 				throw new Exception(GetLateLoadReason("RegisterTCMoldTier"));
 
-			int id = PartMoldTierRegistry.Register(mod, internalName, name, tooltipColor, initialValidMaterials);
+			int id = PartMoldTierRegistry.Register(mod, internalName, name, tooltipColor, initialValidMaterials.ToList());
 
 			ReflectionHelper<Mod>.InvokeSetterFunction("loading", mod, true);
 
