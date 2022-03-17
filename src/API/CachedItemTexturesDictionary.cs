@@ -75,6 +75,9 @@ namespace TerrariansConstructLib.API {
 					Clear(dict);
 				else {
 					//This dictionary is the one with the textures
+					foreach (var v in dictionary.Values)
+						(v as IDisposable)?.Dispose();
+
 					dictionary.Clear();
 					return;
 				}

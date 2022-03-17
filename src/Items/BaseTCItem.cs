@@ -83,9 +83,9 @@ namespace TerrariansConstructLib.Items {
 
 		/// <summary>
 		/// The name for the item, used in <see cref="SetStaticDefaults"/><br/>
-		/// Defaults to:  <c>CoreLibMod.GetItemInternalName(registeredItemID)</c>
+		/// Defaults to:  <c>CoreLibMod.GetItemName(registeredItemID)</c>
 		/// </summary>
-		public virtual string RegisteredItemTypeName => CoreLibMod.GetItemInternalName(registeredItemID);
+		public virtual string RegisteredItemTypeName => CoreLibMod.GetItemName(registeredItemID);
 
 		/// <summary>
 		/// The tooltip for the item

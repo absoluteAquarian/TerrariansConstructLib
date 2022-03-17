@@ -77,7 +77,7 @@ namespace TerrariansConstructLib.API.Commands {
 			caller.Reply("Successfully spawned the item.", Color.Green);
 		}
 
-		private bool GetItemNum(CommandCaller caller, string[] args, int argNum, out int num) {
+		private static bool GetItemNum(CommandCaller caller, string[] args, int argNum, out int num) {
 			if (!int.TryParse(args[argNum], out num)) {
 				caller.Reply($"Argument #{argNum + 1} was not an integer", Color.Red);
 				return false;
@@ -91,7 +91,7 @@ namespace TerrariansConstructLib.API.Commands {
 			return true;
 		}
 
-		private bool GetMaterialNum(CommandCaller caller, string[] args, int argNum, out int num) {
+		private static bool GetMaterialNum(CommandCaller caller, string[] args, int argNum, out int num) {
 			num = -1;
 			if (args[argNum][0] != 'M') {
 				caller.Reply($"Argument #{argNum + 1} was an invalid material argument", Color.Red);
@@ -118,7 +118,7 @@ namespace TerrariansConstructLib.API.Commands {
 			return true;
 		}
 
-		private bool GetPartNum(CommandCaller caller, string[] args, int argNum, out int num) {
+		private static bool GetPartNum(CommandCaller caller, string[] args, int argNum, out int num) {
 			num = -1;
 			if (args[argNum][0] != 'P') {
 				caller.Reply($"Argument #{argNum + 1} was an invalid part argument", Color.Red);

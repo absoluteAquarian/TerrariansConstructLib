@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Terraria;
 using Terraria.ModLoader;
@@ -16,7 +17,7 @@ namespace TerrariansConstructLib.Items {
 	public sealed class ItemPartItem : ModItem {
 		public override string Texture {
 			get {
-				StringBuilder asset = new();
+				StringBuilder asset = new(Mod.Name + "/");
 
 				if (part.partID >= 0 && part.partID < PartRegistry.Count) {
 					//Modded part ID

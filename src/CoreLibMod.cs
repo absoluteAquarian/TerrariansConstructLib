@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
@@ -11,11 +12,13 @@ using Terraria.ModLoader;
 using Terraria.ModLoader.Core;
 using Terraria.ModLoader.Exceptions;
 using TerrariansConstructLib.API;
+using TerrariansConstructLib.API.Commands;
 using TerrariansConstructLib.API.Edits;
 using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Projectiles;
+using TerrariansConstructLib.Rarities;
 using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib {
@@ -48,6 +51,9 @@ namespace TerrariansConstructLib {
 			ItemPart.partData = new();
 			ItemPartItem.registeredPartsByItemID = new();
 			ItemPartItem.itemPartToItemID = new();
+			PartMold.moldsByPartIDMaterialAndTier = new();
+			PartMold.registeredMolds = new();
+			PartMoldTierRegistry.registeredIDs = new();
 
 			itemTextures = new();
 
@@ -74,6 +80,18 @@ namespace TerrariansConstructLib {
 				foreach (var (id, data) in ItemRegistry.registeredIDs)
 					Logger.Debug($"Item Definition \"{data.name}\" (ID: {id}) added by {data.mod.Name}\n" +
 						$"  -- parts: {string.Join(", ", data.validPartIDs.Select(PartRegistry.IDToIdentifier))}");
+
+			LoadAllOfTheThings("RegisterTCMoldTier");
+
+			if (LogPreLoadLoading)
+				foreach (var (id, data) in PartMoldTierRegistry.registeredIDs)
+					Logger.Debug($"Part Mold Tier \"{data.name}\" (ID: {id}) added by {data.mod.Name}");
+
+			LoadAllOfTheThings("RegisterTCPartMolds");
+
+			if (LogPreLoadLoading)
+				foreach (var (id, data) in PartMold.registeredMolds)
+					Logger.Debug($"Part Mold \"{data.Name}\" (ID: {id}) added by {data.Mod.Name}");
 
 			//This needs to go here
 			LogAddedParts = true;
@@ -116,7 +134,7 @@ namespace TerrariansConstructLib {
 		private static void LoadAllOfTheThings(string methodToInvoke) {
 			foreach (var (mod, method) in FindDependents().Select(m => (m, m.GetType().GetMethod(methodToInvoke, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)))) {
 				if (method is null) {
-					Instance.Logger.Warn($"Mod \"{mod.Name}\" does not have a \"{methodToInvoke}\" method declared in its Mod class");
+					Instance.Logger.Warn($"Mod \"{mod.Name}\" does not have a \"public static {methodToInvoke}(Mod mod)\" method declared in its Mod class");
 					continue;
 				}
 
@@ -143,6 +161,31 @@ namespace TerrariansConstructLib {
 			}
 		}
 
+		public override void AddRecipeGroups() {
+			//Make a recipe group for each part type
+			for (int i = 0; i < PartRegistry.Count; i++) {
+				// OrderBy ensures that the Unkonwn material ends up first in the list due to its type being the smallest
+				RegisterRecipeGroup(GetRecipeGroupName(i), PartRegistry.registeredIDs[i].name, GetKnownMaterials()
+					.Select(m => GetItemPartItem(m, i))
+					.OrderBy(i => i.part.material.type)
+					.Select(i => i.Type)
+					.ToArray());
+			}
+		}
+
+		public static void RegisterRecipeGroup(string groupName, string anyName, int[] validTypes)
+			=> RecipeGroup.RegisterGroup(groupName, new RecipeGroup(() => $"{Language.GetTextValue("LegacyMisc.37")} {anyName}", validTypes));
+
+		public static void RegisterRecipeGroup(string groupName, int itemForAnyName, int[] validTypes)
+			=> RecipeGroup.RegisterGroup(groupName, new RecipeGroup(() => $"{Language.GetTextValue("LegacyMisc.37")} {Lang.GetItemNameValue(itemForAnyName)}", validTypes));
+
+		public static string GetRecipeGroupName(int partID) {
+			if (partID < 0 || partID >= PartRegistry.Count)
+				throw new ArgumentException("Part ID was invalid");
+
+			return "TerrariansConstructLib:PartGroup_" + PartRegistry.registeredIDs[partID].internalName;
+		}
+
 		public override void AddRecipes() {
 			//Make a recipe for each item definition
 
@@ -156,7 +199,7 @@ namespace TerrariansConstructLib {
 				Recipe recipe = item.Mod.CreateRecipe(item.Type);
 
 				foreach (int part in data.validPartIDs)
-					recipe.AddIngredient(GetItemPartItemType(new UnknownMaterial(), part));
+					recipe.AddRecipeGroup(GetRecipeGroupName(part));
 
 				// TODO: forge tile?
 
@@ -179,6 +222,9 @@ namespace TerrariansConstructLib {
 			ItemPart.partData = null;
 			ItemPartItem.registeredPartsByItemID = null;
 			ItemPartItem.itemPartToItemID = null;
+			PartMold.moldsByPartIDMaterialAndTier = null;
+			PartMold.registeredMolds = null;
+			PartMoldTierRegistry.registeredIDs = null;
 
 			itemTextures?.Clear();
 			itemTextures = null;
@@ -235,7 +281,7 @@ namespace TerrariansConstructLib {
 		/// <param name="internalName">The internal name of the weapon</param>
 		/// <param name="name">The default item type name used by <seealso cref="BaseTCItem.RegisteredItemTypeName"/></param>
 		/// <param name="itemInternalName">The item type that this registered item ID will be applied to.  Use the string you'd use to access the item via <seealso cref="Mod.Find{T}(string)"/></param>
-		/// <param name="partVisualsFolder">The folder where the item's part visuals is located</param>
+		/// <param name="partVisualsFolder">The folder where the item's part visuals is located, relative to the mod they're from</param>
 		/// <param name="validPartIDs">The array of parts that comprise the weapon</param>
 		/// <returns>The ID of the registered item</returns>
 		/// <exception cref="Exception"/>
@@ -249,6 +295,38 @@ namespace TerrariansConstructLib {
 		}
 
 		/// <summary>
+		/// Registers information for a <seealso cref="PartMold"/> tier
+		/// </summary>
+		/// <param name="mod">The mod that the mold tier belongs to</param>
+		/// <param name="internalName">The internal name for the mold tier</param>
+		/// <param name="name">The display name for the mold tier used in the mold item's tooltip</param>
+		/// <param name="tooltipColor">The color of the mold item's name</param>
+		/// <param name="initialValidMaterials">The initial list of valid material types (<seealso cref="Material.type"/>).  This collection can be modified via <seealso cref="PartMoldTierRegistry.SetAsValidMaterial(Material, int)"/></param>
+		/// <returns>The registered mold tier ID</returns>
+		/// <exception cref="Exception"></exception>
+		/// <exception cref="ArgumentNullException"/>
+		public static int RegisterMoldTier(Mod mod, string internalName, string name, Color tooltipColor, List<int> initialValidMaterials) {
+			if (!isLoadingParts)
+				throw new Exception(GetLateLoadReason("RegisterTCMoldTier"));
+
+			int id = PartMoldTierRegistry.Register(mod, internalName, name, tooltipColor, initialValidMaterials);
+
+			ReflectionHelper<Mod>.InvokeSetterFunction("loading", mod, true);
+
+			mod.AddContent(PartMoldTierRegistry.registeredIDs[id].rarity);
+
+			ReflectionHelper<Mod>.InvokeSetterFunction("loading", mod, false);
+
+			return id;
+		}
+
+		/// <summary>
+		/// Gets an enumeration of <seealso cref="Material"/> instances that were used to create item parts
+		/// </summary>
+		public static IEnumerable<Material> GetKnownMaterials()
+			=> new ListUsedMaterials().GetRegistry().Values.Select(p => p.material);
+
+		/// <summary>
 		/// Gets the name of a registered part
 		/// </summary>
 		/// <param name="id">The ID of the part to get</param>
@@ -256,6 +334,15 @@ namespace TerrariansConstructLib {
 		/// <exception cref="Exception"/>
 		public static string GetPartName(int id)
 			=> id >= 0 && id < PartRegistry.Count ? PartRegistry.registeredIDs[id].name : throw new Exception($"A part with ID {id} does not exist");
+
+		/// <summary>
+		/// Gets the internal name of a registered part
+		/// </summary>
+		/// <param name="id">The ID of the part to get</param>
+		/// <returns>The internal name of the registered part, or throws an exception if a part of type <paramref name="id"/> does not exist</returns>
+		/// <exception cref="Exception"/>
+		public static string GetPartInternalName(int id)
+			=> id >= 0 && id < PartRegistry.Count ? PartRegistry.registeredIDs[id].internalName : throw new Exception($"A part with ID {id} does not exist");
 
 		/// <summary>
 		/// Gets the global tooltip of an <seealso cref="ItemPart"/>
@@ -292,6 +379,39 @@ namespace TerrariansConstructLib {
 		/// <param name="tooltip">The new modifier text</param>
 		public static void SetGlobalPartModifierText(Material material, int partID, string tooltip)
 			=> ItemPart.SetGlobalTooltip(material, partID, tooltip);
+
+		/// <summary>
+		/// Gets the global material cost of an <seealso cref="PartMold"/>
+		/// </summary>
+		/// <param name="material">The material for the part that would be created by the item part mold</param>
+		/// <param name="partID">The part ID</param>
+		/// <param name="moldTier">The item part mold tier</param>
+		/// <param name="materialCost">The material cost for the item part mold</param>
+		public static bool TryGetMoldCost(Material material, int partID, int moldTier, out int materialCost) {
+			if (!PartMold.TryGetMold(material, moldTier, partID, out var mold)) {
+				materialCost = -1;
+				return false;
+			}
+
+			materialCost = mold.partMaterialCost;
+			return true;
+		}
+
+		/// <summary>
+		/// Sets the global material cost for item part molds using material, <paramref name="material"/>, and the part ID, <paramref name="partID"/>, to <paramref name="materialCost"/>
+		/// </summary>
+		/// <param name="material"></param>
+		/// <param name="partID">The part ID</param>
+		/// <param name="materialCost">The new global material cost.  The displayed material cost is this value divided by 2</param>
+		public static void SetMoldCost(Material material, int partID, int materialCost)
+			=> PartMold.SetGlobalMaterialCost(material, partID, materialCost);
+
+		public static void AddMaterialAsValidMaterialPartForMold(PartMold mold, Material material) {
+			if (material is UnloadedMaterial or UnknownMaterial)
+				return;
+
+			PartMoldTierRegistry.SetAsValidMaterial(material, mold.moldTier);
+		}
 
 		/// <summary>
 		/// Gets the name of a registered constructed ammo type
@@ -408,6 +528,20 @@ namespace TerrariansConstructLib {
 			=> ItemPartItem.itemPartToItemID.Get(material, partID);
 
 		/// <summary>
+		/// Gets an <seealso cref="ItemPartItem"/> item instance (via <seealso cref="ModContent.GetModItem(int)"/>) from a material and part ID
+		/// </summary>
+		/// <param name="material">The material</param>
+		/// <param name="partID">The part ID</param>
+		/// <returns>The <seealso cref="ItemPartItem"/> item instance</returns>
+		/// <exception cref="Exception"/>
+		/// <exception cref="ArgumentException"/>
+		public static ItemPartItem GetItemPartItem(Material material, int partID)
+			=> ModContent.GetModItem(GetItemPartItemType(material, partID)) as ItemPartItem;
+
+		public static int GetMoldTierRarityType(int moldTier)
+			=> BasePartMoldRarity.GetInstance(moldTier)?.Type ?? 0;
+
+		/// <summary>
 		/// Registers the part items for the material, <paramref name="materialType"/>, with the given rarity, <paramref name="rarity"/>
 		/// </summary>
 		/// <param name="mod">The mod instance to add the part to</param>
@@ -462,12 +596,14 @@ namespace TerrariansConstructLib {
 
 			ReflectionHelper<Mod>.InvokeSetterFunction("loading", mod, false);
 
-			//ModItem.Type is only set after Mod.AddContent is called
-			ItemPartItem.registeredPartsByItemID[item.Type] = item.part;
-			ItemPartItem.itemPartToItemID.Set(material, partID, item.Type);
+			//ModItem.Type is only set after Mod.AddContent is called and the item is actually registered
+			if (item.Type > 0) {
+				ItemPartItem.registeredPartsByItemID[item.Type] = item.part;
+				ItemPartItem.itemPartToItemID.Set(material, partID, item.Type);
 
-			if (LogAddedParts)
-				Instance.Logger.Info($"Added item part \"{item.Name}\" (ID: {item.Type})");
+				if (LogAddedParts)
+					Instance.Logger.Info($"Added item part \"{item.Name}\" (ID: {item.Type})");
+			}
 		}
 
 		/// <summary>
@@ -482,5 +618,60 @@ namespace TerrariansConstructLib {
 		/// <param name="modifierText">The modifier text that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetGlobalModifierText(Material, int, string)"/></param>
 		public static void AddPart(Mod mod, int materialType, int rarity, int partID, ItemPartActionsBuilder actions, string tooltip, string modifierText)
 			=> AddPart(mod, new Material(){ type = materialType, rarity = rarity }, partID, actions, tooltip, modifierText);
+
+		/// <summary>
+		/// Registers the item part molds for the mold tier, <paramref name="moldTier"/>
+		/// </summary>
+		/// <param name="mod">The mod isntance to add the item part mold to</param>
+		/// <param name="craftMaterial">The material instance used to craft the item part mold item</param>
+		/// <param name="moldTier">The item part mold tier</param>
+		/// <param name="craftMaterialCost">The material cost for crafting the item part mold</param>
+		/// <param name="craftStation">The tile used to craft the item part mold</param>
+		/// <param name="partMaterialCostForAllTiers">The material cost for parts created using the item part mold</param>
+		/// <param name="rootFolderForAssets">The folder for the molds, relative to the mod they're from</param>
+		public static void AddAllPartMoldsOfTier(Mod mod, Material craftMaterial, int moldTier, int craftMaterialCost, ushort craftStation, int partMaterialCostForAllTiers, string rootFolderForAssets) {
+			for (int partID = 0; partID < PartRegistry.Count; partID++)
+				AddPartMold(mod, craftMaterial, partID, moldTier, craftMaterialCost, craftStation, partMaterialCostForAllTiers, rootFolderForAssets);
+		}
+
+		/// <summary>
+		/// Registers an item part mold
+		/// </summary>
+		/// <param name="mod">The mod isntance to add the item part mold to</param>
+		/// <param name="craftMaterial">The material instance used to craft the item part mold item</param>
+		/// <param name="partID">The part ID</param>
+		/// <param name="moldTier">The item part mold tier</param>
+		/// <param name="craftMaterialCost">The material cost for crafting the item part mold</param>
+		/// <param name="craftStation">The tile used to craft the item part mold</param>
+		/// <param name="partMaterialCost">The material cost for parts created using the item part mold</param>
+		/// <param name="rootFolderForAssets">The folder for the molds, relative to the mod they're from</param>
+		public static void AddPartMold(Mod mod, Material craftMaterial, int partID, int moldTier, int craftMaterialCost, ushort craftStation, int partMaterialCost, string rootFolderForAssets) {
+			if (!PartMoldTierRegistry.IsValidMaterial(craftMaterial, moldTier))
+				return;
+
+			PartMold mold = PartMold.Create(craftMaterial, partID, moldTier, craftMaterialCost, craftStation, partMaterialCost, rootFolderForAssets);
+
+			ReflectionHelper<Mod>.InvokeSetterFunction("loading", mod, true);
+
+			mod.AddContent(mold);
+
+			ReflectionHelper<Mod>.InvokeSetterFunction("loading", mod, false);
+
+			//ModItem.Type is only set after Mod.AddContent is called and the item is actually registered
+			if (mold.Type > 0) {
+				PartMold.registeredMolds[mold.Type] = mold;
+				
+				if (!PartMold.moldsByPartIDMaterialAndTier.TryGetValue(partID, out var partDict))
+					partDict = PartMold.moldsByPartIDMaterialAndTier[partID] = new();
+
+				if (!partDict.TryGetValue(craftMaterial.type, out var materialDict))
+					materialDict = partDict[craftMaterial.type] = new();
+
+				materialDict[moldTier] = mold;
+
+				if (LogAddedParts)
+					Instance.Logger.Info($"Added item part mold \"{mold.Name}\" (ID: {mold.Type})");
+			}
+		}
 	}
 }

@@ -16,7 +16,7 @@ using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.API.Edits.MSIL {
-	partial class Vanilla {
+	internal static partial class Vanilla {
 		internal static void Patch_ItemSlot_Draw(ILContext il) {
 			MethodInfo Utils_Size_Texture2D = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Texture2D) });
 			MethodInfo Vector2_op_Multiply = typeof(Vector2).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(float) });

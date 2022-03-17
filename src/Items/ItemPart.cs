@@ -24,6 +24,12 @@ namespace TerrariansConstructLib.Items {
 		public void SetGlobalTooltip(string tooltip)
 			=> SetGlobalTooltip(material, partID, tooltip);
 
+		/// <summary>
+		/// Sets the global tooltip for item parts using the material, <paramref name="material"/>, and the part ID, <paramref name="partID"/>, to <paramref name="tooltip"/>
+		/// </summary>
+		/// <param name="material">The material</param>
+		/// <param name="partID">The part ID</param>
+		/// <param name="tooltip">The new global tooltip</param>
 		public static void SetGlobalTooltip(Material material, int partID, string tooltip) {
 			//Unloaded/Unknown material should not be tampered with
 			if (material is not UnloadedMaterial or UnknownMaterial)
@@ -33,6 +39,12 @@ namespace TerrariansConstructLib.Items {
 		public void SetGlobalModifierText(string modifierText)
 			=> SetGlobalModifierText(material, partID, modifierText);
 
+		/// <summary>
+		/// Sets the global modifier text for item parts using the material, <paramref name="material"/>, and the part ID, <paramref name="partID"/>, to <paramref name="modifierText"/>
+		/// </summary>
+		/// <param name="material">The material</param>
+		/// <param name="partID">The part ID</param>
+		/// <param name="modifierText">The new global modifier text</param>
 		public static void SetGlobalModifierText(Material material, int partID, string modifierText) {
 			//Unloaded/Unknown material should not be tampered with
 			if (material is not UnloadedMaterial or UnknownMaterial)
