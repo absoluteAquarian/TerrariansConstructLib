@@ -616,7 +616,6 @@ namespace TerrariansConstructLib {
 		/// </summary>
 		/// <param name="mod">The mod instance to add the part to</param>
 		/// <param name="materialType">The item ID</param>
-		/// <param name="rarity">The item rarity</param>
 		/// <param name="actions">The actions</param>
 		/// <param name="tooltipForAllParts">The tooltip that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetGlobalTooltip(Material, int, string)"/></param>
 		/// <param name="modifierTextForAllParts">The modifier text that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetGlobalModifierText(Material, int, string)"/></param>
