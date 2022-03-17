@@ -46,6 +46,15 @@ namespace TerrariansConstructLib.Materials {
 		/// <returns>A new <see cref="Item"/> instance, or <see langword="null"/> if this material is an <seealso cref="UnloadedMaterial"/> or <seealso cref="UnknownMaterial"/></returns>
 		public Item AsItem() => this is UnloadedMaterial or UnknownMaterial ? null : new(type);
 
+		public static Material FromItem(int type) {
+			Item item = new(type);
+
+			return new(){
+				type = type,
+				rarity = item.rare
+			};
+		}
+
 		public virtual TagCompound SerializeData() {
 			TagCompound tag = new();
 
