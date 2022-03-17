@@ -234,6 +234,20 @@ namespace TerrariansConstructLib {
 
 				Logger.Debug($"Created recipe for BaseTCItem \"{item.GetType().GetSimplifiedGenericTypeName()}\"");
 			}
+
+			//Make recipes for each mold item, using a previous tier as an ingredient and with reduced costs
+
+			foreach (var (id, mold) in PartMold.registeredMolds) {
+				if (mold.moldTier < 0 || mold.moldTier >= PartMoldTierRegistry.Count)
+					throw new ArgumentException("Mold Tier ID was invalid");
+
+				int tierRarity = PartMoldTierRegistry.registeredIDs[mold.moldTier].tierRarity;
+
+				//Try to find the highest tier below this one.  If there's a mold with this mold's part ID and of that tier, make a recipe using it
+				IEnumerable<int> rarities = GetRaritiesBelowOrAt(tierRarity);
+
+				// NOTE: I was coding here at the time of the poll's announcement...
+			}
 		}
 
 		public override void Unload() {
@@ -430,13 +444,6 @@ namespace TerrariansConstructLib {
 		/// <param name="materialCost">The new global material cost.  The displayed material cost is this value divided by 2</param>
 		public static void SetMoldCost(Material material, int partID, int materialCost)
 			=> PartMold.SetGlobalMaterialCost(material, partID, materialCost);
-
-		public static void AddMaterialAsValidMaterialPartForMold(PartMold mold, Material material) {
-			if (material is UnloadedMaterial or UnknownMaterial)
-				return;
-
-			PartMoldTierRegistry.SetAsValidMaterial(material, mold.moldTier);
-		}
 
 		/// <summary>
 		/// Gets the name of a registered constructed ammo type

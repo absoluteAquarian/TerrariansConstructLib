@@ -65,20 +65,12 @@ namespace TerrariansConstructLib.Registry {
 		public static bool IsValidMaterial(Material material, int moldTier)
 			=> material is UnloadedMaterial or UnknownMaterial && RarityClassification.CanUseMaterial(moldTier, material);
 
-		public static void SetAsValidMaterial(Material material, int moldTier) {
-			if (material is UnloadedMaterial or UnknownMaterial)
-				return;
-
-			registeredIDs[moldTier].validMaterials.Add(material.type);
-		}
-
 		internal class Data {
 			public Mod mod;
 			public int tierRarity;
 			public string name;
 			public string internalName;
 			public Color color;
-			public HashSet<int> validMaterials;
 			internal BasePartMoldRarity rarity;
 		}
 	}
