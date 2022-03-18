@@ -22,7 +22,7 @@ namespace TerrariansConstructLib.Items {
 
 				var partData = PartRegistry.registeredIDs[part.partID];
 
-				string asset = $"{partData.mod.Name}/{partData.assetFolder}/{partData.internalName}/{part.material.GetName()}";
+				string asset = $"{partData.mod.Name}/{partData.assetFolder}/{part.material.GetName()}";
 
 				if (!ModContent.HasAsset(asset)) {
 					// Default to the "unknown" asset
@@ -45,7 +45,7 @@ namespace TerrariansConstructLib.Items {
 
 			var data = PartRegistry.registeredIDs[partID];
 
-			return $"{data.mod.Name}/{data.assetFolder}/{data.internalName}/Unknown";
+			return $"{data.mod.Name}/{data.assetFolder}/Unknown";
 		}
 
 		/// <summary>
