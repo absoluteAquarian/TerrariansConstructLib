@@ -64,7 +64,7 @@ namespace TerrariansConstructLib {
 			}
 
 			//In order for all parts/ammos/etc. to be visible by all mods that use the library, we have to do some magic
-			RegisteredParts.Shard = RegisterPart(ModLoader.GetMod("TerrariansConstruct"), "ItemCraftLeftover", "Shard", 1, hasComplexMold: true, "Assets/Parts");
+			RegisteredParts.Shard = RegisterPart(ModLoader.GetMod("TerrariansConstruct"), "ItemCraftLeftover", "Shard", 1, hasComplexMold: true, "Assets/Parts/ItemCraftLeftover");
 
 			LoadAllOfTheThings("RegisterTCItemParts");
 
