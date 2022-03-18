@@ -117,6 +117,11 @@ namespace TerrariansConstructLib {
 				ReflectionHelper<Mod>.InvokeSetterFunction("loading", partData.mod, false);
 
 				PartMold.registeredMolds[simpleMold.Type] = simpleMold;
+				if (complexMold is not null)
+					PartMold.registeredMolds[complexMold.Type] = complexMold;
+				if (complexPlatinumMold is not null)
+					PartMold.registeredMolds[complexPlatinumMold.Type] = complexPlatinumMold;
+
 				PartMold.moldsByPartID[partID] = new() { simple = simpleMold, complex = complexMold, complexPlatinum = complexPlatinumMold };
 
 				Instance.Logger.Info($"{(partData.hasComplexMold ? "Simple and complex item part molds" : "Simple item part mold")} for part ID \"{partData.mod.Name}:{partData.internalName}\" added by mod \"{partData.mod.Name}\"");
