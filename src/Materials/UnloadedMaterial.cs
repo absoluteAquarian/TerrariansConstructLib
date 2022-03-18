@@ -23,8 +23,7 @@ namespace TerrariansConstructLib.Materials {
 		public override Material Clone() => new UnloadedMaterial() {
 			modName = modName,
 			itemName = itemName,
-			type = type,
-			rarity = rarity
+			type = type
 		};
 
 		public override TagCompound SerializeData() {
@@ -32,7 +31,6 @@ namespace TerrariansConstructLib.Materials {
 
 			tag["mod"] = modName;
 			tag["name"] = itemName;
-			tag["rarity"] = rarity;
 
 			return tag;
 		}
@@ -40,12 +38,10 @@ namespace TerrariansConstructLib.Materials {
 		public static new Func<TagCompound, UnloadedMaterial> DESERIALIZER = tag => {
 			string mod = tag.GetString("mod");
 			string name = tag.GetString("name");
-			int rarity = tag.GetInt("rarity");
 
 			return new UnloadedMaterial(){
 				modName = mod,
 				itemName = name,
-				rarity = rarity,
 				type = StaticType
 			};
 		};
