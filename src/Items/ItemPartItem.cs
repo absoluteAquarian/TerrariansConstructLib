@@ -17,35 +17,36 @@ namespace TerrariansConstructLib.Items {
 	public sealed class ItemPartItem : ModItem {
 		public override string Texture {
 			get {
-				StringBuilder asset = new(Mod.Name + "/");
+				if (part.partID < 0 || part.partID >= PartRegistry.Count)
+					throw new ArgumentException("Part ID was invalid");
 
-				if (part.partID >= 0 && part.partID < PartRegistry.Count) {
-					//Modded part ID
-					asset.Append(PartRegistry.registeredIDs[part.partID].assetFolder);
-				} else
-					throw new Exception("Part ID was invalid");
+				var partData = PartRegistry.registeredIDs[part.partID];
 
-				asset.Append('/');
+				string asset = $"{partData.mod.Name}/{partData.assetFolder}/{partData.internalName}/{part.material.GetName()}";
 
-				asset.Append(part.material.GetName());
-
-				if (!ModContent.HasAsset(asset.ToString())) {
+				if (!ModContent.HasAsset(asset)) {
 					// Default to the "unknown" asset
 					string path = GetUnkownTexturePath(part.partID);
 
 					Mod.Logger.Warn($"Part texture (Material: \"{part.material.GetItemName()}\", Name: \"{PartRegistry.registeredIDs[part.partID].name}\") could not be found." +
-						"  Defaulting to Unknown texture path:\n" +
+						"  Defaulting to Unknown texture path:\n   " +
 						path);
 
 					return path;
 				}
 
-				return asset.ToString();
+				return asset;
 			}
 		}
 
-		public static string GetUnkownTexturePath(int partID)
-			=> $"{PartRegistry.registeredIDs[partID].assetFolder}/{PartRegistry.registeredIDs[partID].internalName}/Unknown";
+		public static string GetUnkownTexturePath(int partID) {
+			if (partID < 0 || partID >= PartRegistry.Count)
+				throw new ArgumentException("Part ID was invalid");
+
+			var data = PartRegistry.registeredIDs[partID];
+
+			return $"{data.mod.Name}/{data.assetFolder}/{data.internalName}/Unknown";
+		}
 
 		/// <summary>
 		/// The information for the item part
