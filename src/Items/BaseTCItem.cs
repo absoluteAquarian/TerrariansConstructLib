@@ -212,10 +212,9 @@ namespace TerrariansConstructLib.Items {
 					if (kvp.Key.GetBaseStatForModifierText is not ItemPart.PartItemModifierFunc func)
 						return format;
 
-					float stat = func.Invoke(kvp.Key.partID, Item) * (float)kvp.Value.Stat;
-					stat *= 100;  //0.01 --> 1%
+					float stat = func.Invoke(kvp.Key.partID, Item) * 100;  //0.01 --> 1%
 
-					return string.Format(format, stat);
+					return string.Format(format, stat * (float)kvp.Value.Stat - stat);
 				});
 		}
 
@@ -235,12 +234,7 @@ namespace TerrariansConstructLib.Items {
 
 		public sealed override bool CanBeConsumedAsAmmo(Player player) => false;
 
-		public sealed override void PickAmmo(Item weapon, Player player, ref int type, ref float speed, ref int damage, ref float knockback) {
-			if (ammoReserveMax <= 0)
-				return;
-
-
-		}
+		public sealed override void PickAmmo(Item weapon, Player player, ref int type, ref float speed, ref int damage, ref float knockback) { }
 
 		public sealed override void ModifyWeaponDamage(Player player, ref StatModifier damage, ref float flat) {
 			for (int i = 0; i < parts.Length; i++)
