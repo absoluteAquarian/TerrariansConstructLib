@@ -125,6 +125,10 @@ namespace TerrariansConstructLib.Items {
 
 		public override void AddRecipes() {
 			var part = registeredPartsByItemID[Type];
+
+			if (part.material is UnloadedMaterial or UnknownMaterial)
+				return;  //No recipe
+
 			PartMold.TryGetMold(part.partID, true, false, out var simpleMold);
 			var partData = PartRegistry.registeredIDs[part.partID];
 
