@@ -17,8 +17,7 @@ namespace TerrariansConstructLib.API.Edits {
 			try {
 				MonoModHooks.RequestNativeAccess();
 
-				//Usage: makes Item Part Mold tiers and Item Part Molds load after all content has loaded
-				IntermediateLanguageHook(typeof(ModContent).GetCachedMethod("Load"), typeof(MSIL.TML).GetCachedMethod(nameof(MSIL.TML.Path_ModContent_Load)));
+				// TODO: make detours that need to happen before Mod.Load()
 			} catch (Exception ex) {
 				throw new Exception("An error occurred while doing patching in TerrariansConstructLib." +
 				                    "\nReport this error to the mod devs and disable the mod in the meantime." +

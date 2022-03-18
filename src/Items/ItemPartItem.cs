@@ -121,6 +121,37 @@ namespace TerrariansConstructLib.Items {
 			Item.rare = part.material.rarity;
 		}
 
+		public override void AddRecipes() {
+			var part = registeredPartsByItemID[Type];
+			PartMold.TryGetMold(part.partID, true, out var simpleMold);
+			var partData = PartRegistry.registeredIDs[part.partID];
+
+			// TODO: forge tile?
+
+			AddRecipeFromMold(part, partData, simpleMold);
+
+			if (PartMold.TryGetMold(part.partID, false, out var complexMold))
+				AddRecipeFromMold(part, partData, complexMold);
+		}
+
+		private void AddRecipeFromMold(ItemPart part, PartRegistry.Data partData, PartMold mold) {
+			var recipe = CreateRecipe()
+				.AddIngredient(part.material.type, partData.materialCost / 2);
+			if (partData.materialCost % 2 != 0)
+				recipe.AddIngredient(CoreLibMod.GetItemPartItemType(part.material, CoreLibMod.RegisteredParts.Shard), 1);
+
+			recipe.AddIngredient(mold)
+				.Register();
+
+			if (partData.materialCost % 2 != 0) {
+				//Add another recipe for an additional material item
+				CreateRecipe()
+					.AddIngredient(part.material.type, partData.materialCost / 2 + 1)
+					.AddIngredient(mold)
+					.Register();
+			}
+		}
+
 		public override void SaveData(TagCompound tag) {
 			tag["part"] = part;
 		}

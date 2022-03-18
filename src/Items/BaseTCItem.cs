@@ -12,6 +12,7 @@ using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Core;
+using Terraria.ModLoader.Exceptions;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
 using TerrariansConstructLib.API.Reflection;
@@ -297,7 +298,20 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public sealed override void AddRecipes() {
-			// Recipes are added in CoreLibMod.AddRecipes
+			var data = ItemRegistry.registeredIDs[registeredItemID];
+
+			Recipe recipe = CreateRecipe();
+
+			foreach (int part in data.validPartIDs)
+				recipe.AddRecipeGroup(CoreLibMod.GetRecipeGroupName(part));
+
+			// TODO: forge tile?
+
+			recipe.AddCondition(NetworkText.FromLiteral("Must be crafted from the Forge UI"), r => false);
+
+			recipe.Register();
+
+			CoreLibMod.Instance.Logger.Debug($"Created recipe for BaseTCItem \"{GetType().GetSimplifiedGenericTypeName()}\"");
 		}
 
 		public sealed override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale) {

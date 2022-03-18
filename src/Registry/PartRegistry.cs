@@ -4,7 +4,7 @@ using Terraria.ModLoader;
 
 namespace TerrariansConstructLib.Registry {
 	public static class PartRegistry {
-		internal static int Register(Mod mod, string internalName, string name, string assetFolderPath) {
+		internal static int Register(Mod mod, string internalName, string name, int materialCost, bool hasComplexMold, string assetFolderPath) {
 			if (mod is null)
 				throw new ArgumentNullException(nameof(mod));
 
@@ -26,7 +26,9 @@ namespace TerrariansConstructLib.Registry {
 				mod = mod,
 				name = name,
 				internalName = internalName,
-				assetFolder = assetFolderPath
+				assetFolder = assetFolderPath,
+				materialCost = materialCost,
+				hasComplexMold = hasComplexMold
 			};
 
 			nextID++;
@@ -74,6 +76,8 @@ namespace TerrariansConstructLib.Registry {
 			public string name;
 			public string assetFolder;
 			public string internalName;
+			public int materialCost;
+			public bool hasComplexMold;
 		}
 	}
 }

@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
-using TerrariansConstructLib.API.Reflection;
-using TerrariansConstructLib.Materials;
-using TerrariansConstructLib.Rarities;
 using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.Items {
@@ -18,76 +14,65 @@ namespace TerrariansConstructLib.Items {
 	public sealed class PartMold : ModItem {
 		public int partID;
 
-		internal int partMaterialCost;
-
-		public int moldTier = -1;
-
-		internal Material material;
-		internal int materialCost;
-		internal ushort craftStation;
-
-		internal string rootFolderForAssets;
+		internal bool isSimpleMold;
 
 		internal static Dictionary<int, PartMold> registeredMolds;
-		internal static Dictionary<int, Dictionary<int, Dictionary<int, PartMold>>> moldsByPartIDMaterialAndTier;
+		internal static Dictionary<int, Data> moldsByPartID;
 
-		public void SetGlobalMaterialCost(int materialCost)
-			=> SetGlobalMaterialCost(material, partID, materialCost);
+		public void SetMaterialCost(int materialCost)
+			=> SetMaterialCost(partID, materialCost);
 
-		public static void SetGlobalMaterialCost(Material material, int partID, int materialCost) {
-			if (material is UnloadedMaterial or UnknownMaterial)
-				return;
-
-			var moldsDict = moldsByPartIDMaterialAndTier[partID];
-
-			if (!moldsDict.TryGetValue(material.type, out var molds))
-				return;
-
-			foreach (var (tier, mold) in molds) {
-				if (mold.moldTier < 0 || mold.moldTier >= PartMoldTierRegistry.Count)
-					throw new Exception($"Mold tier for part mold \"{PartRegistry.registeredIDs[mold.partID].name + " Mold"}\" was invalid");
-
-				if (tier != mold.moldTier)
-					throw new Exception($"Registered part mold \"{PartRegistry.registeredIDs[mold.partID].name + " Mold"}\" was not stored under its tier ID");
-
-				mold.partMaterialCost = materialCost;
-			}
-		}
-
-		public static PartMold Create(Material craftMaterial, int partID, int moldTier, int craftMaterialCost, ushort craftStation, int partMaterialCost, string rootFolderForAssets) {
-			if (craftMaterial is UnloadedMaterial or UnknownMaterial)
-				throw new Exception("Invalid material for crafting item part mold");
-
+		public static void SetMaterialCost(int partID, int materialCost) {
 			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new ArgumentException("Part ID was invalid");
 
-			if (moldTier < 0 || moldTier >= PartMoldTierRegistry.Count)
-				throw new ArgumentException("Mold Tier ID was invalid");
-
-			return new PartMold(){
-				partID = partID,
-				moldTier = moldTier,
-				partMaterialCost = partMaterialCost,
-				material = craftMaterial,
-				materialCost = craftMaterialCost,
-				craftStation = craftStation,
-				rootFolderForAssets = rootFolderForAssets
-			};
+			PartRegistry.registeredIDs[partID].materialCost = materialCost;
 		}
 
-		public static bool TryGetMold(Material partMaterial, int moldTier, int partID, out PartMold mold) {
+		public static int GetMaterialCost(int partID) {
+			if (partID < 0 || partID >= PartRegistry.Count)
+				throw new ArgumentException("Part ID was invalid");
+
+			return PartRegistry.registeredIDs[partID].materialCost;
+		}
+
+		public static PartMold Create(int partID, bool isSimpleMold) {
+			if (partID < 0 || partID >= PartRegistry.Count)
+				throw new ArgumentException("Part ID was invalid");
+
+			if (!moldsByPartID.TryGetValue(partID, out var data))
+				data = moldsByPartID[partID] = new();
+
+			var mold = new PartMold(){
+				partID = partID,
+				isSimpleMold = isSimpleMold
+			};
+
+			if (isSimpleMold)
+				data.simple = mold;
+			else
+				data.complex = mold;
+
+			return mold;
+		}
+
+		public static bool TryGetMold(int partID, bool getSimpleMold, out PartMold mold) {
 			mold = null;
 
 			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new ArgumentException("Part ID was invalid");
-
-			if (moldTier < 0 || moldTier >= PartMoldTierRegistry.Count)
-				throw new ArgumentException("Mold Tier ID was invalid");
-
-			if (!PartMoldTierRegistry.IsValidMaterial(partMaterial, moldTier))
-				return false;
 			
-			return moldsByPartIDMaterialAndTier.TryGetValue(partID, out var partDict) && partDict.TryGetValue(partMaterial.type, out var materialDict) && materialDict.TryGetValue(moldTier, out mold);
+			var data = moldsByPartID[partID];
+
+			if (getSimpleMold) {
+				mold = data.simple;
+				return true;
+			} else if(data.complex is not null) {
+				mold = data.complex;
+				return true;
+			}
+
+			return false;
 		}
 
 		public override string Texture {
@@ -95,12 +80,10 @@ namespace TerrariansConstructLib.Items {
 				if (partID < 0 || partID >= PartRegistry.Count)
 					throw new ArgumentException("Part ID was invalid");
 
-				if (moldTier < 0 || moldTier >= PartMoldTierRegistry.Count)
-					throw new ArgumentException("Mold Tier ID was invalid");
+				var mold = registeredMolds[Type];
+				var partData = PartRegistry.registeredIDs[mold.partID];
 
-				PartMold mold = registeredMolds[Type];
-
-				return Path.Combine(Mod.Name, rootFolderForAssets, CoreLibMod.GetPartName(partID), "Molds", "Tier_" + PartMoldTierRegistry.registeredIDs[mold.moldTier].internalName + "_Mold");
+				return Path.Combine(mold.Mod.Name, partData.assetFolder, "Molds", mold.isSimpleMold ? "Simple" : "Complex");
 			}
 		}
 
@@ -108,59 +91,44 @@ namespace TerrariansConstructLib.Items {
 			PartMold mold = registeredMolds[Type];
 
 			DisplayName.SetDefault(PartRegistry.registeredIDs[mold.partID].name + " Mold");
-			Tooltip.SetDefault("Tier: <MOLD_TIER>\n" +
-				"Material cost: <MATERIAL_COST>\n" +
-				"Can use materials of the following rarities:\n" +
-				"<LIST_RARITIES>");
+			Tooltip.SetDefault("Material cost: <MATERIAL_COST>");
 		}
 
 		public override void SetDefaults() {
+			var mold = registeredMolds[Type];
+
 			Item.width = 32;
 			Item.height = 32;
 			Item.maxStack = 1;
-			Item.rare = CoreLibMod.GetMoldTierRarityType(moldTier);
+			Item.rare = mold.isSimpleMold ? ItemRarityID.Blue : ItemRarityID.Orange;
 		}
 
 		public override void ModifyTooltips(List<TooltipLine> tooltips) {
-			if (partID < 0 || partID >= PartRegistry.Count)
-				throw new ArgumentException("Part ID was invalid");
+			var mold = registeredMolds[Type];
 
-			if (moldTier < 0 || moldTier >= PartMoldTierRegistry.Count)
-				throw new ArgumentException("Mold Tier ID was invalid");
+			var part = PartRegistry.registeredIDs[mold.partID];
 
-			var tier = PartMoldTierRegistry.registeredIDs[moldTier];
-
-			Utility.FindAndModify(tooltips, "<MOLD_TIER>", $"[c/{tier.color.Hex3()}:{tier.name}]");
-
-			Utility.FindAndModify(tooltips, "<MATERIAL_COST>", $"{(CoreLibMod.TryGetMoldCost(material, partID, moldTier, out int cost) ? $"{cost / 2f}" : "<invalid>")}");
-
-			Utility.FindAndInsertLines(Mod, tooltips, "<LIST_RARITIES>", i => "ValidMaterialRarity_" + i, GetValidRarities(tier));
-		}
-
-		private string GetValidRarities(PartMoldTierRegistry.Data data) {
-			if (!CoreLibMod.TryGetRarityLocation(data.tierRarity, out _))
-				return "Cannot determine." +
-					$"\nMold tier's rarity was not registered via [c/dddd00:{nameof(TerrariansConstructLib)}.{nameof(CoreLibMod)}.{nameof(CoreLibMod.SetRarityLocation)}()]";
-
-			string GetModRarityName(int rarity)
-				=> ReflectionHelperReturn<ModRarity, string>.InvokeMethod("get_Name", typeof(RarityLoader).GetCachedMethod("GetRarity").Invoke(null, new object[]{ rarity }) as ModRarity);
-
-			string GetRarityString(int rarity) {
-				string name = rarity < ItemRarityID.Count ? ItemRarityID.Search.GetName(rarity) : GetModRarityName(rarity);
-
-				return $"[c/{Utility.GetRarityColor(Item).Hex3()}:{name}]";
-			}
-
-			return "  " + string.Join("\n  ", CoreLibMod.GetRaritiesBelowOrAt(data.tierRarity).Select(GetRarityString).Where(s => s is not null));
+			Utility.FindAndModify(tooltips, "<MATERIAL_COST>", $"{part.materialCost / 2f}");
 		}
 
 		public override void AddRecipes() {
 			PartMold mold = registeredMolds[Type];
 
-			CreateRecipe()
-				.AddIngredient(mold.material.type, mold.materialCost)
-				.AddTile(mold.craftStation)
-				.Register();
+			var recipe = CreateRecipe();
+
+			if (mold.isSimpleMold)
+				recipe.AddRecipeGroup(RecipeGroupID.Wood, 20);
+			else
+				recipe.AddRecipeGroup(CoreLibMod.RecipeGroups.GoldOrPlatinumBars, 8);
+
+			recipe.AddTile(isSimpleMold ? TileID.WorkBenches : TileID.Anvils);
+
+			recipe.Register();
+		}
+
+		internal class Data {
+			public PartMold simple;
+			public PartMold complex;
 		}
 	}
 }
