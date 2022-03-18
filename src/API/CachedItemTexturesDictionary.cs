@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using Terraria;
 using Terraria.ModLoader;
+using Terraria.ModLoader.Exceptions;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
@@ -45,14 +46,17 @@ namespace TerrariansConstructLib.API {
 			material = parts[^1].material;
 			partID = parts[^1].partID;
 			if (!partsDictionary.TryGet(material, partID, out object texture)) {
-				using ManualResetEvent evt = new(false);
+				if (!AssetRepository.IsMainThread) {
+					ManualResetEvent evt = new(false);
 				
-				Main.QueueMainThreadAction(() => {
-					texture = BuildTexture(registeredItemID, parts);
-					evt.Set();
-				});
+					Main.QueueMainThreadAction(() => {
+						texture = BuildTexture(registeredItemID, parts);
+						evt.Set();
+					});
 
-				evt.WaitOne();
+					evt.WaitOne();
+				} else
+					texture = BuildTexture(registeredItemID, parts);
 
 				partsDictionary.Set(material, partID, texture);
 			}
@@ -120,7 +124,15 @@ namespace TerrariansConstructLib.API {
 		private static Texture2D GetVisualTexture(string visualsFolder, ItemPart part) {
 			string path = visualsFolder + "/" + PartRegistry.registeredIDs[part.partID].internalName + "/" + part.material.GetItemName();
 
-			return ModContent.Request<Texture2D>(path, AssetRequestMode.ImmediateLoad).Value;
+			if (CoreLibMod.Instance.RequestAssetIfExists<Texture2D>(path, out var asset))
+				return asset.Value;
+
+			//Try to find a mod which has the texture, error otherwise
+			foreach (Mod mod in CoreLibMod.Dependents)
+				if (mod.RequestAssetIfExists(path, out asset))
+					return asset.Value;
+
+			throw new MissingResourceException($"Could not find asset \"{path}\" in any mods which have Terrarians' Construct Library as a dependency.");
 		}
 
 		private static void ApplyPixels(int registeredItemID, Texture2D builtTexture, Texture2D incoming) {

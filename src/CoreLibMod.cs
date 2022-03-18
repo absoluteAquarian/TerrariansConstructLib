@@ -68,6 +68,8 @@ namespace TerrariansConstructLib {
 			//In order for all parts/ammos/etc. to be visible by all mods that use the library, we have to do some magic
 			RegisteredParts.Shard = RegisterPart(ModLoader.GetMod("TerrariansConstruct"), "ItemCraftLeftover", "Shard", 1, hasComplexMold: true, "Assets/Parts/ItemCraftLeftover");
 
+			dependents = new(FindDependents());
+
 			LoadAllOfTheThings("RegisterTCItemParts");
 
 			foreach (var (id, data) in PartRegistry.registeredIDs)
@@ -134,6 +136,9 @@ namespace TerrariansConstructLib {
 		private static readonly MethodInfo BuildProperties_ReadModFile = BuildProperties.GetMethod("ReadModFile", BindingFlags.NonPublic | BindingFlags.Static);
 		private static readonly MethodInfo BuildProperties_RefNames = BuildProperties.GetMethod("RefNames", BindingFlags.Public | BindingFlags.Instance);
 
+		private static List<Mod> dependents;
+		internal static IEnumerable<Mod> Dependents => dependents;
+
 		private static IEnumerable<Mod> FindDependents() {
 			static IEnumerable<string> GetReferences(Mod mod) {
 				TmodFile modFile = ReflectionHelperReturn<Mod, TmodFile>.InvokeMethod("get_File", mod);
@@ -156,7 +161,7 @@ namespace TerrariansConstructLib {
 		private static void LoadAllOfTheThings(string methodToInvoke) {
 			Type MemoryTracking = typeof(Mod).Assembly.GetType("Terraria.ModLoader.Core.MemoryTracking");
 
-			foreach (var (mod, method) in FindDependents().Select(m => (m, m.GetType().GetMethod(methodToInvoke, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)))) {
+			foreach (var (mod, method) in Dependents.Select(m => (m, m.GetType().GetMethod(methodToInvoke, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)))) {
 				if (method is null) {
 					Instance.Logger.Warn($"Mod \"{mod.Name}\" does not have a \"public static {methodToInvoke}(Mod mod)\" method declared in its Mod class");
 					continue;

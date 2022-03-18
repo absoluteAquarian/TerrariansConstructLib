@@ -38,7 +38,7 @@ namespace TerrariansConstructLib.Registry {
 				internalName = internalName,
 				validPartIDs = validPartIDs,
 				itemInternalName = itemInternalName,
-				partVisualsFolder = mod.Name + "/" + partVisualsFolder
+				partVisualsFolder = partVisualsFolder
 			};
 
 			nextID++;
