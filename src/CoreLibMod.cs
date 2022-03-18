@@ -38,6 +38,8 @@ namespace TerrariansConstructLib {
 			directDetourInstance = this;
 
 			DirectDetourManager.ModCtorLoad();
+
+			directDetourInstance = null;
 		}
 
 		public override void Load() {

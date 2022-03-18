@@ -69,10 +69,7 @@ namespace TerrariansConstructLib.API.Commands {
 				tc.parts[i] = parts[i];
 
 			//Drop the item in the world
-			const int size = 2;
-			Point tl = caller.Player.Center.ToPoint() - new Point(size / 2, size / 2);
-			Rectangle area = new(tl.X, tl.Y, size, size);
-			Utility.DropItem(new EntitySource_DebugCommand(), item, area);
+			caller.Player.QuickSpawnClonedItem(new EntitySource_DebugCommand(), tc.Item, tc.Item.stack);
 
 			caller.Reply("Successfully spawned the item.", Color.Green);
 		}
