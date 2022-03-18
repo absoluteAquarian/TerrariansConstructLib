@@ -88,6 +88,18 @@ namespace TerrariansConstructLib.Items {
 			}
 		}
 
+		public override string Name  {
+			get {
+				if (partID < 0 || partID >= PartRegistry.Count)
+					throw new ArgumentException("Part ID was invalid");
+
+				var mold = registeredMolds[Type];
+				var partData = PartRegistry.registeredIDs[mold.partID];
+
+				return $"PartMold_{partData.mod.Name}_{partData.internalName}_{(mold.isSimpleMold ? "Simple" : !mold.isPlatinumMold ? "Complex" : "ComplexPlatinum")}";
+			}
+		}
+
 		public override void SetStaticDefaults() {
 			PartMold mold = registeredMolds[Type];
 
