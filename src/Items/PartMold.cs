@@ -57,7 +57,7 @@ namespace TerrariansConstructLib.Items {
 			return mold;
 		}
 
-		public static bool TryGetMold(int partID, bool getSimpleMold, out PartMold mold) {
+		public static bool TryGetMold(int partID, bool getSimpleMold, bool getPlatinumVariantForComplexMold, out PartMold mold) {
 			mold = null;
 
 			if (partID < 0 || partID >= PartRegistry.Count)
@@ -68,8 +68,11 @@ namespace TerrariansConstructLib.Items {
 			if (getSimpleMold) {
 				mold = data.simple;
 				return true;
-			} else if(data.complex is not null) {
+			} else if(data.complex is not null && !getPlatinumVariantForComplexMold) {
 				mold = data.complex;
+				return true;
+			} else if(data.complexPlatinum is not null && getPlatinumVariantForComplexMold) {
+				mold = data.complexPlatinum;
 				return true;
 			}
 
