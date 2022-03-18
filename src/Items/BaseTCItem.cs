@@ -100,7 +100,7 @@ namespace TerrariansConstructLib.Items {
 
 			DisplayName.SetDefault("Constructed " + RegisteredItemTypeName);
 			Tooltip.SetDefault((TooltipText is not null ? TooltipText + "\n" : "") +
-				"<PART_TYPES>\n" +
+				"Materials:\n<PART_TYPES>\n" +
 				"<PART_TOOLTIPS>\n" +
 				"<MODIFIERS>\n" +
 				"<AMMO_COUNT>");
@@ -164,20 +164,26 @@ namespace TerrariansConstructLib.Items {
 
 		public sealed override void ModifyTooltips(List<TooltipLine> tooltips) {
 			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TYPES>", i => "PartType_" + i,
-				string.Join('\n', parts.Select(p => p.material.GetItemName())));
+				string.Join('\n', parts.Select(GetItemNameWithRarity)));
 
 			// TODO: detecting duplicate tooltips/modifiers and merging them into one line
 
 			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TOOLTIPS>", i => "PartTooltip_" + i,
-				string.Join('\n', parts.Select(p => p.tooltip).Where(s => !string.IsNullOrWhiteSpace(s))));
+				string.Join('\n', parts.Select(p => CoreLibMod.GetPartTooltip(p.material, p.partID)).Where(s => !string.IsNullOrWhiteSpace(s))));
 
 			Utility.FindAndInsertLines(Mod, tooltips, "<MODIFIERS>", i => "Modifier_" + i,
-				string.Join('\n', parts.Select(p => p.modifierText).Where(s => !string.IsNullOrWhiteSpace(s))));
+				string.Join('\n', parts.Select(p => CoreLibMod.GetPartModifierText(p.material, p.partID)).Where(s => !string.IsNullOrWhiteSpace(s))));
 
 			if (ammoReserveMax > 0)
 				Utility.FindAndModify(tooltips, "<AMMO_COUNT>", $"{ammoReserve}/{ammoReserveMax}");
 			else
 				Utility.FindAndRemoveLine(tooltips, "<AMMO_COUNT>");
+		}
+
+		private string GetItemNameWithRarity(ItemPart part) {
+			Item material = part.material.AsItem();
+
+			return $"  [c/{Utility.GetRarityColor(material).Hex3()}:{part.material.GetItemName()}]";
 		}
 
 		/// <inheritdoc cref="ModifyTooltips(List{TooltipLine})"/>
