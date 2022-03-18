@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Loader;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
 
@@ -15,7 +14,7 @@ namespace TerrariansConstructLib.API {
 				throw new Exception($"Part ID {partID} was invalid");
 
 			if (!dictByPartID.TryGetValue(partID, out T value))
-				throw new ArgumentException($"Material type \"{material.GetItemName()}\" (ID: {material}) did not have an entry for part ID {partID}");
+				throw new ArgumentException($"Material type \"{material.GetItemName()}\" (ID: {material.type}) did not have an entry for part ID {partID}");
 
 			return value;
 		}

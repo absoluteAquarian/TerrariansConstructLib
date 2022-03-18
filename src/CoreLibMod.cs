@@ -196,11 +196,17 @@ namespace TerrariansConstructLib {
 			//Make a recipe group for each part type
 			for (int i = 0; i < PartRegistry.Count; i++) {
 				// OrderBy ensures that the Unkonwn material ends up first in the list due to its type being the smallest
-				RegisterRecipeGroup(GetRecipeGroupName(i), PartRegistry.registeredIDs[i].name, GetKnownMaterials()
+				int[] ids = GetKnownMaterials()
+					.Where(m => ItemPartItem.itemPartToItemID.Has(m, i))
 					.Select(m => GetItemPartItem(m, i))
 					.OrderBy(i => i.part.material.type)
 					.Select(i => i.Type)
-					.ToArray());
+					.ToArray();
+
+				if (ids.Length == 0)
+					continue;  //Failsafe for if a part ID has no parts registered to it
+
+				RegisterRecipeGroup(GetRecipeGroupName(i), PartRegistry.registeredIDs[i].name, ids);
 			}
 		}
 
