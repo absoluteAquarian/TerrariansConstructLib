@@ -15,6 +15,7 @@ namespace TerrariansConstructLib.Items {
 		public int partID;
 
 		internal bool isSimpleMold;
+		internal bool isPlatinumMold;
 
 		internal static Dictionary<int, PartMold> registeredMolds;
 		internal static Dictionary<int, Data> moldsByPartID;
@@ -83,7 +84,7 @@ namespace TerrariansConstructLib.Items {
 				var mold = registeredMolds[Type];
 				var partData = PartRegistry.registeredIDs[mold.partID];
 
-				return Path.Combine(mold.Mod.Name, partData.assetFolder, "Molds", mold.isSimpleMold ? "Simple" : "Complex");
+				return Path.Combine(mold.Mod.Name, partData.assetFolder, "Molds", mold.isSimpleMold ? "Simple" : !mold.isPlatinumMold ? "Complex" : "ComplexPlatinum");
 			}
 		}
 
@@ -118,17 +119,33 @@ namespace TerrariansConstructLib.Items {
 
 			if (mold.isSimpleMold)
 				recipe.AddRecipeGroup(RecipeGroupID.Wood, 20);
+			else if (!mold.isPlatinumMold)
+				recipe.AddIngredient(ItemID.GoldBar, 8);
 			else
-				recipe.AddRecipeGroup(CoreLibMod.RecipeGroups.GoldOrPlatinumBars, 8);
+				recipe.AddIngredient(ItemID.PlatinumBar, 8);
 
 			recipe.AddTile(isSimpleMold ? TileID.WorkBenches : TileID.Anvils);
 
 			recipe.Register();
 		}
 
+		public override void OnCraft(Recipe recipe) {
+			if (recipe.HasRecipeGroup(RecipeGroupID.Wood)) {
+				isSimpleMold = true;
+				isPlatinumMold = false;
+			} else if(recipe.HasIngredient(ItemID.GoldBar)) {
+				isSimpleMold = false;
+				isPlatinumMold = false;
+			} else {
+				isSimpleMold = false;
+				isPlatinumMold = true;
+			}
+		}
+
 		internal class Data {
 			public PartMold simple;
 			public PartMold complex;
+			public PartMold complexPlatinum;
 		}
 	}
 }

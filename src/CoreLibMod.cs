@@ -101,17 +101,23 @@ namespace TerrariansConstructLib {
 
 				PartMold simpleMold = PartMold.Create(partID, true);
 				PartMold complexMold = !partData.hasComplexMold ? null : PartMold.Create(partID, false);
+				PartMold complexPlatinumMold = complexMold is null ? null : PartMold.Create(partID, false);
+
+				if (complexPlatinumMold is not null)
+					complexPlatinumMold.isPlatinumMold = true;
 
 				ReflectionHelper<Mod>.InvokeSetterFunction("loading", partData.mod, true);
 
 				partData.mod.AddContent(simpleMold);
 				if (complexMold is not null)
 					partData.mod.AddContent(complexMold);
+				if (complexPlatinumMold is not null)
+					partData.mod.AddContent(complexPlatinumMold);
 
 				ReflectionHelper<Mod>.InvokeSetterFunction("loading", partData.mod, false);
 
 				PartMold.registeredMolds[simpleMold.Type] = simpleMold;
-				PartMold.moldsByPartID[partID] = new() { simple = simpleMold, complex = complexMold };
+				PartMold.moldsByPartID[partID] = new() { simple = simpleMold, complex = complexMold, complexPlatinum = complexPlatinumMold };
 
 				Instance.Logger.Info($"{(partData.hasComplexMold ? "Simple and complex item part molds" : "Simple item part mold")} for part ID \"{partData.mod.Name}:{partData.internalName}\" added by mod \"{partData.mod.Name}\"");
 			}
@@ -191,9 +197,6 @@ namespace TerrariansConstructLib {
 					.Select(i => i.Type)
 					.ToArray());
 			}
-
-			RegisterRecipeGroup(RecipeGroups.GoldOrPlatinumBars, ItemID.GoldBar,
-				ItemID.GoldBar, ItemID.PlatinumBar);
 		}
 
 		public static void RegisterRecipeGroup(string groupName, string anyName, params int[] validTypes)
@@ -589,10 +592,6 @@ namespace TerrariansConstructLib {
 
 				AddPart(mod, material, partID, actions, tooltipForAllParts, modifierTextForAllParts);
 			}
-		}
-
-		public static class RecipeGroups {
-			public const string GoldOrPlatinumBars = nameof(TerrariansConstructLib) + ": Gold or Platinum";
 		}
 
 		public static class RegisteredParts {
