@@ -1,6 +1,7 @@
 ﻿using Terraria;
 using Terraria.DataStructures;
 using TerrariansConstructLib.Items;
+using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Projectiles;
 
 namespace TerrariansConstructLib.API.Edits.Detours {
@@ -23,12 +24,8 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 						ItemPart part = tcItem.parts[i];
 
 						tcProj.parts[i] = new(){
-							material = new(){
-								type = part.material.type,
-								rarity = part.material.rarity
-							},
-							partID = part.partID,
-							tooltip = part.tooltip
+							material = part.material.Clone(),
+							partID = part.partID
 						};
 
 						tcProj.parts[i].OnProjectileSpawn(tcProj.parts[i].partID, projectile, spawnSource, X, Y, SpeedX, SpeedY, Type, Damage, KnockBack, Owner, ai0, ai1);

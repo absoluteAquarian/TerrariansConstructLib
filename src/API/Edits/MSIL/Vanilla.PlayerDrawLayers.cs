@@ -38,7 +38,9 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 
 			c.Emit(OpCodes.Stloc_3);
 
-			ILHelper.CompleteLog(CoreLibMod.Instance, c, beforeEdit: true);
+			ILHelper.UpdateInstructionOffsets(c);
+
+			ILHelper.CompleteLog(CoreLibMod.Instance, c, beforeEdit: false);
 
 			return;
 			bad_il:

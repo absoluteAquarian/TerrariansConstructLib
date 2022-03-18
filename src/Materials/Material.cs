@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -11,12 +12,7 @@ namespace TerrariansConstructLib.Materials {
 		/// </summary>
 		public int type = -1;
 
-		/// <summary>
-		/// The rarity of the material
-		/// </summary>
-		public int rarity;
-
-		public virtual Material Clone() => new() { type = type, rarity = rarity };
+		public virtual Material Clone() => new() { type = type };
 
 		public virtual string GetModName() {
 			if (ItemID.Search.TryGetName(type, out _))
@@ -46,14 +42,8 @@ namespace TerrariansConstructLib.Materials {
 		/// <returns>A new <see cref="Item"/> instance, or <see langword="null"/> if this material is an <seealso cref="UnloadedMaterial"/> or <seealso cref="UnknownMaterial"/></returns>
 		public Item AsItem() => this is UnloadedMaterial or UnknownMaterial ? null : new(type);
 
-		public static Material FromItem(int type) {
-			Item item = new(type);
-
-			return new(){
-				type = type,
-				rarity = item.rare
-			};
-		}
+		public static Material FromItem(int type)
+			=> new(){ type = type };
 
 		public virtual TagCompound SerializeData() {
 			TagCompound tag = new();
@@ -68,8 +58,6 @@ namespace TerrariansConstructLib.Materials {
 				tag["mod"] = item.Mod.Name;
 				tag["name"] = item.Name;
 			}
-
-			tag["rarity"] = rarity;
 
 			return tag;
 		}
@@ -91,12 +79,21 @@ namespace TerrariansConstructLib.Materials {
 				type = item.Type;
 			}
 
-			int rarity = tag.GetInt("rarity");
-
 			return new Material(){
-				type = type,
-				rarity = rarity
+				type = type
 			};
 		};
+
+		public override bool Equals(object obj)
+			=> obj is Material material && type == material.type;
+
+		public override int GetHashCode()
+			=> type.GetHashCode();
+
+		public static bool operator ==(Material left, Material right)
+			=> left.type == right.type;
+
+		public static bool operator !=(Material left, Material right)
+			=> !(left == right);
 	}
 }

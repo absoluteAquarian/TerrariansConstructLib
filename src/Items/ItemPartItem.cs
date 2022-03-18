@@ -70,7 +70,7 @@ namespace TerrariansConstructLib.Items {
 			this.part = part;
 		}
 
-		public static ItemPartItem Create(Material material, int partID, ItemPartActionsBuilder builder, string tooltip, string modifierText) {
+		public static ItemPartItem Create(Material material, int partID, ItemPartActionsBuilder builder, string tooltip, ModifierText modifierText) {
 			int materialType = material.type;
 
 			if (!PartActions.builders.TryGetValue(materialType, out var buildersByPartID))
@@ -119,8 +119,10 @@ namespace TerrariansConstructLib.Items {
 		public override void SetDefaults() {
 			part = registeredPartsByItemID[Type];
 
+			Item materialItem = part.material.AsItem();
+
 			Item.DamageType = DamageClass.NoScaling;
-			Item.rare = part.material.rarity;
+			Item.rare = materialItem.rare;
 		}
 
 		public override void AddRecipes() {

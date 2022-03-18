@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
@@ -18,6 +19,7 @@ namespace TerrariansConstructLib.Items {
 		public delegate void PartModifyWeaponDamageFunc(int partID, Player player, ref StatModifier damage, ref float flat);
 		public delegate void PartModifyWeaponKnockbackFunc(int partID, Player player, ref StatModifier knockback, ref float flat);
 		public delegate void PartModifyWeaponCritFunc(int partID, Player player, ref int crit);
+		public delegate float PartItemModifierFunc(int partID, Item item);
 
 		internal static PartsDictionary<ItemPart> partData;
 
@@ -36,19 +38,20 @@ namespace TerrariansConstructLib.Items {
 				partData.Get(material, partID).tooltip = tooltip;
 		}
 
-		public void SetGlobalModifierText(string modifierText)
-			=> SetGlobalModifierText(material, partID, modifierText);
+		public ModifierText GetModifierText()
+			=> GetGlobalModifierText(material, partID);
 
 		/// <summary>
-		/// Sets the global modifier text for item parts using the material, <paramref name="material"/>, and the part ID, <paramref name="partID"/>, to <paramref name="modifierText"/>
+		/// Gets the global modifier text for item parts using the material, <paramref name="material"/>, and the part ID, <paramref name="partID"/>
 		/// </summary>
 		/// <param name="material">The material</param>
 		/// <param name="partID">The part ID</param>
-		/// <param name="modifierText">The new global modifier text</param>
-		public static void SetGlobalModifierText(Material material, int partID, string modifierText) {
+		public static ModifierText GetGlobalModifierText(Material material, int partID) {
 			//Unloaded/Unknown material should not be tampered with
 			if (material is not UnloadedMaterial or UnknownMaterial)
-				partData.Get(material, partID).tooltip = modifierText;
+				return partData.Get(material, partID).modifierText;
+
+			return null;
 		}
 
 		/// <summary>
@@ -61,9 +64,9 @@ namespace TerrariansConstructLib.Items {
 		/// </summary>
 		public int partID;
 
-		public string tooltip;
+		internal string tooltip;
 
-		public string modifierText;
+		internal ModifierText modifierText;
 
 		public virtual ItemPart Clone() => new(){
 			material = material.Clone(),
@@ -95,6 +98,8 @@ namespace TerrariansConstructLib.Items {
 		public PartModifyWeaponCritFunc ModifyWeaponCrit => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyWeaponCrit;
 
 		public PartProjectileFunc ProjectileAI => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).projectileAI;
+
+		public PartItemModifierFunc GetBaseStatForModifierText => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).getBaseStatForModifierText;
 
 		public TagCompound SerializeData() {
 			TagCompound tag = new();
@@ -143,5 +148,17 @@ namespace TerrariansConstructLib.Items {
 
 			return (ItemPart)partData.Get(material, id).MemberwiseClone();
 		};
+
+		public override bool Equals(object obj)
+			=> obj is ItemPart part && material == part.material && partID == part.partID;
+
+		public override int GetHashCode()
+			=> HashCode.Combine(material, partID);
+
+		public static bool operator ==(ItemPart left, ItemPart right)
+			=> left.material == right.material && left.partID == right.partID;
+
+		public static bool operator !=(ItemPart left, ItemPart right)
+			=> !(left == right);
 	}
 }

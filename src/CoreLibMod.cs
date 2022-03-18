@@ -362,7 +362,7 @@ namespace TerrariansConstructLib {
 		/// <param name="material">The material</param>
 		/// <param name="partID">The part ID</param>
 		/// <returns>The global modifier text</returns>
-		public static string GetPartModifierText(Material material, int partID)
+		public static ModifierText GetPartModifierText(Material material, int partID)
 			=> ItemPart.partData.Get(material, partID).modifierText;
 
 		/// <summary>
@@ -522,8 +522,8 @@ namespace TerrariansConstructLib {
 		/// <param name="partID">The part ID</param>
 		/// <param name="actions">The actions</param>
 		/// <param name="tooltip">The tooltip for this part.  Can be modified via <seealso cref="ItemPart.SetGlobalTooltip(Material, int, string)"/></param>
-		/// <param name="modifierText">The modifier text that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetGlobalModifierText(Material, int, string)"/></param>
-		public static void AddPart(Mod mod, Material material, int partID, ItemPartActionsBuilder actions, string tooltip, string modifierText) {
+		/// <param name="modifierText">The modifier text that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.GetGlobalModifierText(Material, int)"/></param>
+		public static void AddPart(Mod mod, Material material, int partID, ItemPartActionsBuilder actions, string tooltip, ModifierText modifierText) {
 			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new ArgumentException("Part ID was invalid");
 
@@ -549,13 +549,12 @@ namespace TerrariansConstructLib {
 		/// </summary>
 		/// <param name="mod">The mod instance to add the part to</param>
 		/// <param name="materialType">The item ID</param>
-		/// <param name="rarity">The item rarity</param>
 		/// <param name="partID">The part ID</param>
 		/// <param name="actions">The actions</param>
 		/// <param name="tooltip">The tooltip for this part.  Can be modified via <seealso cref="ItemPart.SetGlobalTooltip(Material, int, string)"/></param>
-		/// <param name="modifierText">The modifier text that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetGlobalModifierText(Material, int, string)"/></param>
-		public static void AddPart(Mod mod, int materialType, int rarity, int partID, ItemPartActionsBuilder actions, string tooltip, string modifierText)
-			=> AddPart(mod, new Material(){ type = materialType, rarity = rarity }, partID, actions, tooltip, modifierText);
+		/// <param name="modifierText">The modifier text that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.GetGlobalModifierText(Material, int)"/></param>
+		public static void AddPart(Mod mod, int materialType, int partID, ItemPartActionsBuilder actions, string tooltip, ModifierText modifierText)
+			=> AddPart(mod, new Material(){ type = materialType }, partID, actions, tooltip, modifierText);
 
 		/// <summary>
 		/// Registers the part items for the material, <paramref name="materialType"/>
@@ -564,9 +563,9 @@ namespace TerrariansConstructLib {
 		/// <param name="materialType">The item ID</param>
 		/// <param name="actions">The actions</param>
 		/// <param name="tooltipForAllParts">The tooltip that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetGlobalTooltip(Material, int, string)"/></param>
-		/// <param name="modifierTextForAllParts">The modifier text that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetGlobalModifierText(Material, int, string)"/></param>
+		/// <param name="modifierTextForAllParts">The modifier text that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.GetGlobalModifierText(Material, int)"/></param>
 		/// <param name="partIDsToIgnore">The IDs to ignore when iterating to create the part items</param>
-		public static void AddAllPartsOfType(Mod mod, int materialType, ItemPartActionsBuilder actions, string tooltipForAllParts, string modifierTextForAllParts, params int[] partIDsToIgnore)
+		public static void AddAllPartsOfType(Mod mod, int materialType, ItemPartActionsBuilder actions, string tooltipForAllParts, ModifierText modifierTextForAllParts, params int[] partIDsToIgnore)
 			=> AddAllPartsOfMaterial(mod, Material.FromItem(materialType), actions, tooltipForAllParts, modifierTextForAllParts, partIDsToIgnore);
 
 		/// <summary>
@@ -576,9 +575,9 @@ namespace TerrariansConstructLib {
 		/// <param name="material">The material instance</param>
 		/// <param name="actions">The actions</param>
 		/// <param name="tooltipForAllParts">The tooltip that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetGlobalTooltip(Material, int, string)"/></param>
-		/// <param name="modifierTextForAllParts">The modifier text that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.SetGlobalModifierText(Material, int, string)"/></param>
+		/// <param name="modifierTextForAllParts">The modifier text that will be assigned to all parts.  Can be modified via <seealso cref="ItemPart.GetGlobalModifierText(Material, int)"/></param>
 		/// <param name="partIDsToIgnore">The IDs to ignore when iterating to create the part items</param>
-		public static void AddAllPartsOfMaterial(Mod mod, Material material, ItemPartActionsBuilder actions, string tooltipForAllParts, string modifierTextForAllParts, params int[] partIDsToIgnore) {
+		public static void AddAllPartsOfMaterial(Mod mod, Material material, ItemPartActionsBuilder actions, string tooltipForAllParts, ModifierText modifierTextForAllParts, params int[] partIDsToIgnore) {
 			for (int partID = 0; partID < PartRegistry.Count; partID++) {
 				if (Array.IndexOf(partIDsToIgnore, partID) > -1)
 					continue;

@@ -164,15 +164,13 @@ namespace TerrariansConstructLib.Items {
 
 		public sealed override void ModifyTooltips(List<TooltipLine> tooltips) {
 			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TYPES>", i => "PartType_" + i,
-				string.Join('\n', parts.Select(GetItemNameWithRarity)));
-
-			// TODO: detecting duplicate tooltips/modifiers and merging them into one line
+				string.Join('\n', parts.Select(GetItemNameWithRarity).Distinct()));
 
 			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TOOLTIPS>", i => "PartTooltip_" + i,
-				string.Join('\n', parts.Select(p => CoreLibMod.GetPartTooltip(p.material, p.partID)).Where(s => !string.IsNullOrWhiteSpace(s))));
+				string.Join('\n', parts.Select(p => CoreLibMod.GetPartTooltip(p.material, p.partID)).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct()));
 
 			Utility.FindAndInsertLines(Mod, tooltips, "<MODIFIERS>", i => "Modifier_" + i,
-				string.Join('\n', parts.Select(p => CoreLibMod.GetPartModifierText(p.material, p.partID)).Where(s => !string.IsNullOrWhiteSpace(s))));
+				string.Join('\n', EvaluateModifiers(parts.Select(p => CoreLibMod.GetPartModifierText(p.material, p.partID))).Where(s => !string.IsNullOrWhiteSpace(s))));
 
 			if (ammoReserveMax > 0)
 				Utility.FindAndModify(tooltips, "<AMMO_COUNT>", $"{ammoReserve}/{ammoReserveMax}");
@@ -183,7 +181,42 @@ namespace TerrariansConstructLib.Items {
 		private string GetItemNameWithRarity(ItemPart part) {
 			Item material = part.material.AsItem();
 
-			return $"  [c/{Utility.GetRarityColor(material).Hex3()}:{part.material.GetItemName()}]";
+			return $"  [c/{Utility.GetRarityColor(material).Hex3()}:{part.material.GetItemName()} {CoreLibMod.GetPartName(part.partID)}]";
+		}
+
+		private IEnumerable<string> EvaluateModifiers(IEnumerable<ModifierText> orig) {
+			//Evaluate all of the lines from the enumeration
+			List<ModifierText> lines = new(orig);
+
+			Dictionary<ItemPart, ModifierText> modifiers = new();
+
+			foreach (ModifierText modifier in lines) {
+				var part = modifier.GetPart();
+
+				if (part.GetModifierText() is null)
+					continue;
+
+				if (!modifiers.ContainsKey(part))
+					modifiers[part] = modifier.Clone();
+				else {
+					var mod = modifiers[part];
+
+					mod.Stat = mod.Stat.CombineWith(modifier.Stat);
+				}
+			}
+
+			return modifiers
+				.Select(kvp => {
+					string format = Language.GetTextValue(kvp.Value.langText);
+
+					if (kvp.Key.GetBaseStatForModifierText is not ItemPart.PartItemModifierFunc func)
+						return format;
+
+					float stat = func.Invoke(kvp.Key.partID, Item) * (float)kvp.Value.Stat;
+					stat *= 100;  //0.01 --> 1%
+
+					return string.Format(format, stat);
+				});
 		}
 
 		/// <inheritdoc cref="ModifyTooltips(List{TooltipLine})"/>
@@ -201,6 +234,13 @@ namespace TerrariansConstructLib.Items {
 		public virtual void Clone(Item item, BaseTCItem clone) { }
 
 		public sealed override bool CanBeConsumedAsAmmo(Player player) => false;
+
+		public sealed override void PickAmmo(Item weapon, Player player, ref int type, ref float speed, ref int damage, ref float knockback) {
+			if (ammoReserveMax <= 0)
+				return;
+
+
+		}
 
 		public sealed override void ModifyWeaponDamage(Player player, ref StatModifier damage, ref float flat) {
 			for (int i = 0; i < parts.Length; i++)

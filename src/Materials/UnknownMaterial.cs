@@ -19,29 +19,12 @@ namespace TerrariansConstructLib.Materials {
 		}
 
 		public override Material Clone() => new UnknownMaterial() {
-			type = type,
-			rarity = rarity
+			type = type
 		};
 
-		public override TagCompound SerializeData() {
-			TagCompound tag = new();
+		public override TagCompound SerializeData()
+			=> new();
 
-			tag["mod"] = GetModName();
-			tag["name"] = GetName();
-			tag["rarity"] = rarity;
-
-			return tag;
-		}
-
-		public static new Func<TagCompound, UnknownMaterial> DESERIALIZER = tag => {
-			string mod = tag.GetString("mod");
-			string name = tag.GetString("name");
-			int rarity = tag.GetInt("rarity");
-
-			return new UnknownMaterial(){
-				rarity = rarity,
-				type = StaticType
-			};
-		};
+		public static new Func<TagCompound, UnknownMaterial> DESERIALIZER = tag => new UnknownMaterial(){ type = StaticType };
 	}
 }
