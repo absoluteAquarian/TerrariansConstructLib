@@ -178,13 +178,13 @@ namespace TerrariansConstructLib.Items {
 				Utility.FindAndRemoveLine(tooltips, "<AMMO_COUNT>");
 		}
 
-		private string GetItemNameWithRarity(ItemPart part) {
+		private static string GetItemNameWithRarity(ItemPart part) {
 			Item material = part.material.AsItem();
 
 			return $"  [c/{Utility.GetRarityColor(material).Hex3()}:{part.material.GetItemName()} {CoreLibMod.GetPartName(part.partID)}]";
 		}
 
-		private IEnumerable<string> EvaluateModifiers(IEnumerable<ModifierText> orig) {
+		private static IEnumerable<string> EvaluateModifiers(IEnumerable<ModifierText> orig) {
 			//Evaluate all of the lines from the enumeration
 			List<ModifierText> lines = new(orig);
 
