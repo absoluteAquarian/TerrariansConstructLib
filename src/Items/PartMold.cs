@@ -93,10 +93,9 @@ namespace TerrariansConstructLib.Items {
 				if (partID < 0 || partID >= PartRegistry.Count)
 					throw new ArgumentException("Part ID was invalid");
 
-				var mold = registeredMolds[Type];
-				var partData = PartRegistry.registeredIDs[mold.partID];
+				var partData = PartRegistry.registeredIDs[partID];
 
-				return $"PartMold_{partData.mod.Name}_{partData.internalName}_{(mold.isSimpleMold ? "Simple" : !mold.isPlatinumMold ? "Complex" : "ComplexPlatinum")}";
+				return $"PartMold_{partData.mod.Name}_{partData.internalName}_{(isSimpleMold ? "Simple" : !isPlatinumMold ? "Complex" : "ComplexPlatinum")}";
 			}
 		}
 
