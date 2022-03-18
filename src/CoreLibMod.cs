@@ -223,31 +223,6 @@ namespace TerrariansConstructLib {
 			return "TerrariansConstructLib:PartGroup_" + PartRegistry.registeredIDs[partID].internalName;
 		}
 
-		public override void AddRecipes() {
-			//Make a recipe for each item definition
-
-			foreach (var (id, data) in ItemRegistry.registeredIDs) {
-				if (!data.mod.TryFind<ModItem>(data.itemInternalName, out var item))
-					throw new RecipeException($"Registered item #{id} (source mod: {data.mod.Name}) was assigned an invalid internal BaseTCItem.Name value: {data.itemInternalName}");
-
-				if (item is not BaseTCItem)
-					throw new Exception($"Registered item #{id} (source mod: {data.mod.Name}) was assigned a ModItem that doesn't inherit from BaseTCItem");
-
-				Recipe recipe = item.Mod.CreateRecipe(item.Type);
-
-				foreach (int part in data.validPartIDs)
-					recipe.AddRecipeGroup(GetRecipeGroupName(part));
-
-				// TODO: forge tile?
-
-				recipe.AddCondition(NetworkText.FromLiteral("Must be crafted from the Forge UI"), r => false);
-
-				recipe.Register();
-
-				Logger.Debug($"Created recipe for BaseTCItem \"{item.GetType().GetSimplifiedGenericTypeName()}\"");
-			}
-		}
-
 		public override void Unload() {
 			DirectDetourManager.Unload();
 			
