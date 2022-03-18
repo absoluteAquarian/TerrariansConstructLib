@@ -87,7 +87,7 @@ namespace TerrariansConstructLib.Items {
 				var mold = registeredMolds[Type];
 				var partData = PartRegistry.registeredIDs[mold.partID];
 
-				return Path.Combine(mold.Mod.Name, partData.assetFolder, "Molds", mold.isSimpleMold ? "Simple" : !mold.isPlatinumMold ? "Complex" : "ComplexPlatinum");
+				return $"{mold.Mod.Name}/{partData.assetFolder}/Molds/{(mold.isSimpleMold ? "Simple" : !mold.isPlatinumMold ? "Complex" : "ComplexPlatinum")}";
 			}
 		}
 
