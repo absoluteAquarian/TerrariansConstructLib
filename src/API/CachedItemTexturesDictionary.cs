@@ -122,7 +122,7 @@ namespace TerrariansConstructLib.API {
 		}
 
 		private static Texture2D GetVisualTexture(string visualsFolder, ItemPart part) {
-			string path = visualsFolder + "/" + PartRegistry.registeredIDs[part.partID].internalName + "/" + part.material.GetItemName();
+			string path = visualsFolder + "/" + PartRegistry.registeredIDs[part.partID].internalName + "/" + part.material.GetName();
 
 			if (CoreLibMod.Instance.RequestAssetIfExists<Texture2D>(path, out var asset))
 				return asset.Value;
