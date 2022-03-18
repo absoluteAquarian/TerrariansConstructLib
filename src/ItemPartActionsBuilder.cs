@@ -14,7 +14,6 @@ namespace TerrariansConstructLib {
 		internal ItemPart.PartModifyWeaponKnockbackFunc modifyWeaponKnockback;
 		internal ItemPart.PartModifyWeaponCritFunc modifyWeaponCrit;
 		internal ItemPart.PartProjectileFunc projectileAI;
-		internal ItemPart.PartItemModifierFunc getBaseStatForModifierText;
 
 		private bool isReadonly;
 
@@ -124,14 +123,6 @@ namespace TerrariansConstructLib {
 				return new ItemPartActionsBuilder().WithAI(projectileAI);
 
 			this.projectileAI = projectileAI;
-			return this;
-		}
-
-		public ItemPartActionsBuilder WithGetBaseStatForModifierText(ItemPart.PartItemModifierFunc getBaseStatForModifierText) {
-			if (isReadonly)
-				return new ItemPartActionsBuilder().WithGetBaseStatForModifierText(getBaseStatForModifierText);
-
-			this.getBaseStatForModifierText = getBaseStatForModifierText;
 			return this;
 		}
 	}

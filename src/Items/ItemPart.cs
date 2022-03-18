@@ -19,7 +19,6 @@ namespace TerrariansConstructLib.Items {
 		public delegate void PartModifyWeaponDamageFunc(int partID, Player player, ref StatModifier damage, ref float flat);
 		public delegate void PartModifyWeaponKnockbackFunc(int partID, Player player, ref StatModifier knockback, ref float flat);
 		public delegate void PartModifyWeaponCritFunc(int partID, Player player, ref int crit);
-		public delegate float PartItemModifierFunc(int partID, Item item);
 
 		internal static PartsDictionary<ItemPart> partData;
 
@@ -98,8 +97,6 @@ namespace TerrariansConstructLib.Items {
 		public PartModifyWeaponCritFunc ModifyWeaponCrit => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyWeaponCrit;
 
 		public PartProjectileFunc ProjectileAI => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).projectileAI;
-
-		public PartItemModifierFunc GetBaseStatForModifierText => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).getBaseStatForModifierText;
 
 		public TagCompound SerializeData() {
 			TagCompound tag = new();

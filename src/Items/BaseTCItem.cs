@@ -193,7 +193,7 @@ namespace TerrariansConstructLib.Items {
 			foreach (ModifierText modifier in lines) {
 				var part = modifier.GetPart();
 
-				if (part.GetModifierText() is null)
+				if (part.GetModifierText()?.langText is null)
 					continue;
 
 				if (!modifiers.ContainsKey(part))
@@ -209,12 +209,7 @@ namespace TerrariansConstructLib.Items {
 				.Select(kvp => {
 					string format = Language.GetTextValue(kvp.Value.langText);
 
-					if (kvp.Key.GetBaseStatForModifierText is not ItemPart.PartItemModifierFunc func)
-						return format;
-
-					float stat = func.Invoke(kvp.Key.partID, Item) * 100;  //0.01 --> 1%
-
-					return string.Format(format, stat * (float)kvp.Value.Stat - stat);
+					return string.Format(format, ((float)kvp.Value.Stat - 1f) * 100);
 				});
 		}
 
