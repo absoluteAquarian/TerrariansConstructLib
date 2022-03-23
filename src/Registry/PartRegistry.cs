@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Terraria.ModLoader;
+using TerrariansConstructLib.API.Stats;
 
 namespace TerrariansConstructLib.Registry {
 	public static class PartRegistry {
-		internal static int Register(Mod mod, string internalName, string name, int materialCost, bool hasComplexMold, string assetFolderPath) {
+		internal static int Register(Mod mod, string internalName, string name, int materialCost, bool hasSimpleMold, string assetFolderPath, StatType type) {
 			if (mod is null)
 				throw new ArgumentNullException(nameof(mod));
 
@@ -28,7 +30,8 @@ namespace TerrariansConstructLib.Registry {
 				internalName = internalName,
 				assetFolder = assetFolderPath,
 				materialCost = materialCost,
-				hasComplexMold = hasComplexMold
+				hasSimpleMold = hasSimpleMold,
+				type = type
 			};
 
 			nextID++;
@@ -38,11 +41,13 @@ namespace TerrariansConstructLib.Registry {
 
 		internal static void Load() {
 			registeredIDs = new();
+			isAxePart = new(16);
 			nextID = 0;
 		}
 
 		internal static void Unload() {
-			registeredIDs = null;
+			registeredIDs = null!;
+			isAxePart = null!;
 			nextID = 0;
 		}
 
@@ -51,6 +56,7 @@ namespace TerrariansConstructLib.Registry {
 		public static int Count => nextID;
 
 		internal static Dictionary<int, Data> registeredIDs;
+		internal static BitArray isAxePart;
 
 		internal static bool TryFindData(Mod mod, string internalName, out int id) {
 			foreach (var (i, d) in registeredIDs) {
@@ -77,7 +83,8 @@ namespace TerrariansConstructLib.Registry {
 			public string assetFolder;
 			public string internalName;
 			public int materialCost;
-			public bool hasComplexMold;
+			public bool hasSimpleMold;
+			public StatType type;
 		}
 	}
 }

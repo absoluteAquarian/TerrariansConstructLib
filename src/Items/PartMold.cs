@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -37,7 +36,7 @@ namespace TerrariansConstructLib.Items {
 			return PartRegistry.registeredIDs[partID].materialCost;
 		}
 
-		public static PartMold Create(int partID, bool isSimpleMold) {
+		public static PartMold Create(int partID, bool isSimpleMold, bool isPlatinumMold) {
 			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new ArgumentException("Part ID was invalid");
 
@@ -46,18 +45,21 @@ namespace TerrariansConstructLib.Items {
 
 			var mold = new PartMold(){
 				partID = partID,
-				isSimpleMold = isSimpleMold
+				isSimpleMold = isSimpleMold,
+				isPlatinumMold = isPlatinumMold
 			};
 
 			if (isSimpleMold)
 				data.simple = mold;
-			else
+			else if (!isPlatinumMold)
 				data.complex = mold;
+			else
+				data.complexPlatinum = mold;
 
 			return mold;
 		}
 
-		public static bool TryGetMold(int partID, bool getSimpleMold, bool getPlatinumVariantForComplexMold, out PartMold mold) {
+		public static bool TryGetMold(int partID, bool getSimpleMold, bool getPlatinumVariantForComplexMold, out PartMold? mold) {
 			mold = null;
 
 			if (partID < 0 || partID >= PartRegistry.Count)
@@ -157,7 +159,7 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		internal class Data {
-			public PartMold simple;
+			public PartMold? simple;
 			public PartMold complex;
 			public PartMold complexPlatinum;
 		}

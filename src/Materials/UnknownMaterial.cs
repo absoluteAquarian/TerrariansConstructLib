@@ -15,16 +15,16 @@ namespace TerrariansConstructLib.Materials {
 		public static readonly int StaticType = -100612;
 
 		public UnknownMaterial() {
-			type = StaticType;
+			Type = StaticType;
 		}
 
 		public override Material Clone() => new UnknownMaterial() {
-			type = type
+			Type = Type
 		};
 
 		public override TagCompound SerializeData()
 			=> new();
 
-		public static new Func<TagCompound, UnknownMaterial> DESERIALIZER = tag => new UnknownMaterial(){ type = StaticType };
+		public static new Func<TagCompound, UnknownMaterial> DESERIALIZER = tag => new UnknownMaterial() { Type = StaticType };
 	}
 }

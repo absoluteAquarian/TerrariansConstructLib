@@ -11,6 +11,6 @@ namespace TerrariansConstructLib.Registry {
 		public static ItemPartActionsBuilder GetPartActions(Material material, int partID)
 			=> builders.Get(material, partID);
 
-		public static readonly ItemPartActionsBuilder NoActions = new(isReadonly: true);
+		public static readonly ItemPartActionsBuilder NoActions = new ItemPartActionsBuilder().MarkAsReadonly();
 	}
 }

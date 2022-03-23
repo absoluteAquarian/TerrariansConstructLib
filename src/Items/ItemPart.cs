@@ -1,24 +1,101 @@
 ﻿using System;
-using System.Collections.Generic;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
+using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.Items {
 	public class ItemPart : TagSerializable {
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Item"/> <paramref name="item"/>
+		/// </summary>
 		public delegate void PartItemFunc(int partID, Item item);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Player"/> <paramref name="player"/>,
+		/// <see cref="Item"/> <paramref name="item"/>
+		/// </summary>
 		public delegate void PartPlayerFunc(int partID, Player player, Item item);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Projectile"/> <paramref name="projectile"/>
+		/// </summary>
 		public delegate void PartProjectileFunc(int partID, Projectile projectile);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Projectile"/> <paramref name="projectile"/>,
+		/// <see cref="IEntitySource"/> <paramref name="source"/>,
+		/// <see langword="float"/> <paramref name="X"/>,
+		/// <see langword="float"/> <paramref name="Y"/>,
+		/// <see langword="float"/> <paramref name="SpeedX"/>,
+		/// <see langword="float"/> <paramref name="SpeedY"/>,
+		/// <see langword="int"/> <paramref name="Type"/>,
+		/// <see langword="int"/> <paramref name="Damage"/>,
+		/// <see langword="float"/> <paramref name="KnockBack"/>,
+		/// <see langword="int"/> <paramref name="Owner"/>,
+		/// <see langword="float"/> <paramref name="ai0"/>,
+		/// <see langword="float"/> <paramref name="ai1"/>
+		/// </summary>
 		public delegate void PartProjectileSpawnFunc(int partID, Projectile projectile, IEntitySource source, float X, float Y, float SpeedX, float SpeedY, int Type, int Damage, float KnockBack, int Owner, float ai0, float ai1);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Projectile"/> <paramref name="projectile"/>,
+		/// <see cref="NPC"/> <paramref name="target"/>,
+		/// <see langword="int"/> <paramref name="damage"/>,
+		/// <see langword="float"/> <paramref name="knockback"/>,
+		/// <see langword="bool"/> <paramref name="crit"/>
+		/// </summary>
 		public delegate void PartProjectileHitNPCFunc(int partID, Projectile projectile, NPC target, int damage, float knockback, bool crit);
-		public delegate void PartProjectileHitPlayerFunc(int partID, Projectile projectile, Player targetpartID, int damage, bool crit);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Projectile"/> <paramref name="projectile"/>,
+		/// <see cref="Player"/> <paramref name="target"/>,
+		/// <see langword="int"/> <paramref name="damage"/>,
+		/// <see langword="bool"/> <paramref name="crit"/>
+		/// </summary>
+		public delegate void PartProjectileHitPlayerFunc(int partID, Projectile projectile, Player target, int damage, bool crit);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Player"/> <paramref name="player"/>,
+		/// <see cref="StatModifier"/> <paramref name="damage"/>,
+		/// <see langword="ref float"/> <paramref name="flat"/>
+		/// </summary>
 		public delegate void PartModifyWeaponDamageFunc(int partID, Player player, ref StatModifier damage, ref float flat);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Player"/> <paramref name="player"/>,
+		/// <see cref="StatModifier"/> <paramref name="knockback"/>,
+		/// <see langword="ref float"/> <paramref name="flat"/>
+		/// </summary>
 		public delegate void PartModifyWeaponKnockbackFunc(int partID, Player player, ref StatModifier knockback, ref float flat);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Player"/> <paramref name="player"/>,
+		/// <see langword="ref int"/> <paramref name="crit"/>
+		/// </summary>
 		public delegate void PartModifyWeaponCritFunc(int partID, Player player, ref int crit);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Player"/> <paramref name="player"/>,
+		/// <see cref="Item"/> <paramref name="item"/>,
+		/// <see cref="TileDestructionContext"/> <paramref name="context"/>,
+		/// <see langword="ref int"/> <paramref name="power"/>
+		/// </summary>
+		public delegate void PartToolPowerFunc(int partID, Player player, Item item, TileDestructionContext context, ref int power);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Player"/> <paramref name="player"/>,
+		/// <see cref="Item"/> <paramref name="item"/>,
+		/// <see langword="int"/> <paramref name="x"/>
+		/// <see langword="int"/> <paramref name="y"/>
+		/// <see cref="TileDestructionContext"/> <paramref name="context"/>
+		/// </summary>
+		public delegate void PartTileDestructionFunc(int partID, Player player, Item item, int x, int y, TileDestructionContext context);
 
 		internal static PartsDictionary<ItemPart> partData;
 
@@ -37,7 +114,7 @@ namespace TerrariansConstructLib.Items {
 				partData.Get(material, partID).tooltip = tooltip;
 		}
 
-		public ModifierText GetModifierText()
+		public ModifierText? GetModifierText()
 			=> GetGlobalModifierText(material, partID);
 
 		/// <summary>
@@ -45,7 +122,7 @@ namespace TerrariansConstructLib.Items {
 		/// </summary>
 		/// <param name="material">The material</param>
 		/// <param name="partID">The part ID</param>
-		public static ModifierText GetGlobalModifierText(Material material, int partID) {
+		public static ModifierText? GetGlobalModifierText(Material material, int partID) {
 			//Unloaded/Unknown material should not be tampered with
 			if (material is not UnloadedMaterial or UnknownMaterial)
 				return partData.Get(material, partID).modifierText;
@@ -63,9 +140,9 @@ namespace TerrariansConstructLib.Items {
 		/// </summary>
 		public int partID;
 
-		internal string tooltip;
+		internal string? tooltip;
 
-		internal ModifierText modifierText;
+		internal ModifierText? modifierText;
 
 		public virtual ItemPart Clone() => new(){
 			material = material.Clone(),
@@ -74,29 +151,33 @@ namespace TerrariansConstructLib.Items {
 			modifierText = modifierText
 		};
 
-		public PartItemFunc SetItemDefaults => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).setItemDefaults;
+		public PartItemFunc? SetItemDefaults => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).setItemDefaults;
 
-		public PartProjectileFunc SetProjectileDefaults => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).setProjectileDefaults;
+		public PartProjectileFunc? SetProjectileDefaults => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).setProjectileDefaults;
 
-		public PartPlayerFunc OnUse => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onUse;
+		public PartPlayerFunc? OnUse => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onUse;
 
-		public PartPlayerFunc OnHold => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onHold;
+		public PartPlayerFunc? OnHold => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onHold;
 
-		public PartPlayerFunc OnGenericHotkeyUsage => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onGenericHotkeyUsage;
+		public PartPlayerFunc? OnGenericHotkeyUsage => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onGenericHotkeyUsage;
 
-		public PartProjectileSpawnFunc OnProjectileSpawn => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onProjectileSpawn;
+		public PartProjectileSpawnFunc? OnProjectileSpawn => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onProjectileSpawn;
 
-		public PartProjectileHitNPCFunc OnHitNPC => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onHitNPC;
+		public PartProjectileHitNPCFunc? OnHitNPC => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onHitNPC;
 
-		public PartProjectileHitPlayerFunc OnHitPlayer => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onHitPlayer;
+		public PartProjectileHitPlayerFunc? OnHitPlayer => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onHitPlayer;
 
-		public PartModifyWeaponDamageFunc ModifyWeaponDamage => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyWeaponDamage;
+		public PartModifyWeaponDamageFunc? ModifyWeaponDamage => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyWeaponDamage;
 
-		public PartModifyWeaponKnockbackFunc ModifyWeaponKnockback => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyWeaponKnockback;
+		public PartModifyWeaponKnockbackFunc? ModifyWeaponKnockback => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyWeaponKnockback;
 
-		public PartModifyWeaponCritFunc ModifyWeaponCrit => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyWeaponCrit;
+		public PartModifyWeaponCritFunc? ModifyWeaponCrit => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyWeaponCrit;
 
-		public PartProjectileFunc ProjectileAI => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).projectileAI;
+		public PartProjectileFunc? ProjectileAI => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).projectileAI;
+
+		public PartToolPowerFunc? ModifyToolPower => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyToolPower;
+
+		public PartTileDestructionFunc? OnTileDestroyed => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onTileDestroyed;
 
 		public TagCompound SerializeData() {
 			TagCompound tag = new();
@@ -143,10 +224,10 @@ namespace TerrariansConstructLib.Items {
 				};
 			}
 
-			return (ItemPart)partData.Get(material, id).MemberwiseClone();
+			return (ItemPart)partData!.Get(material, id).MemberwiseClone();
 		};
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 			=> obj is ItemPart part && material == part.material && partID == part.partID;
 
 		public override int GetHashCode()

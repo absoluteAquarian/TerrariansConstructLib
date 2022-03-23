@@ -1,7 +1,6 @@
 ﻿using Terraria;
 using Terraria.DataStructures;
 using TerrariansConstructLib.Items;
-using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Projectiles;
 
 namespace TerrariansConstructLib.API.Edits.Detours {
@@ -13,7 +12,7 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 
 			if (projectile.ModProjectile is BaseTCProjectile tcProj) {
 				//If the projectile wasn't spawned from an item, kill it immediately
-				BaseTCItem tcItem;
+				BaseTCItem? tcItem;
 
 				if ((spawnSource is EntitySource_ItemUse sourceItem && (tcItem = sourceItem.Item.ModItem as BaseTCItem) is not null)
 					|| (spawnSource is EntitySource_ItemUse_WithAmmo sourceItem_WithAmmo && (tcItem = sourceItem_WithAmmo.Item.ModItem as BaseTCItem) is not null)){
@@ -28,7 +27,7 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 							partID = part.partID
 						};
 
-						tcProj.parts[i].OnProjectileSpawn(tcProj.parts[i].partID, projectile, spawnSource, X, Y, SpeedX, SpeedY, Type, Damage, KnockBack, Owner, ai0, ai1);
+						tcProj.parts[i].OnProjectileSpawn?.Invoke(tcProj.parts[i].partID, projectile, spawnSource, X, Y, SpeedX, SpeedY, Type, Damage, KnockBack, Owner, ai0, ai1);
 					}
 				} else {
 					projectile.Kill();

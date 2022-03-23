@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.Loader;
 
 namespace TerrariansConstructLib.API.Reflection {
 	//Copied from my game
@@ -29,8 +27,8 @@ namespace TerrariansConstructLib.API.Reflection {
 		public static object InvokeGetterFunction(string field, T instance) {
 			string name = "get_" + field;
 
-			Func<object> staticFunc = null;
-			if (!getterFuncs.TryGetValue(name, out Func<T, object> func) && !getterStaticFuncs.TryGetValue(name, out staticFunc)) {
+			Func<object>? staticFunc = null;
+			if (!getterFuncs.TryGetValue(name, out Func<T, object>? func) && !getterStaticFuncs.TryGetValue(name, out staticFunc)) {
 				CreateGetAccessor(field, out _);
 
 				_ = getterFuncs.TryGetValue(name, out func) || getterStaticFuncs.TryGetValue(name, out staticFunc);
@@ -63,8 +61,8 @@ namespace TerrariansConstructLib.API.Reflection {
 		public static void InvokeSetterFunction(string field, T instance, object obj) {
 			string name = "set_" + field;
 
-			Action<object> staticFunc = null;
-			if (!setterFuncs.TryGetValue(name, out Action<T, object> func) && !setterStaticFuncs.TryGetValue(name, out staticFunc)) {
+			Action<object>? staticFunc = null;
+			if (!setterFuncs.TryGetValue(name, out Action<T, object>? func) && !setterStaticFuncs.TryGetValue(name, out staticFunc)) {
 				CreateSetAccessor(field, out _);
 
 				_ = setterFuncs.TryGetValue(name, out func) || setterStaticFuncs.TryGetValue(name, out staticFunc);
@@ -95,7 +93,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (getterFuncs.ContainsKey(name) || getterStaticFuncs.ContainsKey(name))
 				return; //Already defined
 
-			FieldInfo fieldInfo = typeof(T).GetField(field, ReflectionHelper.AllFlags);
+			FieldInfo? fieldInfo = typeof(T).GetField(field, ReflectionHelper.AllFlags);
 			if (fieldInfo is null)
 				throw new Exception($"Field \"{typeof(T).FullName}::{field}\" could not be found");
 
@@ -145,7 +143,7 @@ namespace TerrariansConstructLib.API.Reflection {
 			if (setterFuncs.ContainsKey(name) || setterStaticFuncs.ContainsKey(name))
 				return; //Already defined
 
-			FieldInfo fieldInfo = typeof(T).GetField(field, ReflectionHelper.AllFlags);
+			FieldInfo? fieldInfo = typeof(T).GetField(field, ReflectionHelper.AllFlags);
 			if (fieldInfo is null)
 				throw new Exception($"Field \"{typeof(T).FullName}::{field}\" could not be found");
 

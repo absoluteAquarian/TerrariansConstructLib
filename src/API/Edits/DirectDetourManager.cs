@@ -29,7 +29,7 @@ namespace TerrariansConstructLib.API.Edits {
 		public static void Load() {
 			try {
 				// Usage: proper drawing of constructed items in tModLoader's config UI
-				IntermediateLanguageHook(typeof(Mod).Assembly.GetType("Terraria.ModLoader.Config.UI.ItemDefinitionOptionElement").GetCachedMethod("DrawSelf"),
+				IntermediateLanguageHook(typeof(Mod).Assembly.GetType("Terraria.ModLoader.Config.UI.ItemDefinitionOptionElement")!.GetCachedMethod("DrawSelf"),
 					typeof(MSIL.TML).GetCachedMethod(nameof(MSIL.TML.Patch_ItemDefinitionOptionElement_DrawSelf)));
 			} catch (Exception ex) {
 				throw new Exception("An error occurred while doing patching in TerrariansConstructLib." +
@@ -41,10 +41,10 @@ namespace TerrariansConstructLib.API.Edits {
 
 		private static MethodInfo GetCachedMethod(this Type type, string method) {
 			string key = $"{type.FullName}::{method}";
-			if (cachedMethods.TryGetValue(key, out MethodInfo value))
+			if (cachedMethods.TryGetValue(key, out MethodInfo? value))
 				return value;
 
-			return cachedMethods[key] = type.GetMethod(method, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+			return cachedMethods[key] = type.GetMethod(method, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)!;
 		}
 
 		public static void Unload() {

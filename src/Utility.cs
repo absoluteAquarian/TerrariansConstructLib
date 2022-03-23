@@ -1,13 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
 using TerrariansConstructLib.API.Reflection;
-using TerrariansConstructLib.Materials;
-using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib {
 	public static class Utility {
@@ -51,7 +50,7 @@ namespace TerrariansConstructLib {
 			float num4 = Main.mouseTextColor / 255f;
 			int a = Main.mouseTextColor;
 			//Main.instance._mouseTextCache.diff
-			byte diff = (byte)typeof(Main).GetNestedType("MouseTextCache").GetField("diff", BindingFlags.Public | BindingFlags.Instance).GetValue(ReflectionHelper<Main>.InvokeGetterFunction("_mouseTextCache", Main.instance));
+			byte diff = (byte)typeof(Main).GetNestedType("MouseTextCache")!.GetField("diff", BindingFlags.Public | BindingFlags.Instance)!.GetValue(ReflectionHelper<Main>.InvokeGetterFunction("_mouseTextCache", Main.instance))!;
 
 			Color black = new(num4, num4, num4, num4);
 
@@ -95,7 +94,7 @@ namespace TerrariansConstructLib {
 				black = new Color((byte)(180f * num4), (byte)(40f * num4), (byte)(255f * num4), a);
 
 			if (rare > 11)
-				black = (typeof(RarityLoader).GetCachedMethod("GetRarity").Invoke(null, new object[]{ rare }) as ModRarity).RarityColor * num4;
+				black = (typeof(RarityLoader).GetCachedMethod("GetRarity")!.Invoke(null, new object[]{ rare }) as ModRarity)!.RarityColor * num4;
 
 			if (diff == 1)
 				black = new Color((byte)(Main.mcColor.R * num4), (byte)(Main.mcColor.G * num4), (byte)(Main.mcColor.B * num4), a);
@@ -111,5 +110,8 @@ namespace TerrariansConstructLib {
 
 			return black;
 		}
+
+		public static double Average<T>(this IEnumerable<T> collection, Func<T, double> func, double defaultValueIfEmpty = 0)
+			=> !collection.Any() ? defaultValueIfEmpty : collection.Average(func);
 	}
 }

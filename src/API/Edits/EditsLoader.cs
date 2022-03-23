@@ -11,6 +11,8 @@
 			IL.Terraria.UI.ItemSlot.Draw_SpriteBatch_ItemArray_int_int_Vector2_Color += MSIL.Vanilla.Patch_ItemSlot_Draw;
 			IL.Terraria.DataStructures.PlayerDrawLayers.DrawPlayer_27_HeldItem += MSIL.Vanilla.Patch_PlayerDrawLayers_DrawPlayer_27_HeldItem;
 			IL.Terraria.Player.PickAmmo += MSIL.Vanilla.Patch_Player_PickAmmo;
+			IL.Terraria.Player.ItemCheck_UseMiningTools_ActuallyUseMiningTool += MSIL.Vanilla.Patch_Player_ItemCheck_UseMiningTools_ActuallyUseMiningTool;
+			IL.Terraria.Player.ItemCheck_UseMiningTools_TryHittingWall += MSIL.Vanilla.Patch_Player_ItemCheck_UseMiningTools_TryHittingWall;
 
 			ILHelper.DeInitMonoModDumps();
 

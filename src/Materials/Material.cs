@@ -1,31 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using TerrariansConstructLib.API.Stats;
 
 namespace TerrariansConstructLib.Materials {
 	public class Material : TagSerializable {
 		/// <summary>
 		/// The ID of the item used as the material
 		/// </summary>
-		public int type = -1;
+		public int Type { get; internal init; } = -1;
 
-		public virtual Material Clone() => new() { type = type };
+		internal static Dictionary<int, IPartStats[]> statsByMaterialID;
+		internal static Dictionary<int, int> worthByMaterialID;
+
+		public virtual Material Clone() => new() { Type = Type };
 
 		public virtual string GetModName() {
-			if (ItemID.Search.TryGetName(type, out _))
+			if (ItemID.Search.TryGetName(Type, out _))
 				return "Terraria";
-			else if (ModContent.GetModItem(type) is ModItem mItem)
+			else if (ModContent.GetModItem(Type) is ModItem mItem)
 				return mItem.Mod.Name;
 			throw new Exception("Invalid material type ID");
 		}
 
 		public virtual string GetName() {
-			if (ItemID.Search.TryGetName(type, out string materialName))
+			if (ItemID.Search.TryGetName(Type, out string materialName))
 				return materialName;
-			else if (ModContent.GetModItem(type) is ModItem mItem)
+			else if (ModContent.GetModItem(Type) is ModItem mItem)
 				return mItem.Name;
 			throw new Exception("Invalid material type ID");
 		}
@@ -34,25 +39,31 @@ namespace TerrariansConstructLib.Materials {
 		/// Gets the name for this material
 		/// </summary>
 		public virtual string GetItemName()
-			=> Lang.GetItemNameValue(type);
+			=> Lang.GetItemNameValue(Type);
+
+		public IPartStats? GetStat(StatType type)
+			=> statsByMaterialID[Type].FirstOrDefault(s => s.Type == type);
+
+		public S? GetStat<S>(StatType type) where S : class, IPartStats
+			=> statsByMaterialID[Type].FirstOrDefault(s => s.Type == type && s is S) is S s ? s : null;
 
 		/// <summary>
 		/// Gets an instance of the item this material references
 		/// </summary>
 		/// <returns>A new <see cref="Item"/> instance, or <see langword="null"/> if this material is an <seealso cref="UnloadedMaterial"/> or <seealso cref="UnknownMaterial"/></returns>
-		public Item AsItem() => this is UnloadedMaterial or UnknownMaterial ? null : new(type);
+		public Item? AsItem() => this is UnloadedMaterial or UnknownMaterial ? null : new(Type);
 
 		public static Material FromItem(int type)
-			=> new(){ type = type };
+			=> new(){ Type = type };
 
 		public virtual TagCompound SerializeData() {
 			TagCompound tag = new();
 
-			if (type < ItemID.Count) {
+			if (Type < ItemID.Count) {
 				tag["mod"] = "Terraria";
-				tag["id"] = type;
+				tag["id"] = Type;
 			} else {
-				if (ModContent.GetModItem(type) is not ModItem item)
+				if (ModContent.GetModItem(Type) is not ModItem item)
 					throw new Exception("Material item type was invalid");
 
 				tag["mod"] = item.Mod.Name;
@@ -73,25 +84,25 @@ namespace TerrariansConstructLib.Materials {
 
 				if (!ModLoader.TryGetMod(mod, out Mod instance) || !instance.TryFind(name, out ModItem item)) {
 					//Inform the thing using the material that it was an unloaded material
-					return null;
+					return null!;
 				}
 
 				type = item.Type;
 			}
 
 			return new Material(){
-				type = type
+				Type = type
 			};
 		};
 
-		public override bool Equals(object obj)
-			=> obj is Material material && type == material.type;
+		public override bool Equals(object? obj)
+			=> obj is Material material && Type == material.Type;
 
 		public override int GetHashCode()
-			=> type.GetHashCode();
+			=> Type.GetHashCode();
 
 		public static bool operator ==(Material left, Material right)
-			=> left.type == right.type;
+			=> left.Type == right.Type;
 
 		public static bool operator !=(Material left, Material right)
 			=> !(left == right);

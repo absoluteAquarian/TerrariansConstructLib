@@ -1,29 +1,22 @@
 ﻿using System.Collections.Generic;
-using TerrariansConstructLib.Items;
+using System.Linq;
+using TerrariansConstructLib.Materials;
 
 namespace TerrariansConstructLib.API.Commands {
-	internal class ListUsedMaterials : RegistryCommand<ItemPart> {
-		public override string ChatString => "Known Materials:";
+	internal class ListUsedMaterials : RegistryCommand<Material> {
+		public override string ChatString => "Registered Materials:";
 
 		public override string UsageString => "/lm";
 
 		public override string Command => "lm";
 
-		public override string Description => "Lists all known materials used by parts loaded by Terrarians' Construct";
+		public override string Description => "Lists all registered materials with stats";
 
-		public override Dictionary<int, ItemPart> GetRegistry() {
-			HashSet<int> usedIDs = new();
-			Dictionary<int, ItemPart> dict = new();
+		public override Dictionary<int, Material> GetRegistry() => Material.statsByMaterialID
+			.Select(kvp => new KeyValuePair<int, Material>(kvp.Key, Material.FromItem(kvp.Key)))
+			.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-			foreach (var (id, part) in ItemPartItem.registeredPartsByItemID) {
-				if (usedIDs.Add(part.material.type))
-					dict.Add(id, part);
-			}
-
-			return dict;
-		}
-
-		public override string GetReplyString(int id, ItemPart data)
-			=> $"Item ID: \"{data.material.GetModName()}:{data.material.GetItemName()}\" ({data.material.type})";
+		public override string GetReplyString(int id, Material data)
+			=> $"Item ID: \"{data.GetModName()}:{data.GetItemName()}\" ({data.Type})";
 	}
 }

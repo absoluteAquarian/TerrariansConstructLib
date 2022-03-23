@@ -36,7 +36,7 @@ namespace TerrariansConstructLib.API {
 				material = parts[i].material;
 				partID = parts[i].partID;
 
-				if(!partsDictionary.TryGet(material, partID, out object partsSubDictionary))
+				if(!partsDictionary!.TryGet(material, partID, out object? partsSubDictionary))
 					partsDictionary.Set(material, partID, partsSubDictionary = new PartsDictionary<object>());
 
 				partsDictionary = partsSubDictionary as PartsDictionary<object>;
@@ -45,7 +45,7 @@ namespace TerrariansConstructLib.API {
 			//"partsDictionary" is now set to the final step in the tree.  Initialize it if necessary
 			material = parts[^1].material;
 			partID = parts[^1].partID;
-			if (!partsDictionary.TryGet(material, partID, out object texture)) {
+			if (!partsDictionary!.TryGet(material, partID, out object? texture)) {
 				if (!AssetRepository.IsMainThread) {
 					ManualResetEvent evt = new(false);
 				
@@ -58,10 +58,10 @@ namespace TerrariansConstructLib.API {
 				} else
 					texture = BuildTexture(registeredItemID, parts);
 
-				partsDictionary.Set(material, partID, texture);
+				partsDictionary.Set(material, partID, texture!);
 			}
 
-			return texture as Texture2D;
+			return (texture as Texture2D)!;
 		}
 
 		public void Clear()
@@ -88,24 +88,29 @@ namespace TerrariansConstructLib.API {
 			}
 		}
 
+		private static Dictionary<int, int> GenerateHashmap(ItemPart[] parts)
+			=> parts.ToDictionary(part => part.partID, part => (from p in parts where p.partID == part.partID select p).Count());
+
 		private static Texture2D BuildTexture(int registeredItemID, ItemPart[] parts) {
 			string visualsFolder = ItemRegistry.registeredIDs[registeredItemID].partVisualsFolder;
 
-			Texture2D partTexture = GetVisualTexture(visualsFolder, parts[^1]);
+			var hashmap = GenerateHashmap(parts);
+
+			Texture2D partTexture = GetVisualTexture(visualsFolder, parts[^1], hashmap);
 			Texture2D texture = new(Main.graphics.GraphicsDevice, partTexture.Width, partTexture.Height);
 
 			ApplyPixels(registeredItemID, texture, partTexture);
 
 			//Parts at the front of the array should be on top of parts at the bottom
 			for (int i = parts.Length - 2; i >= 0; i--) {
-				partTexture = GetVisualTexture(visualsFolder, parts[i]);
+				partTexture = GetVisualTexture(visualsFolder, parts[i], hashmap);
 
 				ApplyPixels(registeredItemID, texture, partTexture);
 			}
 
 			if (SaveGeneratedTexturesToFiles) {
 				string textureImage = ItemRegistry.registeredIDs[registeredItemID].internalName + "_"
-					+ string.Join("_", parts.Select(p => "M" + (p.material is UnloadedMaterial ? "U" : p.material is UnknownMaterial ? "K" : p.material.type.ToString())
+					+ string.Join("_", parts.Select(p => "M" + (p.material is UnloadedMaterial ? "U" : p.material is UnknownMaterial ? "K" : p.material.Type.ToString())
 						+ "+P" + p.partID));
 
 				string path = Program.SavePath;
@@ -121,8 +126,11 @@ namespace TerrariansConstructLib.API {
 			return texture;
 		}
 
-		private static Texture2D GetVisualTexture(string visualsFolder, ItemPart part) {
-			string path = visualsFolder + "/" + PartRegistry.registeredIDs[part.partID].internalName + "/" + part.material.GetName();
+		private static Texture2D GetVisualTexture(string visualsFolder, ItemPart part, Dictionary<int, int> hashmap) {
+			hashmap[part.partID]--;
+			int numCount = hashmap[part.partID];
+
+			string path = visualsFolder + "/" + PartRegistry.registeredIDs[part.partID].internalName + "/" + (numCount > 0 ? numCount + "_" : "") + part.material.GetName();
 
 			if (CoreLibMod.Instance.RequestAssetIfExists<Texture2D>(path, out var asset))
 				return asset.Value;

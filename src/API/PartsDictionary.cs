@@ -6,21 +6,24 @@ using TerrariansConstructLib.Registry;
 namespace TerrariansConstructLib.API {
 	public class PartsDictionary<T> : Dictionary<int, Dictionary<int, T>> {
 		public T Get(Material material, int partID) {
-			int materialType = material.type;
+			int materialType = material.Type;
+			if (!Material.statsByMaterialID.ContainsKey(materialType))
+				throw new ArgumentException($"Material was not registered: \"{material.GetItemName()}\" (ID: {material.Type})");
+
 			if (!TryGetValue(materialType, out var dictByPartID))
-				throw new ArgumentException($"Unknown material type: \"{material.GetItemName()}\" (ID: {material})");
+				throw new ArgumentException($"Unknown material type: \"{material.GetItemName()}\" (ID: {material.Type})");
 
 			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new Exception($"Part ID {partID} was invalid");
 
-			if (!dictByPartID.TryGetValue(partID, out T value))
-				throw new ArgumentException($"Material type \"{material.GetItemName()}\" (ID: {material.type}) did not have an entry for part ID {partID}");
+			if (!dictByPartID.TryGetValue(partID, out T? value))
+				throw new ArgumentException($"Material type \"{material.GetItemName()}\" (ID: {material.Type}) did not have an entry for part ID {partID}");
 
 			return value;
 		}
 
-		public bool TryGet(Material material, int partID, out T value) {
-			int materialType = material.type;
+		public bool TryGet(Material material, int partID, out T? value) {
+			int materialType = material.Type;
 			if (!TryGetValue(materialType, out var dictByPartID)) {
 				value = default;
 				return false;
@@ -39,7 +42,7 @@ namespace TerrariansConstructLib.API {
 			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new Exception($"Part ID {partID} was invalid");
 
-			int materialType = material.type;
+			int materialType = material.Type;
 			if (!TryGetValue(materialType, out var dictByPartID))
 				dictByPartID = this[materialType] = new();
 
@@ -51,7 +54,7 @@ namespace TerrariansConstructLib.API {
 			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new Exception($"Part ID {partID} was invalid");
 
-			return TryGetValue(material.type, out var dictByPartID) && dictByPartID.ContainsKey(partID);
+			return TryGetValue(material.Type, out var dictByPartID) && dictByPartID.ContainsKey(partID);
 		}
 	}
 }

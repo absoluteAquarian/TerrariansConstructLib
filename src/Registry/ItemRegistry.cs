@@ -52,7 +52,7 @@ namespace TerrariansConstructLib.Registry {
 		}
 
 		internal static void Unload() {
-			registeredIDs = null;
+			registeredIDs = null!;
 			nextID = 0;
 		}
 

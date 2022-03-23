@@ -5,11 +5,19 @@ using Terraria;
 using Terraria.GameContent;
 using Terraria.GameInput;
 using Terraria.UI;
+using TerrariansConstructLib.Items;
+using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.API.UI {
 	public class TCUIItemSlot : UIElement {
 		public static class SlotContexts {
-			public const int ForgeUI = -10413;
+			public const int ForgeUIItemPartSlot = -10413;
+
+			public const int ForgeMaterialSlot = -20413;
+
+			public static bool IsValidContext(int context)
+				=> (context >= ForgeUIItemPartSlot && context < ForgeUIItemPartSlot + PartRegistry.Count)
+				|| (context >= ForgeMaterialSlot - 2 && context < ForgeMaterialSlot + PartMold.moldsByPartID.Count);
 		}
 
 		private int Context { get; set; }

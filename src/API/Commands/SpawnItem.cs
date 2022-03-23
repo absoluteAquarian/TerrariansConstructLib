@@ -44,7 +44,7 @@ namespace TerrariansConstructLib.API.Commands {
 
 				// TODO: material registry?
 				parts[i] = new(){
-					material = materialType == UnknownMaterial.StaticType ? new UnknownMaterial() : materialType == UnloadedMaterial.StaticType ? new UnloadedMaterial() : new Material(){ type = materialType },
+					material = materialType == UnknownMaterial.StaticType ? CoreLibMod.RegisteredMaterials.Unknown : materialType == UnloadedMaterial.StaticType ? CoreLibMod.RegisteredMaterials.Unloaded : new Material(){ Type = materialType },
 					partID = partID
 				};
 			}
@@ -57,7 +57,7 @@ namespace TerrariansConstructLib.API.Commands {
 			}
 
 			Item item = new(mItem.Type);
-			BaseTCItem tc = item.ModItem as BaseTCItem;
+			BaseTCItem tc = (item.ModItem as BaseTCItem)!;
 
 			if (data.validPartIDs.Length != tc.PartsCount || !Array.TrueForAll(parts, part => tc.parts.IsPartIDValidForAnySlot(part.partID))) {
 				caller.Reply($"Requested part IDs did not match the expected sequence of valid part IDs for the registered item ID #{registeredItemID} ({data.mod.Name}:{data.internalName}).", Color.Red);

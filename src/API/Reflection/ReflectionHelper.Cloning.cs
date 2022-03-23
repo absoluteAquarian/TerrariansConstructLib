@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection.Emit;
-using System.Runtime.Loader;
 
 namespace TerrariansConstructLib.API.Reflection {
 	public static partial class ReflectionHelper<T> {
@@ -45,7 +44,7 @@ namespace TerrariansConstructLib.API.Reflection {
 
 			clone = (Func<T, T>)method.CreateDelegate(typeof(Func<T, T>));
 
-			CoreLibMod.UnloadReflection += () => clone = null;
+			CoreLibMod.UnloadReflection += () => clone = null!;
 		}
 	}
 }

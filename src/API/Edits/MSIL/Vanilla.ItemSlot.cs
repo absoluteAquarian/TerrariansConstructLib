@@ -18,13 +18,13 @@ using TerrariansConstructLib.Registry;
 namespace TerrariansConstructLib.API.Edits.MSIL {
 	internal static partial class Vanilla {
 		internal static void Patch_ItemSlot_Draw(ILContext il) {
-			MethodInfo Utils_Size_Texture2D = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Texture2D) });
-			MethodInfo Vector2_op_Multiply = typeof(Vector2).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(float) });
-			MethodInfo Vector2_op_Division = typeof(Vector2).GetMethod("op_Division", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(float) });
-			MethodInfo Vector2_op_Addition = typeof(Vector2).GetMethod("op_Addition", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(Vector2) });
-			MethodInfo Color_get_White = typeof(Color).GetProperty("White", BindingFlags.Public | BindingFlags.Static).GetGetMethod();
-			MethodInfo Color_op_Multiply = typeof(Color).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Color), typeof(float) });
-			MethodInfo Utils_Size_Rectangle = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Rectangle) });
+			MethodInfo Utils_Size_Texture2D = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Texture2D) })!;
+			MethodInfo Vector2_op_Multiply = typeof(Vector2).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(float) })!;
+			MethodInfo Vector2_op_Division = typeof(Vector2).GetMethod("op_Division", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(float) })!;
+			MethodInfo Vector2_op_Addition = typeof(Vector2).GetMethod("op_Addition", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Vector2), typeof(Vector2) })!;
+			MethodInfo Color_get_White = typeof(Color).GetProperty("White", BindingFlags.Public | BindingFlags.Static)!.GetGetMethod()!;
+			MethodInfo Color_op_Multiply = typeof(Color).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Color), typeof(float) })!;
+			MethodInfo Utils_Size_Rectangle = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Rectangle) })!;
 
 			ILHelper.EnsureAreNotNull(
 				(Utils_Size_Texture2D, typeof(Utils).FullName + "::Size(Texture2D)"),
@@ -63,7 +63,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			//  ldloc     'value'
 			c.Emit(OpCodes.Ldloc, 7);
 			c.EmitDelegate<Func<int, Texture2D, Texture2D>>((context, value) => {
-				if (context >= TCUIItemSlot.SlotContexts.ForgeUI && context < TCUIItemSlot.SlotContexts.ForgeUI + PartRegistry.Count)
+				if (TCUIItemSlot.SlotContexts.IsValidContext(context))
 					value = TextureAssets.InventoryBack5.Value;
 
 				return value;
@@ -99,7 +99,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			//  ldarg.2
 			c.Emit(OpCodes.Ldarg_2);
 
-			c.EmitDelegate<Func<Item, int, bool>>((item, context) => item.type <= ItemID.None || item.stack <= 0 || context < TCUIItemSlot.SlotContexts.ForgeUI || context >= TCUIItemSlot.SlotContexts.ForgeUI + PartRegistry.Count);
+			c.EmitDelegate<Func<Item, int, bool>>((item, context) => item.type <= ItemID.None || item.stack <= 0 || TCUIItemSlot.SlotContexts.IsValidContext(context));
 
 			c.Emit(OpCodes.Brtrue_S, postContextCheck);
 
@@ -153,11 +153,38 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			 */
 
 			c.EmitDelegate<Action<Texture2D, Vector2, Rectangle, Color, float, Vector2, float, SpriteEffects, float, int, int>>((value6, position, rectangle, color, rotation, origin, scale, effects, layerDepth, slot, context) => {
-				Texture2D texture = null;
+				Texture2D? texture = null;
 
-				int partID = context - TCUIItemSlot.SlotContexts.ForgeUI;
+				int partID = context - TCUIItemSlot.SlotContexts.ForgeUIItemPartSlot;
 
-				if (ModContent.RequestIfExists<Texture2D>(ItemPartItem.GetUnkownTexturePath(partID), out var asset, AssetRequestMode.ImmediateLoad)) {
+				bool hasAsset;
+				Asset<Texture2D> asset;
+				if (partID >= 0 && partID < PartRegistry.Count)
+					hasAsset = ModContent.RequestIfExists(ItemPartItem.GetUnkownTexturePath(partID), out asset, AssetRequestMode.ImmediateLoad);
+				else {
+					//Attempt to load a material item slot
+					int moldID = context - TCUIItemSlot.SlotContexts.ForgeMaterialSlot;
+
+					if (moldID == -2) {
+						//Wood icon
+						hasAsset = true;
+						asset = TextureAssets.Item[ItemID.Wood];
+					} else if (moldID == -1) {
+						//Shard icon
+						hasAsset = ModContent.RequestIfExists(ItemPartItem.GetUnkownTexturePath(CoreLibMod.RegisteredParts.Shard), out asset, AssetRequestMode.ImmediateLoad);
+					} else if (moldID >= 0 && moldID < PartMold.moldsByPartID.Count) {
+						//Mold icon
+						var mold = PartMold.moldsByPartID[moldID].complexPlatinum;
+
+						hasAsset = true;
+						asset = TextureAssets.Item[mold.Type];
+					} else {
+						hasAsset = false;
+						asset = null!;
+					}
+				}
+
+				if (hasAsset) {
 					texture = asset.Value;
 					rectangle = new(0, 0, texture.Width, texture.Height);
 					origin = rectangle.Size() / 2f;

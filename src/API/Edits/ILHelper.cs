@@ -1,6 +1,5 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using ReLogic.OS;
 using System;
 using System.IO;
 using System.Linq;
@@ -22,9 +21,9 @@ namespace TerrariansConstructLib.API.Edits {
 			else if(instr.Operand is ILLabel label)  //This label's target should NEVER be null!  If it is, the IL edit wouldn't load anyway
 				operand = $"IL_{label.Target.Offset :X5}";
 			else if(instr.OpCode == OpCodes.Switch)
-				operand = "(" + string.Join(", ", (instr.Operand as ILLabel[]).Select(l => $"IL_{l.Target.Offset :X5}")) + ")";
+				operand = "(" + string.Join(", ", (instr.Operand as ILLabel[])!.Select(l => $"IL_{l.Target.Offset :X5}")) + ")";
 			else
-				operand = instr.Operand.ToString();
+				operand = instr.Operand.ToString()!;
 		}
 
 		public static void CompleteLog(Mod mod, ILCursor c, bool beforeEdit = false){
@@ -147,7 +146,7 @@ namespace TerrariansConstructLib.API.Edits {
 			return $"{offset} {opcode}   {operand}";
 		}
 
-		public static void EnsureAreNotNull(params (MemberInfo member, string identifier)[] memberInfos) {
+		public static void EnsureAreNotNull(params (MemberInfo? member, string identifier)[] memberInfos) {
 			foreach (var (member, identifier) in memberInfos)
 				if (member is null)
 					throw new NullReferenceException($"Member reference \"{identifier}\" is null");

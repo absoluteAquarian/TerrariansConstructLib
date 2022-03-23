@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.GameContent.UI.Elements;
 using Terraria.UI;
@@ -10,21 +12,69 @@ namespace TerrariansConstructLib.API.UI {
 
 		public bool Dragging { get; set; }
 
-		public bool StopItemUse { get; private set; }
+		public readonly bool StopItemUse;
 
 		public int UIDelay = -1;
 
-		public UIDragablePanel(bool stopItemUse = true) {
+		public event Action OnMenuClose;
+		public UIPanel header;
+
+		public readonly Dictionary<string, UITextPanel<string>> menus;
+
+		public UIDragablePanel(bool stopItemUse, params string[] menuOptions) {
 			StopItemUse = stopItemUse;
+
+			SetPadding(0);
+
+			header = new UIPanel();
+			header.SetPadding(0);
+			header.Height.Set(30, 0f);
+			header.BackgroundColor.A = 255;
+			header.OnMouseDown += Header_MouseDown;
+			header.OnMouseUp += Header_MouseUp;
+			Append(header);
+
+			var closeButton = new UITextPanel<char>('X');
+			closeButton.SetPadding(7);
+			closeButton.Width.Set(40, 0);
+			closeButton.Left.Set(-40, 1);
+			closeButton.BackgroundColor.A = 255;
+			closeButton.OnClick += (evt, element) => OnMenuClose?.Invoke();
+			header.Append(closeButton);
+
+			menus = new();
+
+			float left = 0;
+
+			for (int i = 0; i < menuOptions.Length; i++) {
+				UITextPanel<string> menu;
+				menus.Add(menuOptions[i], menu = new(menuOptions[i]));
+				menu.SetPadding(7);
+				menu.Left.Set(left, 0f);
+				menu.BackgroundColor.A = 255;
+				menu.Recalculate();
+
+				left += menu.GetDimensions().Width + 10;
+			}
 		}
 
-		public override void MouseDown(UIMouseEvent evt) {
+		public override void OnInitialize(){
+			base.OnInitialize();
+			header.Width = Width;
+		}
+
+		public override void Recalculate(){
+			base.Recalculate();
+			header.Width = Width;
+		}
+
+		private void Header_MouseDown(UIMouseEvent evt, UIElement element) {
 			base.MouseDown(evt);
 
 			DragStart(evt);
 		}
 
-		public override void MouseUp(UIMouseEvent evt) {
+		private void Header_MouseUp(UIMouseEvent evt, UIElement element) {
 			base.MouseUp(evt);
 
 			DragEnd(evt);

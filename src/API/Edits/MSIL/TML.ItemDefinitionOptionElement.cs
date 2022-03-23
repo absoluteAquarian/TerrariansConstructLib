@@ -10,7 +10,7 @@ using TerrariansConstructLib.Items;
 namespace TerrariansConstructLib.API.Edits.MSIL {
 	internal static partial class TML {
 		internal static void Patch_ItemDefinitionOptionElement_DrawSelf(ILContext il) {
-			FieldInfo ItemDefinitionOptionElement_item = typeof(Mod).Assembly.GetType("Terraria.ModLoader.Config.UI.ItemDefinitionOptionElement").GetField("item", BindingFlags.Public | BindingFlags.Instance);
+			FieldInfo ItemDefinitionOptionElement_item = typeof(Mod).Assembly.GetType("Terraria.ModLoader.Config.UI.ItemDefinitionOptionElement")!.GetField("item", BindingFlags.Public | BindingFlags.Instance)!;
 
 			ILHelper.EnsureAreNotNull((ItemDefinitionOptionElement_item, "Terraria.ModLoader.Config.UI.ItemDefinitionOptionElement::item"));
 

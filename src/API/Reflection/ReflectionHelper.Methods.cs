@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -10,7 +9,7 @@ namespace TerrariansConstructLib.API.Reflection {
 	/// </summary>
 	/// <typeparam name="TType">The declaring type</typeparam>
 	public static class ReflectionHelperVoid<TType> {
-		private delegate void MethodDelegate(TType instance);
+		private delegate void MethodDelegate(TType? instance);
 		private delegate void StaticMethodDelegate();
 
 		private static readonly Dictionary<string, MethodDelegate> methodFuncs = new();
@@ -23,9 +22,9 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="instance">The instance.  If the method is <see langword="static"/>, pass <see langword="null"/> for this parameter.</param>
 		/// <exception cref="Exception"/>
 		/// <exception cref="InvalidOperationException"/>
-		public static void InvokeMethod(string method, TType instance) {
-			StaticMethodDelegate staticFunc = null;
-			if (!methodFuncs.TryGetValue(method, out MethodDelegate func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
+		public static void InvokeMethod(string method, TType? instance) {
+			StaticMethodDelegate? staticFunc = null;
+			if (!methodFuncs.TryGetValue(method, out MethodDelegate? func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
 				CreateMethod(method);
 
 				_ = methodFuncs.TryGetValue(method, out func) || staticMethodFuncs.TryGetValue(method, out staticFunc);
@@ -58,7 +57,7 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="method">The name of the method</param>
 		/// <exception cref="ArgumentException"/>
 		public static void CreateMethod(string method) {
-			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, Type.EmptyTypes);
+			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, Type.EmptyTypes)!;
 
 			if (methodFuncs.ContainsKey(method) || staticMethodFuncs.ContainsKey(method))
 				return;  //Already defined
@@ -101,7 +100,7 @@ namespace TerrariansConstructLib.API.Reflection {
 	/// <typeparam name="TType">The declaring type</typeparam>
 	/// <typeparam name="TReturn">The return type of the method</typeparam>
 	public static class ReflectionHelperReturn<TType, TReturn> {
-		private delegate TReturn MethodDelegate(TType instance);
+		private delegate TReturn MethodDelegate(TType? instance);
 		private delegate TReturn StaticMethodDelegate();
 
 		private static readonly Dictionary<string, MethodDelegate> methodFuncs = new();
@@ -115,9 +114,9 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <returns>The return value for the method</returns>
 		/// <exception cref="Exception"/>
 		/// <exception cref="InvalidOperationException"/>
-		public static TReturn InvokeMethod(string method, TType instance) {
-			StaticMethodDelegate staticFunc = null;
-			if (!methodFuncs.TryGetValue(method, out MethodDelegate func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
+		public static TReturn InvokeMethod(string method, TType? instance) {
+			StaticMethodDelegate? staticFunc = null;
+			if (!methodFuncs.TryGetValue(method, out MethodDelegate? func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
 				CreateMethod(method);
 
 				_ = methodFuncs.TryGetValue(method, out func) || staticMethodFuncs.TryGetValue(method, out staticFunc);
@@ -146,7 +145,7 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="method">The name of the method</param>
 		/// <exception cref="ArgumentException"/>
 		public static void CreateMethod(string method) {
-			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, Type.EmptyTypes);
+			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, Type.EmptyTypes)!;
 
 			if (methodFuncs.ContainsKey(method) || staticMethodFuncs.ContainsKey(method))
 				return;  //Already defined
@@ -189,7 +188,7 @@ namespace TerrariansConstructLib.API.Reflection {
 	/// <typeparam name="TType">The declaring type</typeparam>
 	/// <typeparam name="TArg">The type of the first argument</typeparam>
 	public static class ReflectionHelperVoid<TType, TArg> {
-		private delegate void MethodDelegate(TType instance, TArg arg);
+		private delegate void MethodDelegate(TType? instance, TArg arg);
 		private delegate void StaticMethodDelegate(TArg arg);
 
 		private static readonly Dictionary<string, MethodDelegate> methodFuncs = new();
@@ -203,9 +202,9 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="arg">The first argument</param>
 		/// <exception cref="Exception"/>
 		/// <exception cref="InvalidOperationException"/>
-		public static void InvokeMethod(string method, TType instance, TArg arg) {
-			StaticMethodDelegate staticFunc = null;
-			if (!methodFuncs.TryGetValue(method, out MethodDelegate func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
+		public static void InvokeMethod(string method, TType? instance, TArg arg) {
+			StaticMethodDelegate? staticFunc = null;
+			if (!methodFuncs.TryGetValue(method, out MethodDelegate? func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
 				CreateMethod(method);
 
 				_ = methodFuncs.TryGetValue(method, out func) || staticMethodFuncs.TryGetValue(method, out staticFunc);
@@ -238,7 +237,7 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="method">The name of the method</param>
 		/// <exception cref="ArgumentException"/>
 		public static void CreateMethod(string method) {
-			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, new Type[]{ typeof(TArg) });
+			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, new Type[]{ typeof(TArg) })!;
 
 			if (methodFuncs.ContainsKey(method) || staticMethodFuncs.ContainsKey(method))
 				return;  //Already defined
@@ -284,7 +283,7 @@ namespace TerrariansConstructLib.API.Reflection {
 	/// <typeparam name="TArg">The type of the first argument</typeparam>
 	/// <typeparam name="TReturn">The return type of the method</typeparam>
 	public static class ReflectionHelper<TType, TArg, TReturn> {
-		private delegate TReturn MethodDelegate(TType instance, TArg arg);
+		private delegate TReturn MethodDelegate(TType? instance, TArg arg);
 		private delegate TReturn StaticMethodDelegate(TArg arg);
 
 		private static readonly Dictionary<string, MethodDelegate> methodFuncs = new();
@@ -299,9 +298,9 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <returns>The return value for the method</returns>
 		/// <exception cref="Exception"/>
 		/// <exception cref="InvalidOperationException"/>
-		public static TReturn InvokeMethod(string method, TType instance, TArg arg) {
-			StaticMethodDelegate staticFunc = null;
-			if (!methodFuncs.TryGetValue(method, out MethodDelegate func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
+		public static TReturn InvokeMethod(string method, TType? instance, TArg arg) {
+			StaticMethodDelegate? staticFunc = null;
+			if (!methodFuncs.TryGetValue(method, out MethodDelegate? func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
 				CreateMethod(method);
 
 				_ = methodFuncs.TryGetValue(method, out func) || staticMethodFuncs.TryGetValue(method, out staticFunc);
@@ -330,7 +329,7 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="method">The name of the method</param>
 		/// <exception cref="ArgumentException"/>
 		public static void CreateMethod(string method) {
-			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, new Type[]{ typeof(TArg) });
+			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, new Type[]{ typeof(TArg) })!;
 
 			if (methodFuncs.ContainsKey(method) || staticMethodFuncs.ContainsKey(method))
 				return;  //Already defined
@@ -376,7 +375,7 @@ namespace TerrariansConstructLib.API.Reflection {
 	/// <typeparam name="TArg">The type of the first argument</typeparam>
 	/// <typeparam name="TArg2">The type of the second argument</typeparam>
 	public static class ReflectionHelperVoid<TType, TArg, TArg2> {
-		private delegate void MethodDelegate(TType instance, TArg arg, TArg2 arg2);
+		private delegate void MethodDelegate(TType? instance, TArg arg, TArg2 arg2);
 		private delegate void StaticMethodDelegate(TArg arg, TArg2 arg2);
 
 		private static readonly Dictionary<string, MethodDelegate> methodFuncs = new();
@@ -391,9 +390,9 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="arg2">The second argument</param>
 		/// <exception cref="Exception"/>
 		/// <exception cref="InvalidOperationException"/>
-		public static void InvokeMethod(string method, TType instance, TArg arg, TArg2 arg2) {
-			StaticMethodDelegate staticFunc = null;
-			if (!methodFuncs.TryGetValue(method, out MethodDelegate func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
+		public static void InvokeMethod(string method, TType? instance, TArg arg, TArg2 arg2) {
+			StaticMethodDelegate? staticFunc = null;
+			if (!methodFuncs.TryGetValue(method, out MethodDelegate? func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
 				CreateMethod(method);
 
 				_ = methodFuncs.TryGetValue(method, out func) || staticMethodFuncs.TryGetValue(method, out staticFunc);
@@ -426,7 +425,7 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="method">The name of the method</param>
 		/// <exception cref="ArgumentException"/>
 		public static void CreateMethod(string method) {
-			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, new Type[]{ typeof(TArg), typeof(TArg2) });
+			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, new Type[]{ typeof(TArg), typeof(TArg2) })!;
 
 			if (methodFuncs.ContainsKey(method) || staticMethodFuncs.ContainsKey(method))
 				return;  //Already defined
@@ -474,7 +473,7 @@ namespace TerrariansConstructLib.API.Reflection {
 	/// <typeparam name="TArg2">The type of the second argument</typeparam>
 	/// <typeparam name="TReturn">The return type of the method</typeparam>
 	public static class ReflectionHelper<TType, TArg, TArg2, TReturn> {
-		private delegate TReturn MethodDelegate(TType instance, TArg arg, TArg2 arg2);
+		private delegate TReturn MethodDelegate(TType? instance, TArg arg, TArg2 arg2);
 		private delegate TReturn StaticMethodDelegate(TArg arg, TArg2 arg2);
 
 		private static readonly Dictionary<string, MethodDelegate> methodFuncs = new();
@@ -490,9 +489,9 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <returns>The return value for the method</returns>
 		/// <exception cref="Exception"/>
 		/// <exception cref="InvalidOperationException"/>
-		public static TReturn InvokeMethod(string method, TType instance, TArg arg, TArg2 arg2) {
-			StaticMethodDelegate staticFunc = null;
-			if (!methodFuncs.TryGetValue(method, out MethodDelegate func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
+		public static TReturn InvokeMethod(string method, TType? instance, TArg arg, TArg2 arg2) {
+			StaticMethodDelegate? staticFunc = null;
+			if (!methodFuncs.TryGetValue(method, out MethodDelegate? func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
 				CreateMethod(method);
 
 				_ = methodFuncs.TryGetValue(method, out func) || staticMethodFuncs.TryGetValue(method, out staticFunc);
@@ -521,7 +520,7 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="method">The name of the method</param>
 		/// <exception cref="ArgumentException"/>
 		public static void CreateMethod(string method) {
-			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, new Type[]{ typeof(TArg), typeof(TArg2) });
+			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, new Type[]{ typeof(TArg), typeof(TArg2) })!;
 
 			if (methodFuncs.ContainsKey(method) || staticMethodFuncs.ContainsKey(method))
 				return;  //Already defined
@@ -569,7 +568,7 @@ namespace TerrariansConstructLib.API.Reflection {
 	/// <typeparam name="TArg2">The type of the second argument</typeparam>
 	/// <typeparam name="TArg3">The type of the third argument</typeparam>
 	public static class ReflectionHelperVoid<TType, TArg, TArg2, TArg3> {
-		private delegate void MethodDelegate(TType instance, TArg arg, TArg2 arg2, TArg3 arg3);
+		private delegate void MethodDelegate(TType? instance, TArg arg, TArg2 arg2, TArg3 arg3);
 		private delegate void StaticMethodDelegate(TArg arg, TArg2 arg2, TArg3 arg3);
 
 		private static readonly Dictionary<string, MethodDelegate> methodFuncs = new();
@@ -585,9 +584,9 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="arg3">The third argument</param>
 		/// <exception cref="Exception"/>
 		/// <exception cref="InvalidOperationException"/>
-		public static void InvokeMethod(string method, TType instance, TArg arg, TArg2 arg2, TArg3 arg3) {
-			StaticMethodDelegate staticFunc = null;
-			if (!methodFuncs.TryGetValue(method, out MethodDelegate func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
+		public static void InvokeMethod(string method, TType? instance, TArg arg, TArg2 arg2, TArg3 arg3) {
+			StaticMethodDelegate? staticFunc = null;
+			if (!methodFuncs.TryGetValue(method, out MethodDelegate? func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
 				CreateMethod(method);
 
 				_ = methodFuncs.TryGetValue(method, out func) || staticMethodFuncs.TryGetValue(method, out staticFunc);
@@ -620,7 +619,7 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="method">The name of the method</param>
 		/// <exception cref="ArgumentException"/>
 		public static void CreateMethod(string method) {
-			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, new Type[]{ typeof(TArg), typeof(TArg2), typeof(TArg3) });
+			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, new Type[]{ typeof(TArg), typeof(TArg2), typeof(TArg3) })!;
 
 			if (methodFuncs.ContainsKey(method) || staticMethodFuncs.ContainsKey(method))
 				return;  //Already defined
@@ -670,7 +669,7 @@ namespace TerrariansConstructLib.API.Reflection {
 	/// <typeparam name="TArg3">The type of the third argument</typeparam>
 	/// <typeparam name="TReturn">The return type of the method</typeparam>
 	public static class ReflectionHelper<TType, TArg, TArg2, TArg3, TReturn> {
-		private delegate TReturn MethodDelegate(TType instance, TArg arg, TArg2 arg2, TArg3 arg3);
+		private delegate TReturn MethodDelegate(TType? instance, TArg arg, TArg2 arg2, TArg3 arg3);
 		private delegate TReturn StaticMethodDelegate(TArg arg, TArg2 arg2, TArg3 arg3);
 
 		private static readonly Dictionary<string, MethodDelegate> methodFuncs = new();
@@ -687,9 +686,9 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <returns>The return value for the method</returns>
 		/// <exception cref="Exception"/>
 		/// <exception cref="InvalidOperationException"/>
-		public static TReturn InvokeMethod(string method, TType instance, TArg arg, TArg2 arg2, TArg3 arg3) {
-			StaticMethodDelegate staticFunc = null;
-			if (!methodFuncs.TryGetValue(method, out MethodDelegate func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
+		public static TReturn InvokeMethod(string method, TType? instance, TArg arg, TArg2 arg2, TArg3 arg3) {
+			StaticMethodDelegate? staticFunc = null;
+			if (!methodFuncs.TryGetValue(method, out MethodDelegate? func) && !staticMethodFuncs.TryGetValue(method, out staticFunc)) {
 				CreateMethod(method);
 
 				_ = methodFuncs.TryGetValue(method, out func) || staticMethodFuncs.TryGetValue(method, out staticFunc);
@@ -718,7 +717,7 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="method">The name of the method</param>
 		/// <exception cref="ArgumentException"/>
 		public static void CreateMethod(string method) {
-			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, new Type[]{ typeof(TArg), typeof(TArg2) });
+			MethodInfo methodInfo = typeof(TType).GetMethod(method, ReflectionHelper.AllFlags, new Type[]{ typeof(TArg), typeof(TArg2) })!;
 
 			if (methodFuncs.ContainsKey(method) || staticMethodFuncs.ContainsKey(method))
 				return;  //Already defined

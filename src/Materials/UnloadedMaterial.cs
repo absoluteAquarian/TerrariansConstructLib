@@ -17,13 +17,13 @@ namespace TerrariansConstructLib.Materials {
 		public static readonly int StaticType = -100413;
 
 		public UnloadedMaterial() {
-			type = StaticType;
+			Type = StaticType;
 		}
 
 		public override Material Clone() => new UnloadedMaterial() {
 			modName = modName,
 			itemName = itemName,
-			type = type
+			Type = Type
 		};
 
 		public override TagCompound SerializeData() {
@@ -39,10 +39,10 @@ namespace TerrariansConstructLib.Materials {
 			string mod = tag.GetString("mod");
 			string name = tag.GetString("name");
 
-			return new UnloadedMaterial(){
+			return new UnloadedMaterial() {
 				modName = mod,
 				itemName = name,
-				type = StaticType
+				Type = StaticType
 			};
 		};
 	}

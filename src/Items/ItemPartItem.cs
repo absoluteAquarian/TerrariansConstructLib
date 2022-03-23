@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using Terraria;
+using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
+using TerrariansConstructLib.API.Stats;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
 
@@ -70,8 +70,8 @@ namespace TerrariansConstructLib.Items {
 			this.part = part;
 		}
 
-		public static ItemPartItem Create(Material material, int partID, ItemPartActionsBuilder builder, string tooltip, ModifierText modifierText) {
-			int materialType = material.type;
+		public static ItemPartItem Create(Material material, int partID, ItemPartActionsBuilder builder, string? tooltip, ModifierText? modifierText) {
+			int materialType = material.Type;
 
 			if (!PartActions.builders.TryGetValue(materialType, out var buildersByPartID))
 				buildersByPartID = PartActions.builders[materialType] = new();
@@ -91,14 +91,14 @@ namespace TerrariansConstructLib.Items {
 
 		public override bool CanStack(Item item2)
 			=> item2.ModItem is ItemPartItem pItem
-				&& part.material.type == pItem.part.material.type && part.partID == pItem.part.partID;
+				&& part.material.Type == pItem.part.material.Type && part.partID == pItem.part.partID;
 
 		public override bool CanStackInWorld(Item item2)
 			=> CanStack(item2);
 
 		public override ModItem Clone(Item item) {
 			ModItem clone = base.Clone(item);
-			(clone as ItemPartItem).part = part.Clone();
+			(clone as ItemPartItem)!.part = part.Clone();
 			return clone;
 		}
 
@@ -112,17 +112,17 @@ namespace TerrariansConstructLib.Items {
 
 			DisplayName.SetDefault(name + " " + PartRegistry.registeredIDs[part.partID].name);
 
-			if (part.tooltip is not null)
-				Tooltip.SetDefault(part.tooltip);
+			Tooltip.SetDefault((part.tooltip is not null ? part.tooltip + "\n" : "")
+				+ "<STATS>");
 		}
 
 		public override void SetDefaults() {
 			part = registeredPartsByItemID[Type];
 
-			Item materialItem = part.material.AsItem();
+			Item? materialItem = part.material.AsItem();
 
 			Item.DamageType = DamageClass.NoScaling;
-			Item.rare = materialItem.rare;
+			Item.rare = materialItem?.rare ?? ItemRarityID.White;  //Unknown and Unloaded materials return null for the item
 		}
 
 		public override void AddRecipes() {
@@ -131,49 +131,65 @@ namespace TerrariansConstructLib.Items {
 			if (part.material is UnloadedMaterial or UnknownMaterial)
 				return;  //No recipe
 
-			PartMold.TryGetMold(part.partID, true, false, out var simpleMold);
 			var partData = PartRegistry.registeredIDs[part.partID];
 
 			// TODO: forge tile?
 
-			AddRecipeFromMold(part, partData, simpleMold);
-
+			if (PartMold.TryGetMold(part.partID, true, false, out var simpleMold))
+				AddRecipeFromMold(part, partData, simpleMold);
 			if (PartMold.TryGetMold(part.partID, false, false, out var complexMold))
 				AddRecipeFromMold(part, partData, complexMold);
 			if (PartMold.TryGetMold(part.partID, false, true, out var complexPlatinumMold))
 				AddRecipeFromMold(part, partData, complexPlatinumMold);
 		}
 
-		private void AddRecipeFromMold(ItemPart part, PartRegistry.Data partData, PartMold mold) {
+		private void AddRecipeFromMold(ItemPart part, PartRegistry.Data partData, PartMold? mold) {
 			NetworkText text = NetworkText.FromLiteral("Crafted in the Forge UI");
+
+			int materialWorth = Material.worthByMaterialID[part.material.Type];
+			int totalCostTimesTwo = materialWorth * partData.materialCost;
 			
 			if (part.partID == CoreLibMod.RegisteredParts.Shard) {
-				CreateRecipe(2)
-					.AddIngredient(part.material.type, 1)
-					.AddIngredient(mold)
-					.AddCondition(text, r => false)
-					.Register();
+				//Only add a recipe if the material has a Shard part registered
+				if (itemPartToItemID.TryGet(part.material, part.partID, out _)) {
+					(materialWorth % 2 != 0 ? CreateRecipe(2) : CreateRecipe(1))
+						.AddIngredient(part.material.Type, materialWorth % 2 != 0 ? materialWorth : materialWorth / 2)
+						.AddIngredient(mold)
+						.AddCondition(text, r => false)
+						.Register();
+				}
 
 				return;
 			}
 
 			var recipe = CreateRecipe()
-				.AddIngredient(part.material.type, partData.materialCost / 2);
-			if (partData.materialCost % 2 != 0)
+				.AddIngredient(part.material.Type, totalCostTimesTwo / 2);
+			if (totalCostTimesTwo % 2 != 0)
 				recipe.AddIngredient(CoreLibMod.GetItemPartItemType(part.material, CoreLibMod.RegisteredParts.Shard), 1);
 
 			recipe.AddIngredient(mold)
 				.AddCondition(text, r => false)
 				.Register();
 
-			if (partData.materialCost % 2 != 0) {
+			if (totalCostTimesTwo % 2 != 0) {
 				//Add another recipe for an additional material item
 				CreateRecipe()
-					.AddIngredient(part.material.type, partData.materialCost / 2 + 1)
+					.AddIngredient(part.material.Type, totalCostTimesTwo / 2 + 1)
 					.AddIngredient(mold)
 					.AddCondition(text, r => false)
 					.Register();
 			}
+		}
+
+		public override void ModifyTooltips(List<TooltipLine> tooltips) {
+			StatType type = PartRegistry.registeredIDs[part.partID].type;
+
+			string? lines = part.material.GetStat(type)?.GetTooltipLines(PartRegistry.isAxePart[part.partID]);
+
+			if (lines is not null)
+				Utility.FindAndInsertLines(Mod, tooltips, "<STATS>", i => "PartStat_" + i, lines);
+			else
+				Utility.FindAndRemoveLine(tooltips, "<STATS>");
 		}
 
 		public override void SaveData(TagCompound tag) {
