@@ -91,7 +91,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 		}
 
 		internal static void Patch_Player_ItemCheck_UseMiningTools_ActuallyUseMiningTool(ILContext il) {
-			MethodInfo WorldGen_CanKillTile = typeof(WorldGen).GetMethod("CanKillTile", BindingFlags.Public | BindingFlags.Static)!;
+			MethodInfo WorldGen_CanKillTile = typeof(WorldGen).GetMethod("CanKillTile", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(int), typeof(int) })!;
 			MethodInfo AchievementsHelper_set_CurrentlyMining = typeof(AchievementsHelper).GetProperty("CurrentlyMining", BindingFlags.Public | BindingFlags.Static)!.GetGetMethod()!;
 
 			ILHelper.EnsureAreNotNull((WorldGen_CanKillTile, typeof(WorldGen).FullName + "::CanKillTile(int, int)"),
@@ -238,7 +238,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 		}
 
 		internal static void Patch_Player_PickTile(ILContext il) {
-			MethodInfo WorldGen_CanKillTile = typeof(WorldGen).GetMethod("CanKillTile", BindingFlags.Public | BindingFlags.Static)!;
+			MethodInfo WorldGen_CanKillTile = typeof(WorldGen).GetMethod("CanKillTile", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(int), typeof(int) })!;
 			ConstructorInfo StackTrace_ctor = typeof(StackTrace).GetConstructor(BindingFlags.Public | BindingFlags.Instance, new Type[]{ typeof(int), typeof(bool) })!;
 			MethodInfo AchievementsHelper_set_CurrentlyMining = typeof(AchievementsHelper).GetProperty("CurrentlyMining", BindingFlags.Public | BindingFlags.Static)!.GetGetMethod()!;
 
