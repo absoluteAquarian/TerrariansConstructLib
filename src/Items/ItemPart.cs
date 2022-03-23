@@ -96,6 +96,25 @@ namespace TerrariansConstructLib.Items {
 		/// <see cref="TileDestructionContext"/> <paramref name="context"/>
 		/// </summary>
 		public delegate void PartTileDestructionFunc(int partID, Player player, Item item, int x, int y, TileDestructionContext context);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Item"/> <paramref name="item"/>,
+		/// <see cref="Player"/> <paramref name="owner"/>,
+		/// <see cref="NPC"/> <paramref name="target"/>,
+		/// <see langword="int"/> <paramref name="damage"/>,
+		/// <see langword="float"/> <paramref name="knockback"/>,
+		/// <see langword="bool"/> <paramref name="crit"/>
+		/// </summary>
+		public delegate void PartItemHitNPCFunc(int partID, Item item, Player owner, NPC target, int damage, float knockback, bool crit);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Item"/> <paramref name="item"/>,
+		/// <see cref="Player"/> <paramref name="owner"/>,
+		/// <see cref="Player"/> <paramref name="target"/>,
+		/// <see langword="int"/> <paramref name="damage"/>,
+		/// <see langword="bool"/> <paramref name="crit"/>
+		/// </summary>
+		public delegate void PartItemHitPlayerFunc(int partID, Item item, Player owner, Player target, int damage, bool crit);
 
 		internal static PartsDictionary<ItemPart> partData;
 
@@ -163,9 +182,9 @@ namespace TerrariansConstructLib.Items {
 
 		public PartProjectileSpawnFunc? OnProjectileSpawn => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onProjectileSpawn;
 
-		public PartProjectileHitNPCFunc? OnHitNPC => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onHitNPC;
+		public PartProjectileHitNPCFunc? OnProjectileHitNPC => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onProjectileHitNPC;
 
-		public PartProjectileHitPlayerFunc? OnHitPlayer => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onHitPlayer;
+		public PartProjectileHitPlayerFunc? OnProjectileHitPlayer => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onProjectileHitPlayer;
 
 		public PartModifyWeaponDamageFunc? ModifyWeaponDamage => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyWeaponDamage;
 
@@ -178,6 +197,10 @@ namespace TerrariansConstructLib.Items {
 		public PartToolPowerFunc? ModifyToolPower => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyToolPower;
 
 		public PartTileDestructionFunc? OnTileDestroyed => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onTileDestroyed;
+
+		public PartItemHitNPCFunc? OnItemHitNPC => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onItemHitNPC;
+
+		public PartItemHitPlayerFunc? OnItemHitPlayer => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onItemHitPlayer;
 
 		public TagCompound SerializeData() {
 			TagCompound tag = new();

@@ -8,14 +8,16 @@ namespace TerrariansConstructLib {
 		internal ItemPart.PartPlayerFunc onHold;
 		internal ItemPart.PartPlayerFunc onGenericHotkeyUsage;
 		internal ItemPart.PartProjectileSpawnFunc onProjectileSpawn;
-		internal ItemPart.PartProjectileHitNPCFunc onHitNPC;
-		internal ItemPart.PartProjectileHitPlayerFunc onHitPlayer;
+		internal ItemPart.PartProjectileHitNPCFunc onProjectileHitNPC;
+		internal ItemPart.PartProjectileHitPlayerFunc onProjectileHitPlayer;
 		internal ItemPart.PartModifyWeaponDamageFunc modifyWeaponDamage;
 		internal ItemPart.PartModifyWeaponKnockbackFunc modifyWeaponKnockback;
 		internal ItemPart.PartModifyWeaponCritFunc modifyWeaponCrit;
 		internal ItemPart.PartProjectileFunc projectileAI;
 		internal ItemPart.PartToolPowerFunc modifyToolPower;
 		internal ItemPart.PartTileDestructionFunc onTileDestroyed;
+		internal ItemPart.PartItemHitNPCFunc onItemHitNPC;
+		internal ItemPart.PartItemHitPlayerFunc onItemHitPlayer;
 
 		private bool isReadonly;
 
@@ -78,19 +80,19 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
-		public ItemPartActionsBuilder WithOnHitNPC(ItemPart.PartProjectileHitNPCFunc onHitNPC) {
+		public ItemPartActionsBuilder WithOnProjectileHitNPC(ItemPart.PartProjectileHitNPCFunc onProjectileHitNPC) {
 			if (isReadonly)
-				return Clone().WithOnHitNPC(onHitNPC);
+				return Clone().WithOnProjectileHitNPC(onProjectileHitNPC);
 
-			this.onHitNPC = onHitNPC;
+			this.onProjectileHitNPC = onProjectileHitNPC;
 			return this;
 		}
 
-		public ItemPartActionsBuilder WithOnHitPlayer(ItemPart.PartProjectileHitPlayerFunc onHitPlayer) {
+		public ItemPartActionsBuilder WithOnProjectileHitPlayer(ItemPart.PartProjectileHitPlayerFunc onProjectileHitPlayer) {
 			if (isReadonly)
-				return Clone().WithOnHitPlayer(onHitPlayer);
+				return Clone().WithOnProjectileHitPlayer(onProjectileHitPlayer);
 
-			this.onHitPlayer = onHitPlayer;
+			this.onProjectileHitPlayer = onProjectileHitPlayer;
 			return this;
 		}
 
@@ -139,6 +141,22 @@ namespace TerrariansConstructLib {
 				return Clone().WithOnTileDestroyed(onTileDestroyed);
 
 			this.onTileDestroyed = onTileDestroyed;
+			return this;
+		}
+
+		public ItemPartActionsBuilder WithOnItemHitNPC(ItemPart.PartItemHitNPCFunc onItemHitNPC) {
+			if (isReadonly)
+				return Clone().WithOnItemHitNPC(onItemHitNPC);
+
+			this.onItemHitNPC = onItemHitNPC;
+			return this;
+		}
+
+		public ItemPartActionsBuilder WithOnItemHitPlayer(ItemPart.PartItemHitPlayerFunc onItemHitPlayer) {
+			if (isReadonly)
+				return Clone().WithOnItemHitPlayer(onItemHitPlayer);
+
+			this.onItemHitPlayer = onItemHitPlayer;
 			return this;
 		}
 	}

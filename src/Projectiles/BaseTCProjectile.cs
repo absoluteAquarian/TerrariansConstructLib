@@ -54,7 +54,7 @@ namespace TerrariansConstructLib.Projectiles {
 
 		public sealed override void OnHitNPC(NPC target, int damage, float knockback, bool crit) {
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnHitNPC?.Invoke(parts[i].partID, Projectile, target, damage, knockback, crit);
+				parts[i].OnProjectileHitNPC?.Invoke(parts[i].partID, Projectile, target, damage, knockback, crit);
 		}
 
 		/// <inheritdoc cref="OnHitNPC(NPC, int, float, bool)"/>
@@ -62,7 +62,7 @@ namespace TerrariansConstructLib.Projectiles {
 
 		public sealed override void OnHitPlayer(Player target, int damage, bool crit) {
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnHitPlayer?.Invoke(parts[i].partID, Projectile, target, damage, crit);
+				parts[i].OnProjectileHitPlayer?.Invoke(parts[i].partID, Projectile, target, damage, crit);
 		}
 
 		/// <inheritdoc cref="OnHitPlayer(Player, int, bool)"/>

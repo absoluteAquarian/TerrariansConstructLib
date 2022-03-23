@@ -190,7 +190,7 @@ namespace TerrariansConstructLib.Items {
 			if (ammoReserveMax > 0) {
 				float pct = (float)ammoReserve / ammoReserveMax;
 
-				Color color = pct > 0.3f ? Color.White : pct > 0.05f ? Color.Orange : Color.DarkRed;
+				Color color = pct > 0.5f ? Color.Green : pct > 3f / 16f ? Color.Yellow : Color.Red;
 
 				Utility.FindAndModify(tooltips, "<AMMO_COUNT>", $"[c/{color.Hex3()}:{ammoReserve}/{ammoReserveMax}]");
 			} else
@@ -201,7 +201,7 @@ namespace TerrariansConstructLib.Items {
 
 				float pct = (float)CurrentDurability / max;
 
-				Color color = pct > 0.3f ? Color.White : pct > 0.05f ? Color.Orange : Color.DarkRed;
+				Color color = pct > 0.5f ? Color.Green : pct > 3f / 16f ? Color.Yellow : Color.Red;
 
 				Utility.FindAndModify(tooltips, "<DURABILITY>", $"Durability: [c/{color.Hex3()}:{CurrentDurability} / {GetMaxDurability()}]");
 			} else
@@ -357,15 +357,32 @@ namespace TerrariansConstructLib.Items {
 		/// <inheritdoc cref="UseItem(Player)"/>
 		public virtual void SafeUseItem(Player player) { }
 
-		internal void OnTileDestroyed(Player player, int x, int y, TileDestructionContext context) {
-			if (CurrentDurability > 0 && TCConfig.Instance.UseDurability) {
-				CurrentDurability--;
+		public sealed override void OnHitNPC(Player player, NPC target, int damage, float knockBack, bool crit) {
+			TryReduceDurability(player, GetToolPower() > 0 ? 2 : 1);
 
-				if (CurrentDurability == 0) {
-					SoundEngine.PlaySound(SoundID.Tink, player.Center, style: 0);
-					SoundEngine.PlaySound(SoundID.Item50, player.Center);
-				}
-			}
+			for (int i = 0; i < parts.Length; i++)
+				parts[i].OnItemHitNPC?.Invoke(parts[i].partID, Item, player, target, damage, knockBack, crit);
+
+			SafeOnHitNPC(player, target, damage, knockBack, crit);
+		}
+
+		/// <inheritdoc cref="OnHitNPC(Player, NPC, int, float, bool)"/>
+		public virtual void SafeOnHitNPC(Player player, NPC target, int damage, float knockBack, bool crit) { }
+
+		public sealed override void OnHitPvp(Player player, Player target, int damage, bool crit) {
+			TryReduceDurability(player, GetToolPower() > 0 ? 2 : 1);
+
+			for (int i = 0; i < parts.Length; i++)
+				parts[i].OnItemHitPlayer?.Invoke(parts[i].partID, Item, player, target, damage, crit);
+
+			SafeOnHitPvp(player, target, damage, crit);
+		}
+
+		/// <inheritdoc cref="OnHitPvp(Player, Player, int, bool)"/>
+		public virtual void SafeOnHitPvp(Player player, Player target, int damage, bool crit) { }
+
+		internal void OnTileDestroyed(Player player, int x, int y, TileDestructionContext context) {
+			TryReduceDurability(player, 1);
 
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnTileDestroyed?.Invoke(parts[i].partID, player, Item, x, y, context);
@@ -420,6 +437,20 @@ namespace TerrariansConstructLib.Items {
 			return (int)averageHead;
 		}
 
+		private void TryReduceDurability(Player player, int amount) {
+			if (CurrentDurability > 0 && TCConfig.Instance.UseDurability) {
+				CurrentDurability -= amount;
+
+				if (CurrentDurability < 0)
+					CurrentDurability = 0;
+
+				if (CurrentDurability == 0) {
+					SoundEngine.PlaySound(SoundID.Tink, player.Center, style: 0);
+					SoundEngine.PlaySound(SoundID.Item50, player.Center);
+				}
+			}
+		}
+
 		public override void SaveData(TagCompound tag) {
 			tag["parts"] = parts.ToList();
 		}
@@ -452,6 +483,16 @@ namespace TerrariansConstructLib.Items {
 			Texture2D texture = CoreLibMod.itemTextures.Get(registeredItemID, parts);
 
 			spriteBatch.Draw(texture, position, frame, drawColor, 0f, origin, scale, SpriteEffects.None, 0);
+
+			if (CurrentDurability > 0) {
+				Texture2D durabilityBar = Mod.Assets.Request<Texture2D>("Assets/DurabliityBar").Value;
+
+				int max = GetMaxDurability();
+				int frameY = CurrentDurability >= max ? 0 : (int)(15 * (1 - (float)CurrentDurability / max));
+				Rectangle barFrame = durabilityBar.Frame(1, 15, 0, frameY);
+
+				spriteBatch.Draw(durabilityBar, position, barFrame, Color.White, 0f, barFrame.Size() / 2f, 1f, SpriteEffects.None, 0);
+			}
 
 			return false;
 		}
