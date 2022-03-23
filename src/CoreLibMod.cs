@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -48,6 +49,8 @@ namespace TerrariansConstructLib {
 		private static void SetLoadingSubProgressText(string text)
 			=> UIProgress_set_SubProgressText.Invoke(Interface_loadMods.GetValue(null), new object[]{ text });
 
+		private static StreamWriter writer;
+
 		public override void Load() {
 			if(!ModLoader.HasMod("TerrariansConstruct"))
 				throw new Exception(Language.GetTextValue("tModLoader.LoadErrorDependencyMissing", "TerrariansConstruct", Name));
@@ -79,6 +82,20 @@ namespace TerrariansConstructLib {
 				ActivateAbility = KeybindLoader.RegisterKeybind(this, "Activate Tool Ability", Keys.G);
 			}
 
+			string path = Program.SavePath;
+			path = Path.Combine(path, "aA Mods", "TerrariansConstructLib");
+			Directory.CreateDirectory(path);
+
+			string logFile = Path.Combine(path, "logs.txt");
+			writer = new(File.Open(logFile, FileMode.Create));
+
+			Logger.Info("Logging information to:  " + logFile);
+
+			writer.WriteLine($"Date: {DateTime.Now :d}");
+			writer.WriteLine($"============================");
+
+			writer.Flush();
+
 			//In order for all parts/ammos/etc. to be visible by all mods that use the library, we have to do some magic
 			RegisteredParts.Shard = RegisterPart(ModLoader.GetMod("TerrariansConstruct"), "ItemCraftLeftover", "Shard", 1, hasSimpleMold: true, "Assets/Parts/ItemCraftLeftover", StatType.Extra);
 
@@ -88,19 +105,25 @@ namespace TerrariansConstructLib {
 
 			LoadAllOfTheThings("RegisterTCItemParts");
 
-			foreach (var (id, data) in PartRegistry.registeredIDs)
-				Logger.Debug($"Item Part \"{data.name}\" (ID: {id}) added by {data.mod.Name}");
+			foreach (var (id, data) in PartRegistry.registeredIDs) {
+				writer.WriteLine($"Item Part \"{data.name}\" (ID: {id}) added by {data.mod.Name}");
+				writer.Flush();
+			}
 
 			LoadAllOfTheThings("RegisterTCAmmunition");
 
-			foreach (var (id, data) in ConstructedAmmoRegistry.registeredIDs)
-				Logger.Debug($"Constructed Ammo \"{data.name}\" (ID: {id}) added by {data.mod.Name}");
+			foreach (var (id, data) in ConstructedAmmoRegistry.registeredIDs) {
+				writer.WriteLine($"Constructed Ammo \"{data.name}\" (ID: {id}) added by {data.mod.Name}");
+				writer.Flush();
+			}
 
 			LoadAllOfTheThings("RegisterTCItems");
 
-			foreach (var (id, data) in ItemRegistry.registeredIDs)
-				Logger.Debug($"Item Definition \"{data.name}\" (ID: {id}) added by {data.mod.Name}\n" +
+			foreach (var (id, data) in ItemRegistry.registeredIDs) {
+				writer.WriteLine($"Item Definition \"{data.name}\" (ID: {id}) added by {data.mod.Name}\n" +
 					$"  -- parts: {string.Join(", ", data.validPartIDs.Select(PartRegistry.IDToIdentifier))}");
+				writer.Flush();
+			}
 
 			AddMoldItems();
 
@@ -119,7 +142,8 @@ namespace TerrariansConstructLib {
 			foreach (var (type, stats) in Material.statsByMaterialID) {
 				Material copy = type == UnloadedMaterial.StaticType ? RegisteredMaterials.Unloaded : type == UnknownMaterial.StaticType ? RegisteredMaterials.Unknown : Material.FromItem(type);
 
-				Logger.Debug($"Stats for material \"{copy.GetModName()}:{copy.GetName()}\" was registered with the following part types: " + string.Join(", ", stats.Select(s => s.ToString())));
+				writer.WriteLine($"Stats for material \"{copy.GetModName()}:{copy.GetName()}\" was registered with the following part types: " + string.Join(", ", stats.Select(s => s.ToString())));
+				writer.Flush();
 			}
 
 			for (int i = 0; i < PartRegistry.Count; i++)
@@ -162,8 +186,14 @@ namespace TerrariansConstructLib {
 
 				PartMold.moldsByPartID[partID] = new() { simple = simpleMold, complex = complexMold, complexPlatinum = complexPlatinumMold };
 
-				Instance.Logger.Info($"{(partData.hasSimpleMold ? "Simple and complex item part molds" : "Complex item part molds")} for part ID \"{partData.mod.Name}:{partData.internalName}\" added by mod \"{partData.mod.Name}\"");
+				writer.WriteLine($"{(partData.hasSimpleMold ? "Simple and complex item part molds" : "Complex item part molds")} for part ID \"{partData.mod.Name}:{partData.internalName}\" added by mod \"{partData.mod.Name}\"");
+				writer.Flush();
 			}
+		}
+
+		public override void PostSetupContent() {
+			writer.Dispose();
+			writer = null!;
 		}
 
 		private static readonly Type BuildProperties = typeof(Mod).Assembly.GetType("Terraria.ModLoader.Core.BuildProperties")!;
@@ -298,6 +328,9 @@ namespace TerrariansConstructLib {
 
 			Interface_loadMods = null!;
 			UIProgress_set_SubProgressText = null!;
+
+			writer.Dispose();
+			writer = null!;
 		}
 
 		//No Mod.Call() implementation.  If people want to add content/add support for content to this mod, they better use a strong/weak reference
@@ -662,7 +695,8 @@ namespace TerrariansConstructLib {
 				ItemPartItem.registeredPartsByItemID[item.Type] = item.part;
 				ItemPartItem.itemPartToItemID.Set(material, partID, item.Type);
 
-				Instance.Logger.Info($"Added item part \"{item.Name}\" (ID: {item.Type})");
+				writer.WriteLine($"Added item part \"{item.Name}\" (ID: {item.Type})");
+				writer.Flush();
 			}
 		}
 
