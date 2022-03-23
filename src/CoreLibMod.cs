@@ -46,7 +46,9 @@ namespace TerrariansConstructLib {
 		private static FieldInfo Interface_loadMods;
 		private static MethodInfo UIProgress_set_SubProgressText;
 
-		internal static void SetLoadingSubProgressText(string text)
+		public static string ProgressText_FinishResourceLoading => Language.GetTextValue("tModLoader.MSFinishingResourceLoading");
+
+		public static void SetLoadingSubProgressText(string text)
 			=> UIProgress_set_SubProgressText.Invoke(Interface_loadMods.GetValue(null), new object[]{ text });
 
 		private static StreamWriter writer;
@@ -99,7 +101,7 @@ namespace TerrariansConstructLib {
 			//In order for all parts/ammos/etc. to be visible by all mods that use the library, we have to do some magic
 			RegisteredParts.Shard = RegisterPart(ModLoader.GetMod("TerrariansConstruct"), "ItemCraftLeftover", "Shard", 1, hasSimpleMold: true, "Assets/Parts/ItemCraftLeftover", StatType.Extra);
 
-			SetLoadingSubProgressText("Finding Dependents");
+			SetLoadingSubProgressText(Language.GetTextValue("Mods.TerrariansConstructLib.Loading.FindingDependents"));
 
 			dependents = new(FindDependents());
 
@@ -155,7 +157,7 @@ namespace TerrariansConstructLib {
 
 			DirectDetourManager.Load();
 
-			SetLoadingSubProgressText("Finishing Resource Loading");
+			SetLoadingSubProgressText(ProgressText_FinishResourceLoading);
 
 			isLoadingParts = false;
 		}
@@ -225,7 +227,7 @@ namespace TerrariansConstructLib {
 		}
 
 		private static void LoadAllOfTheThings(string methodToInvoke) {
-			SetLoadingSubProgressText("Invoking: " + methodToInvoke);
+			SetLoadingSubProgressText(Language.GetTextValue("Mods.TerrariansConstructLib.Loading.InvokingMethod", methodToInvoke));
 
 			Type MemoryTracking = typeof(Mod).Assembly.GetType("Terraria.ModLoader.Core.MemoryTracking")!;
 

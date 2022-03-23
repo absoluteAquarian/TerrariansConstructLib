@@ -1,5 +1,20 @@
 ﻿Mods: {
 	TerrariansConstructLib: {
+		Loading: {
+			InvokingMethod: "Invoking: {0}"
+			FindingDependents: "Finding Mod Dependents"
+
+			EditsLoader: {
+				Detours: "Adding method detours"
+				ILEdits: "Adding IL edits"
+			}
+
+			DirectDetourManager: {
+				Detours: "Adding native detours"
+				ILEdits: "Adding native IL edits"
+			}
+		}
+
 		ToolTypes: {
 			Pickaxe: "Pickaxe",
 			Axe: "Axe",

@@ -92,7 +92,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 
 		internal static void Patch_Player_ItemCheck_UseMiningTools_ActuallyUseMiningTool(ILContext il) {
 			MethodInfo WorldGen_CanKillTile = typeof(WorldGen).GetMethod("CanKillTile", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(int), typeof(int) })!;
-			MethodInfo AchievementsHelper_set_CurrentlyMining = typeof(AchievementsHelper).GetProperty("CurrentlyMining", BindingFlags.Public | BindingFlags.Static)!.GetGetMethod()!;
+			MethodInfo AchievementsHelper_set_CurrentlyMining = typeof(AchievementsHelper).GetProperty("CurrentlyMining", BindingFlags.Public | BindingFlags.Static)!.GetSetMethod()!;
 
 			ILHelper.EnsureAreNotNull((WorldGen_CanKillTile, typeof(WorldGen).FullName + "::CanKillTile(int, int)"),
 				(AchievementsHelper_set_CurrentlyMining, typeof(AchievementsHelper).FullName + "::set_CurrentlyMining(bool)"));
@@ -112,62 +112,89 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 					i => i.MatchLdcI4(0),
 					i => i.MatchStloc(1));
 
-			bool EmitLoadAndDelegates(bool axe = false, bool hammer = false) {
-				c.Emit(OpCodes.Ldarg_0);
+			if(!FindSequence())
+				goto bad_il;
 
-				branchTarget.Target = c.Prev;
+			patchNum++;
 
-				c.Emit(OpCodes.Ldarg_1);
-				c.Emit(OpCodes.Ldloc_1);
-				c.EmitDelegate<Func<Player, Item, int, int>>((self, sItem, num2) => {
-					if (sItem.ModItem is BaseTCItem tc) {
-						if (tc.CurrentDurability <= 0 && TCConfig.Instance.UseDurability)
-							num2 = 0;
-						else {
-							for (int i = 0; i < tc.parts.Length; i++)
-								tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num2, axe: axe, hammer: hammer), ref num2);
-						}
+			c.Emit(OpCodes.Ldarg_0);
+
+			branchTarget.Target = c.Prev;
+
+			c.Emit(OpCodes.Ldarg_1);
+			c.Emit(OpCodes.Ldloc_1);
+			c.EmitDelegate<Func<Player, Item, int, int>>((self, sItem, num2) => {
+				if (sItem.ModItem is BaseTCItem tc) {
+					if (tc.CurrentDurability <= 0 && TCConfig.Instance.UseDurability)
+						num2 = 0;
+					else {
+						for (int i = 0; i < tc.parts.Length; i++)
+							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num2, hammer: true), ref num2);
 					}
+				}
 
-					return num2;
-				});
-				c.Emit(OpCodes.Stloc_1);
+				return num2;
+			});
+			c.Emit(OpCodes.Stloc_1);
 
-				if (!c.TryGotoNext(MoveType.After, i => i.MatchLdcI4(0),
-					i => i.MatchCall(AchievementsHelper_set_CurrentlyMining)))
-					return false;
+			if (!c.TryGotoNext(MoveType.After, i => i.MatchLdcI4(0),
+				i => i.MatchCall(AchievementsHelper_set_CurrentlyMining)))
+				goto bad_il;
 
-				patchNum++;
+			patchNum++;
 
-				c.Emit(OpCodes.Ldarg_0);
-				c.Emit(OpCodes.Ldarg_1);
-				c.Emit(OpCodes.Ldarg_3);
-				c.Emit(OpCodes.Ldarg, 4);
-				c.Emit(OpCodes.Ldloc_1);
+			c.Emit(OpCodes.Ldarg_0);
+			c.Emit(OpCodes.Ldarg_1);
+			c.Emit(OpCodes.Ldarg_3);
+			c.Emit(OpCodes.Ldarg, 4);
+			c.Emit(OpCodes.Ldloc_1);
 
-				c.EmitDelegate<Action<Player, Item, int, int, int>>((self, sItem, x, y, num2) => {
-					if (sItem.ModItem is BaseTCItem tc)
-						tc.OnTileDestroyed(self, x, y, new TileDestructionContext(num2, axe: axe, hammer: hammer));
-				});
-
-				return true;
-			}
+			c.EmitDelegate<Action<Player, Item, int, int, int>>((self, sItem, x, y, num2) => {
+				if (sItem.ModItem is BaseTCItem tc)
+					tc.OnTileDestroyed(self, x, y, new TileDestructionContext(num2, hammer: true));
+			});
 
 			if(!FindSequence())
 				goto bad_il;
 
 			patchNum++;
 
-			if(!EmitLoadAndDelegates(hammer: true))
-				goto bad_il;
+			c.Emit(OpCodes.Ldarg_0);
 
-			if(!FindSequence())
+			branchTarget.Target = c.Prev;
+
+			c.Emit(OpCodes.Ldarg_1);
+			c.Emit(OpCodes.Ldloc_1);
+			c.EmitDelegate<Func<Player, Item, int, int>>((self, sItem, num2) => {
+				if (sItem.ModItem is BaseTCItem tc) {
+					if (tc.CurrentDurability <= 0 && TCConfig.Instance.UseDurability)
+						num2 = 0;
+					else {
+						for (int i = 0; i < tc.parts.Length; i++)
+							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num2, axe: true), ref num2);
+					}
+				}
+
+				return num2;
+			});
+			c.Emit(OpCodes.Stloc_1);
+
+			if (!c.TryGotoNext(MoveType.After, i => i.MatchLdcI4(0),
+				i => i.MatchCall(AchievementsHelper_set_CurrentlyMining)))
 				goto bad_il;
 
 			patchNum++;
 
-			if(!EmitLoadAndDelegates(axe: true))
-				goto bad_il;
+			c.Emit(OpCodes.Ldarg_0);
+			c.Emit(OpCodes.Ldarg_1);
+			c.Emit(OpCodes.Ldarg_3);
+			c.Emit(OpCodes.Ldarg, 4);
+			c.Emit(OpCodes.Ldloc_1);
+
+			c.EmitDelegate<Action<Player, Item, int, int, int>>((self, sItem, x, y, num2) => {
+				if (sItem.ModItem is BaseTCItem tc)
+					tc.OnTileDestroyed(self, x, y, new TileDestructionContext(num2, axe: true));
+			});
 
 			ILHelper.UpdateInstructionOffsets(c);
 
@@ -240,7 +267,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 		internal static void Patch_Player_PickTile(ILContext il) {
 			MethodInfo WorldGen_CanKillTile = typeof(WorldGen).GetMethod("CanKillTile", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(int), typeof(int) })!;
 			ConstructorInfo StackTrace_ctor = typeof(StackTrace).GetConstructor(BindingFlags.Public | BindingFlags.Instance, new Type[]{ typeof(int), typeof(bool) })!;
-			MethodInfo AchievementsHelper_set_CurrentlyMining = typeof(AchievementsHelper).GetProperty("CurrentlyMining", BindingFlags.Public | BindingFlags.Static)!.GetGetMethod()!;
+			MethodInfo AchievementsHelper_set_CurrentlyMining = typeof(AchievementsHelper).GetProperty("CurrentlyMining", BindingFlags.Public | BindingFlags.Static)!.GetSetMethod()!;
 
 			ILHelper.EnsureAreNotNull((WorldGen_CanKillTile, typeof(WorldGen).FullName + "::CanKillTile(int, int)"),
 				(StackTrace_ctor, typeof(StackTrace).FullName + "::.ctor"),

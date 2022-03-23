@@ -61,16 +61,32 @@ namespace TerrariansConstructLib.API.Edits {
 			writer.WriteLine(DateTime.Now.ToString("'['ddMMMyyyy '-' HH:mm:ss']'"));
 			writer.WriteLine($"// ILCursor: {c.Method.Name}\n");
 
-			if (c.Body.HasVariables) {
-				writer.WriteLine("// Locals:");
+			writer.WriteLine("// Arguments:");
 
-				foreach (var local in c.Body.Variables) {
-					string localIndex = $"[{local.Index}] ";
-					writer.WriteLine($"{localIndex,-8}{local.VariableType.FullName} V_{local.Index}");
+			var args = c.Method.Parameters;
+			if (args.Count == 0)
+				writer.WriteLine($"{"none",8}");
+			else {
+				foreach (var arg in args) {
+					string argIndex = $"[{arg.Index}]";
+					writer.WriteLine($"{argIndex,8} {arg.ParameterType.FullName} {arg.Name}");
 				}
-
-				writer.WriteLine();
 			}
+
+			writer.WriteLine();
+
+			writer.WriteLine("// Locals:");
+
+			if (!c.Body.HasVariables)
+				writer.WriteLine($"{"none",8}");
+			else {
+				foreach (var local in c.Body.Variables) {
+					string localIndex = $"[{local.Index}]";
+					writer.WriteLine($"{localIndex,8} {local.VariableType.FullName} V_{local.Index}");
+				}
+			}
+
+			writer.WriteLine();
 			
 			writer.WriteLine("// Body:");
 			do {

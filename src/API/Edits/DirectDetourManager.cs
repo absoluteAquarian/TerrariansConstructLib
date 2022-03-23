@@ -4,6 +4,7 @@ using MonoMod.RuntimeDetour.HookGen;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace TerrariansConstructLib.API.Edits {
@@ -28,7 +29,9 @@ namespace TerrariansConstructLib.API.Edits {
 
 		public static void Load() {
 			try {
-				CoreLibMod.SetLoadingSubProgressText("Adding direct detours");
+				CoreLibMod.SetLoadingSubProgressText(Language.GetTextValue("Mods.TerrariansConstructLib.Loading.DirectDetourManager.Detours"));
+
+				CoreLibMod.SetLoadingSubProgressText(Language.GetTextValue("Mods.TerrariansConstructLib.Loading.DirectDetourManager.ILEdits"));
 
 				// Usage: proper drawing of constructed items in tModLoader's config UI
 				IntermediateLanguageHook(typeof(Mod).Assembly.GetType("Terraria.ModLoader.Config.UI.ItemDefinitionOptionElement")!.GetCachedMethod("DrawSelf"),
