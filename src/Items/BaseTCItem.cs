@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Terraria;
+using Terraria.Audio;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.Localization;
@@ -357,6 +358,15 @@ namespace TerrariansConstructLib.Items {
 		public virtual void SafeUseItem(Player player) { }
 
 		internal void OnTileDestroyed(Player player, int x, int y, TileDestructionContext context) {
+			if (CurrentDurability > 0 && TCConfig.Instance.UseDurability) {
+				CurrentDurability--;
+
+				if (CurrentDurability == 0) {
+					SoundEngine.PlaySound(SoundID.Tink, player.Center, style: 0);
+					SoundEngine.PlaySound(SoundID.Item50, player.Center);
+				}
+			}
+
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnTileDestroyed?.Invoke(parts[i].partID, player, Item, x, y, context);
 
