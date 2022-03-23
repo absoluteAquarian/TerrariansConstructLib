@@ -14,6 +14,7 @@ using TerrariansConstructLib.API.Commands;
 using TerrariansConstructLib.API.Edits;
 using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.API.Stats;
+using TerrariansConstructLib.API.UI;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
@@ -65,6 +66,7 @@ namespace TerrariansConstructLib {
 			PartMold.registeredMolds = new();
 			Material.statsByMaterialID = new();
 			Material.worthByMaterialID = new();
+			ForgeUISlotConfiguration.Initialize();
 
 			ItemStatCollection.Load();
 
@@ -276,6 +278,7 @@ namespace TerrariansConstructLib {
 			PartMold.registeredMolds = null!;
 			Material.statsByMaterialID = null!;
 			Material.worthByMaterialID = null!;
+			ForgeUISlotConfiguration.Unload();
 
 			ItemStatCollection.Unload();
 
