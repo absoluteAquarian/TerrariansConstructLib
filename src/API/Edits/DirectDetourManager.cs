@@ -28,6 +28,8 @@ namespace TerrariansConstructLib.API.Edits {
 
 		public static void Load() {
 			try {
+				CoreLibMod.SetLoadingSubProgressText("Adding direct detours");
+
 				// Usage: proper drawing of constructed items in tModLoader's config UI
 				IntermediateLanguageHook(typeof(Mod).Assembly.GetType("Terraria.ModLoader.Config.UI.ItemDefinitionOptionElement")!.GetCachedMethod("DrawSelf"),
 					typeof(MSIL.TML).GetCachedMethod(nameof(MSIL.TML.Patch_ItemDefinitionOptionElement_DrawSelf)));

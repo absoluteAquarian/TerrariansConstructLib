@@ -46,7 +46,7 @@ namespace TerrariansConstructLib {
 		private static FieldInfo Interface_loadMods;
 		private static MethodInfo UIProgress_set_SubProgressText;
 
-		private static void SetLoadingSubProgressText(string text)
+		internal static void SetLoadingSubProgressText(string text)
 			=> UIProgress_set_SubProgressText.Invoke(Interface_loadMods.GetValue(null), new object[]{ text });
 
 		private static StreamWriter writer;
@@ -154,6 +154,8 @@ namespace TerrariansConstructLib {
 			EditsLoader.Load();
 
 			DirectDetourManager.Load();
+
+			SetLoadingSubProgressText("Finishing Resource Loading");
 
 			isLoadingParts = false;
 		}
