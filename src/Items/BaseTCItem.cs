@@ -58,8 +58,8 @@ namespace TerrariansConstructLib.Items {
 		/// Creates an instance of a <see cref="BaseTCItem"/> using the data from a registered item ID
 		/// </summary>
 		/// <param name="registeredItemID">The registered item ID</param>
-		/// <exception cref="Exception"></exception>
-		/// <exception cref="ArgumentException"></exception>
+		/// <exception cref="Exception"/>
+		/// <exception cref="ArgumentException"/>
 		public BaseTCItem(int registeredItemID) {
 			this.registeredItemID = registeredItemID;
 		}

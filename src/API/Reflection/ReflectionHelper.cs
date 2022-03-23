@@ -57,7 +57,7 @@ namespace TerrariansConstructLib.API.Reflection {
 		/// <param name="field">The name of the field</param>
 		/// <param name="instance">The instance.  If the field is <see langword="static"/>, pass <see langword="null"/> for this parameter.</param>
 		/// <param name="obj">The boxed value to set the field to</param>
-		/// <exception cref="Exception"></exception>
+		/// <exception cref="Exception"/>
 		public static void InvokeSetterFunction(string field, T instance, object obj) {
 			string name = "set_" + field;
 

@@ -42,8 +42,8 @@ namespace TerrariansConstructLib {
 			directDetourInstance = null!;
 		}
 
-		private static FieldInfo Interface_loadMods = typeof(Mod).Assembly.GetType("Terraria.ModLoader.UI.Interface")!.GetField("loadMods")!;
-		private static MethodInfo UIProgress_set_SubProgressText = typeof(Mod).Assembly.GetType("Terraria.ModLoader.UI.UIProgress")!.GetProperty("SubProgressText")!.GetSetMethod()!;
+		private static FieldInfo Interface_loadMods;
+		private static MethodInfo UIProgress_set_SubProgressText;
 
 		private static void SetLoadingSubProgressText(string text)
 			=> UIProgress_set_SubProgressText.Invoke(Interface_loadMods.GetValue(null), new object[]{ text });
@@ -51,6 +51,9 @@ namespace TerrariansConstructLib {
 		public override void Load() {
 			if(!ModLoader.HasMod("TerrariansConstruct"))
 				throw new Exception(Language.GetTextValue("tModLoader.LoadErrorDependencyMissing", "TerrariansConstruct", Name));
+
+			Interface_loadMods = typeof(Mod).Assembly.GetType("Terraria.ModLoader.UI.Interface")!.GetField("loadMods", BindingFlags.NonPublic | BindingFlags.Static)!;
+			UIProgress_set_SubProgressText = typeof(Mod).Assembly.GetType("Terraria.ModLoader.UI.UIProgress")!.GetProperty("SubProgressText", BindingFlags.Public | BindingFlags.Instance)!.GetSetMethod()!;
 
 			isLoadingParts = true;
 
@@ -114,7 +117,7 @@ namespace TerrariansConstructLib {
 			LoadAllOfTheThings("RegisterTCMaterials");
 
 			foreach (var (type, stats) in Material.statsByMaterialID) {
-				Material copy = Material.FromItem(type);
+				Material copy = type == UnloadedMaterial.StaticType ? RegisteredMaterials.Unloaded : type == UnknownMaterial.StaticType ? RegisteredMaterials.Unknown : Material.FromItem(type);
 
 				Logger.Debug($"Stats for material \"{copy.GetModName()}:{copy.GetName()}\" was registered with the following part types: " + string.Join(", ", stats.Select(s => s.ToString())));
 			}
@@ -213,8 +216,11 @@ namespace TerrariansConstructLib {
 
 				var parameters = method.GetParameters();
 
+				if (parameters.Length == 0)
+					throw new Exception($"Method {methodDescriptor} should have a \"Mod mod\" parameter.  No parameters were detected");
+
 				if (parameters.Length != 1)
-					throw new Exception($"Method {methodDescriptor} should have only one parameter");
+					throw new Exception($"Method {methodDescriptor} should have only one \"Mod mod\" parameter.  Multiple parameters were detected");
 
 				if (parameters[0].ParameterType != typeof(Mod))
 					throw new Exception($"Method {methodDescriptor} did not have its parameter be of type \"{typeof(Mod).FullName}\"");
@@ -264,6 +270,9 @@ namespace TerrariansConstructLib {
 		}
 
 		public override void Unload() {
+			Interface_loadMods = null!;
+			UIProgress_set_SubProgressText = null!;
+
 			DirectDetourManager.Unload();
 			
 			ConstructedAmmoRegistry.Unload();
@@ -360,18 +369,26 @@ namespace TerrariansConstructLib {
 		/// <param name="material">The material for the item part stats</param>
 		/// <param name="worth">How much material is needed to create one Shard part</param>
 		/// <param name="stats">The stats for the material</param>
-		/// <exception cref="Exception"></exception>
-		public static Material RegisterMaterialStats(Material material, int worth, params IPartStats[] stats) {
+		/// <exception cref="Exception"/>
+		/// <exception cref="ArgumentException"/>
+		public static Material RegisterMaterialStats(int material, int worth, params IPartStats[] stats) {
+			Material instance = Material.FromItem(material);
+			
+			RegisterMaterialStats(instance, worth, stats);
+
+			return instance;
+		}
+
+		//Used to load the stats for the Unloaded and Unknown materials
+		private static void RegisterMaterialStats(Material material, int worth, params IPartStats[] stats) {
 			if (stats is null || stats.Length == 0)
 				throw new ArgumentException("Stats array was null or had a zero length");
-
+			
 			if (Material.statsByMaterialID.ContainsKey(material.Type))
 				throw new Exception($"Stats for the material \"{material.GetModName()}:{material.GetName()}\" have already been registered");
 
 			Material.statsByMaterialID[material.Type] = (IPartStats[])stats.Clone();
 			Material.worthByMaterialID[material.Type] = worth;
-
-			return material;
 		}
 
 		/// <summary>
@@ -385,7 +402,7 @@ namespace TerrariansConstructLib {
 		/// </summary>
 		/// <param name="partID">The part ID</param>
 		/// <param name="isAxe">Whether the part is an axe part</param>
-		/// <exception cref="ArgumentException"></exception>
+		/// <exception cref="ArgumentException"/>
 		public static void SetPartAsAxeToolPart(int partID, bool isAxe) {
 			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new ArgumentException("Part ID was invalid");

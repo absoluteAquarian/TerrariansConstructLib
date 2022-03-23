@@ -18,7 +18,7 @@ namespace TerrariansConstructLib.API.Stats {
 		/// </summary>
 		/// <param name="identifier">The name of the stat</param>
 		/// <param name="stat">The stat value</param>
-		/// <exception cref="ArgumentException"></exception>
+		/// <exception cref="ArgumentException"/>
 		public ExtraPartStats With(string identifier, StatModifier stat) {
 			if (!modifiers.ContainsKey(identifier))
 				modifiers[identifier] = stat;
