@@ -1,10 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.Localization;
 using Terraria.ModLoader;
 using TerrariansConstructLib.API.Reflection;
 
@@ -113,5 +115,28 @@ namespace TerrariansConstructLib {
 
 		public static double Average<T>(this IEnumerable<T> collection, Func<T, double> func, double defaultValueIfEmpty = 0)
 			=> !collection.Any() ? defaultValueIfEmpty : collection.Average(func);
+
+		internal static MethodInfo LocalizationLoader_AutoloadTranslations, LocalizationLoader_SetLocalizedText;
+		internal static FieldInfo LanguageManager__localizedTexts;
+
+		/// <summary>
+		/// Force's the localization for the given mod, <paramref name="mod"/>, to be loaded for use with <seealso cref="Language"/>
+		/// </summary>
+		/// <param name="mod">The mod instance</param>
+		public static void ForceLoadModHJsonLocalization(Mod mod) {
+			Dictionary<string, ModTranslation> modTranslationDictionary = new();
+
+			LocalizationLoader_AutoloadTranslations.Invoke(null, new object[] { mod, modTranslationDictionary });
+
+			Dictionary<string, LocalizedText> dict = (LanguageManager__localizedTexts.GetValue(LanguageManager.Instance) as Dictionary<string, LocalizedText>)!;
+
+			var culture = Language.ActiveCulture;
+			foreach (ModTranslation translation in modTranslationDictionary.Values) {
+				//LocalizedText text = new LocalizedText(translation.Key, translation.GetTranslation(culture));
+				LocalizedText text = (Activator.CreateInstance(typeof(LocalizedText), BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.CreateInstance, null, new object[] { translation.Key, translation.GetTranslation(culture) }, CultureInfo.InvariantCulture) as LocalizedText)!;
+
+				LocalizationLoader_SetLocalizedText.Invoke(null, new object[] { dict, text });
+			}
+		}
 	}
 }
