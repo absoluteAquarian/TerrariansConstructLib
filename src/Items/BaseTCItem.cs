@@ -455,10 +455,16 @@ namespace TerrariansConstructLib.Items {
 
 		public override void SaveData(TagCompound tag) {
 			tag["parts"] = parts.ToList();
+			tag["durability"] = CurrentDurability;
+			tag["ammo"] = ammoReserve;
+			tag["ammoMax"] = ammoReserveMax;
 		}
 
 		public override void LoadData(TagCompound tag) {
 			parts = new(tag.GetList<ItemPart>("parts").ToArray());
+			CurrentDurability = tag.GetInt("durability");
+			ammoReserve = tag.GetInt("ammo");
+			ammoReserveMax = tag.GetInt("ammoMax");
 
 			if (parts.Length != PartsCount)
 				throw new IOException($"Saved parts list length ({parts.Length}) was not equal to the expected length of {PartsCount}");
