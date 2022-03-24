@@ -164,7 +164,7 @@ namespace TerrariansConstructLib.Items {
 
 		public sealed override void AutoStaticDefaults() {
 			//Need to get an asset instance just so that we can replace the texture...
-			Asset<Texture2D> asset = TextureAssets.Item[Item.type] = CoreLibMod.Instance.Assets.Request<Texture2D>("Assets/DummyItem", AssetRequestMode.ImmediateLoad);
+			Asset<Texture2D> asset = TextureAssets.Item[Item.type] = ReflectionHelper<Asset<Texture2D>>.InvokeCloneMethod(CoreLibMod.Instance.Assets.Request<Texture2D>("Assets/DummyItem", AssetRequestMode.ImmediateLoad));
 
 			ReflectionHelper<Asset<Texture2D>>.InvokeSetterFunction("ownValue", asset, CoreLibMod.itemTextures.Get(registeredItemID,
 				new(CoreLibMod.GetItemValidPartIDs(registeredItemID)
