@@ -51,7 +51,7 @@ namespace TerrariansConstructLib {
 		public static void SetLoadingSubProgressText(string text)
 			=> UIProgress_set_SubProgressText.Invoke(Interface_loadMods.GetValue(null), new object[]{ text });
 
-		private static StreamWriter writer;
+		internal static StreamWriter writer;
 
 		public override void Load() {
 			if(!ModLoader.HasMod("TerrariansConstruct"))
@@ -201,11 +201,6 @@ namespace TerrariansConstructLib {
 			}
 		}
 
-		public override void PostSetupContent() {
-			writer.Dispose();
-			writer = null!;
-		}
-
 		private static readonly Type BuildProperties = typeof(Mod).Assembly.GetType("Terraria.ModLoader.Core.BuildProperties")!;
 		private static readonly MethodInfo BuildProperties_ReadModFile = BuildProperties.GetMethod("ReadModFile", BindingFlags.NonPublic | BindingFlags.Static)!;
 		private static readonly MethodInfo BuildProperties_RefNames = BuildProperties.GetMethod("RefNames", BindingFlags.Public | BindingFlags.Instance)!;
@@ -343,7 +338,7 @@ namespace TerrariansConstructLib {
 			Interface_loadMods = null!;
 			UIProgress_set_SubProgressText = null!;
 
-			writer.Dispose();
+			writer?.Dispose();
 			writer = null!;
 		}
 
@@ -708,6 +703,7 @@ namespace TerrariansConstructLib {
 			if (item.Type > 0) {
 				ItemPartItem.registeredPartsByItemID[item.Type] = item.part;
 				ItemPartItem.itemPartToItemID.Set(material, partID, item.Type);
+				ItemPart.partData.Set(material, partID, item.part);
 
 				writer.WriteLine($"Added item part \"{item.Name}\" (ID: {item.Type})");
 				writer.Flush();

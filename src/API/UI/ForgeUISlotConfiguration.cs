@@ -28,7 +28,7 @@ namespace TerrariansConstructLib.API.UI {
 		}
 
 		public static void Register(int registeredItemID, params (int slot, int position, int partID)[] configurations)
-			=> Register(registeredItemID, configurations.Cast<ForgeUISlotConfiguration>().ToArray());
+			=> Register(registeredItemID, configurations.Select(t => (ForgeUISlotConfiguration)t).ToArray());
 
 		public static ForgeUISlotConfiguration[] Get(int registeredItemID)
 			=> registeredConfigurations.TryGetValue(registeredItemID, out var array)

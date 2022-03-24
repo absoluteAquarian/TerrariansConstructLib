@@ -40,14 +40,14 @@ namespace TerrariansConstructLib.Items {
 
 		protected ReadOnlySpan<ItemPart> GetParts() => parts.ToArray();
 
-		private IEnumerable<ItemPart> GetPartStats(StatType type)
-			=> parts.Where(p => Material.statsByMaterialID.TryGetValue(p.material.Type, out var stats) && Array.Exists(stats, s => s.Type == type));
+		private IEnumerable<S> GetPartStats<S>(StatType type) where S : class, IPartStats
+			=> parts.Select(p => p.material.GetStat<S>(type)!).Where(s => s is not null);
 
-		protected IEnumerable<HeadPartStats> GetHeadParts() => GetPartStats(StatType.Head).Select(p => p.material.GetStat<HeadPartStats>(StatType.Head)!).Where(s => s is not null);
+		protected IEnumerable<HeadPartStats> GetHeadParts() => GetPartStats<HeadPartStats>(StatType.Head);
 
-		protected IEnumerable<HandlePartStats> GetHandleParts() => GetPartStats(StatType.Handle).Select(p => p.material.GetStat<HandlePartStats>(StatType.Handle)!).Where(s => s is not null);
+		protected IEnumerable<HandlePartStats> GetHandleParts() => GetPartStats<HandlePartStats>(StatType.Handle);
 
-		protected IEnumerable<ExtraPartStats> GetExtraParts() => GetPartStats(StatType.Extra).Select(p => p.material.GetStat<ExtraPartStats>(StatType.Extra)!).Where(s => s is not null);
+		protected IEnumerable<ExtraPartStats> GetExtraParts() => GetPartStats<ExtraPartStats>(StatType.Extra);
 
 		public ItemPart this[int index] {
 			get => parts[index];
@@ -403,8 +403,10 @@ namespace TerrariansConstructLib.Items {
 			double averageHead = GetHeadParts().Average(p => p.durability);
 			double averageHandle = GetHandleParts().Average(p => p.durability.Multiplicative);
 			double handleAdd = GetHandleParts().Sum(p => p.durability.Additive);
+			double averageExtra = GetExtraParts().Average(p => p.Get(CoreLibMod.KnownStatModifiers.ExtraDurability).Multiplicative);
+			double extraAdd = GetExtraParts().Average(p => p.Get(CoreLibMod.KnownStatModifiers.ExtraDurability).Additive);
 
-			return (int)Math.Max(1, (averageHead + handleAdd) * averageHandle);
+			return (int)Math.Max(1, (averageHead + handleAdd + extraAdd) * (averageHandle + averageExtra - 1));
 		}
 
 		public int GetBaseDamage() {
@@ -476,7 +478,8 @@ namespace TerrariansConstructLib.Items {
 
 			recipe.Register();
 
-			CoreLibMod.Instance.Logger.Debug($"Created recipe for BaseTCItem \"{GetType().GetSimplifiedGenericTypeName()}\"");
+			CoreLibMod.writer.WriteLine($"Created recipe for BaseTCItem \"{GetType().GetSimplifiedGenericTypeName()}\"");
+			CoreLibMod.writer.Flush();
 		}
 
 		public sealed override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale) {
@@ -485,7 +488,7 @@ namespace TerrariansConstructLib.Items {
 			spriteBatch.Draw(texture, position, frame, drawColor, 0f, origin, scale, SpriteEffects.None, 0);
 
 			if (CurrentDurability > 0) {
-				Texture2D durabilityBar = Mod.Assets.Request<Texture2D>("Assets/DurabliityBar").Value;
+				Texture2D durabilityBar = CoreLibMod.Instance.Assets.Request<Texture2D>("Assets/DurabliityBar").Value;
 
 				int max = GetMaxDurability();
 				int frameY = CurrentDurability >= max ? 0 : (int)(15 * (1 - (float)CurrentDurability / max));

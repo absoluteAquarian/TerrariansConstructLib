@@ -31,6 +31,10 @@ namespace TerrariansConstructLib.API.Edits {
 			try {
 				CoreLibMod.SetLoadingSubProgressText(Language.GetTextValue("Mods.TerrariansConstructLib.Loading.DirectDetourManager.Detours"));
 
+				// Usage: displaying in the loading UI when an item's defaults are being processed
+				DetourHook(typeof(ModItem).GetCachedMethod("SetupContent"), typeof(Detours.TML).GetCachedMethod(nameof(Detours.TML.Hook_ModItem_SetupContent)));
+				DetourHook(typeof(Mod).GetCachedMethod("SetupContent"), typeof(Detours.TML).GetCachedMethod(nameof(Detours.TML.Hook_Mod_SetupContent)));
+
 				CoreLibMod.SetLoadingSubProgressText(Language.GetTextValue("Mods.TerrariansConstructLib.Loading.DirectDetourManager.ILEdits"));
 
 				// Usage: proper drawing of constructed items in tModLoader's config UI

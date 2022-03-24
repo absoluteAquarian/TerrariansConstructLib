@@ -114,7 +114,7 @@ namespace TerrariansConstructLib {
 		}
 
 		public static double Average<T>(this IEnumerable<T> collection, Func<T, double> func, double defaultValueIfEmpty = 0)
-			=> !collection.Any() ? defaultValueIfEmpty : collection.Average(func);
+			=> !collection.Any() ? defaultValueIfEmpty : Enumerable.Average(collection, func);
 
 		internal static MethodInfo LocalizationLoader_AutoloadTranslations, LocalizationLoader_SetLocalizedText;
 		internal static FieldInfo LanguageManager__localizedTexts;

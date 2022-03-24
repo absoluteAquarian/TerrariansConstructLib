@@ -13,6 +13,8 @@
 				Detours: "Adding native detours"
 				ILEdits: "Adding native IL edits"
 			}
+
+			TCItemDefaults: "Setting defaults for item \"{0}\""
 		}
 
 		ToolTypes: {
