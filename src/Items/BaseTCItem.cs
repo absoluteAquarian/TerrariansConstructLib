@@ -157,7 +157,7 @@ namespace TerrariansConstructLib.Items {
 			Item.consumable = false;
 		}
 
-		internal void InitializeWithParts(params ItemPart[] parts) {
+		public void InitializeWithParts(params ItemPart[] parts) {
 			for (int i = 0; i < parts.Length; i++)
 				this.parts[i] = parts[i];
 

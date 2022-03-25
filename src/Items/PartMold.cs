@@ -4,6 +4,7 @@ using System.IO;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.ModLoader.IO;
 using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.Items {
@@ -173,6 +174,22 @@ namespace TerrariansConstructLib.Items {
 			BitsByte bb = reader.ReadByte();
 
 			bb.Retrieve(ref isSimpleMold, ref isPlatinumMold);
+		}
+
+		public override void SaveData(TagCompound tag) {
+			tag["id"] = partID;
+			tag["flags"] = (byte)new BitsByte(isSimpleMold, isPlatinumMold);
+		}
+
+		public override void LoadData(TagCompound tag) {
+			if (tag.ContainsKey("id"))
+				partID = tag.GetInt("id");
+
+			if (tag.ContainsKey("flags")) {
+				BitsByte bb = tag.GetByte("flags");
+
+				bb.Retrieve(ref isSimpleMold, ref isPlatinumMold);
+			}
 		}
 
 		internal class Data {

@@ -21,6 +21,8 @@ namespace TerrariansConstructLib.API.UI {
 
 		public readonly Dictionary<string, UITextPanel<string>> menus;
 
+		public UIPanel viewArea;
+
 		public UIDragablePanel(bool stopItemUse, params string[] menuOptions) {
 			StopItemUse = stopItemUse;
 
@@ -28,6 +30,7 @@ namespace TerrariansConstructLib.API.UI {
 
 			header = new UIPanel();
 			header.SetPadding(0);
+			header.Width.Set(0, 1f);
 			header.Height.Set(30, 0f);
 			header.BackgroundColor.A = 255;
 			header.OnMouseDown += Header_MouseDown;
@@ -42,6 +45,14 @@ namespace TerrariansConstructLib.API.UI {
 			closeButton.OnClick += (evt, element) => OnMenuClose?.Invoke();
 			header.Append(closeButton);
 
+			viewArea = new();
+			viewArea.Top.Set(38, 0);
+			viewArea.Width.Set(0, 1f);
+			viewArea.Height.Set(-38, 1f);
+			viewArea.BackgroundColor = Color.Transparent;
+			viewArea.BorderColor = Color.Transparent;
+			Append(viewArea);
+
 			menus = new();
 
 			float left = 0;
@@ -55,6 +66,8 @@ namespace TerrariansConstructLib.API.UI {
 				menu.Recalculate();
 
 				left += menu.GetDimensions().Width + 10;
+
+				header.Append(menu);
 			}
 		}
 

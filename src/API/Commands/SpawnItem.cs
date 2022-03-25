@@ -111,27 +111,5 @@ namespace TerrariansConstructLib.API.Commands {
 
 			return true;
 		}
-
-		private static bool GetPartNum(CommandCaller caller, string[] args, int argNum, out int num) {
-			num = -1;
-			if (args[argNum][0] != 'P') {
-				caller.Reply($"Argument #{argNum + 1} was an invalid part argument", Color.Red);
-				return false;
-			}
-
-			args[argNum] = args[argNum][1..];
-
-			if (!int.TryParse(args[argNum], out num)) {
-				caller.Reply($"Argument #{argNum + 1} was not an integer.", Color.Red);
-				return false;
-			}
-
-			if (num < 0 || num >= PartRegistry.Count) {
-				caller.Reply("Part # exceeded the bounds of valid IDs.  Use \"/lp\" to list the registered part IDs.", Color.Red);
-				return false;
-			}
-
-			return true;
-		}
 	}
 }
