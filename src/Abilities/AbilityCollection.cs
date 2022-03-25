@@ -132,12 +132,14 @@ namespace TerrariansConstructLib.Abilities {
 
 							var memberList = members[material].abilities;
 
-							if (values.Count != memberList.Count)
-								throw new IOException($"Ability list count mistmatch (existing: {memberList.Count}, data: {values.Count})");
+							if (memberList is not null) {
+								if (values.Count != memberList.Count)
+									throw new IOException($"Ability list count mistmatch (existing: {memberList.Count}, data: {values.Count})");
 
-							foreach (var value in values) {
-								memberList[index].LoadData(value);
-								index++;
+								foreach (var value in values) {
+									memberList[index].LoadData(value);
+									index++;
+								}
 							}
 						}
 					}

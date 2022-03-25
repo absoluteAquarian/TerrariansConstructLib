@@ -517,7 +517,7 @@ namespace TerrariansConstructLib.Items {
 		private static int AverageToolStats(IEnumerable<HeadPartStats> stats) {
 			double average = stats.Average(p => p.toolPower);
 
-			return average > 0 ? (int)(average + 1) : 0;
+			return average > 0 ? (int)Math.Ceiling(average) : 0;
 		}
 
 		public bool HasAnyToolPower()
