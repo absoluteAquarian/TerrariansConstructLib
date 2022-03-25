@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Terraria.ModLoader.IO;
 
 namespace TerrariansConstructLib.Materials {
@@ -45,5 +46,19 @@ namespace TerrariansConstructLib.Materials {
 				Type = StaticType
 			};
 		};
+
+		public override void NetSend(BinaryWriter writer) {
+			base.NetSend(writer);
+
+			writer.Write(modName);
+			writer.Write(itemName);
+		}
+
+		public override void NetReceive(BinaryReader reader) {
+			base.NetReceive(reader);
+
+			modName = reader.ReadString();
+			itemName = reader.ReadString();
+		}
 	}
 }

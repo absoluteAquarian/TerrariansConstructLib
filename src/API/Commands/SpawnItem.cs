@@ -11,7 +11,7 @@ namespace TerrariansConstructLib.API.Commands {
 	internal class SpawnItem : ModCommand {
 		public override CommandType Type => CommandType.Chat;
 
-		public override string Usage => "[c/ff6a00:Usage: /si <registered item #> M<material 0> P<part #> M<material 1> P<part #> ...]";
+		public override string Usage => "[c/ff6a00:Usage: /si <registered item #> M<material 0 #> M<material 1 #> ...]";
 
 		public override string Command => "si";
 
@@ -24,28 +24,31 @@ namespace TerrariansConstructLib.API.Commands {
 			}
 
 			if ((args.Length - 1) % 2 != 0) {
-				caller.Reply("Final material argument did not have a matching part argument.");
+				caller.Reply("Final material argument did not have a matching part argument.", Color.Red);
 				return;
 			}
 
 			if (!GetItemNum(caller, args, 0, out int registeredItemID))
 				return;
 
-			int numParts = (args.Length - 1) / 2;
+			int numParts = args.Length - 1;
 
 			ItemPart[] parts = new ItemPart[numParts];
+
+			int[] partIDs = ItemRegistry.registeredIDs[registeredItemID].validPartIDs;
+
+			if (partIDs.Length != numParts) {
+				caller.Reply($"Registered Item {registeredItemID} expects {partIDs.Length} parts", Color.Red);
+				return;
+			}
 
 			for (int i = 0; i < numParts; i++) {
 				if (!GetMaterialNum(caller, args, 1 + i * 2, out int materialType))
 					return;
 
-				if (!GetPartNum(caller, args, 1 + i * 2 + 1, out int partID))
-					return;
-
-				// TODO: material registry?
 				parts[i] = new(){
-					material = materialType == UnknownMaterial.StaticType ? CoreLibMod.RegisteredMaterials.Unknown : materialType == UnloadedMaterial.StaticType ? CoreLibMod.RegisteredMaterials.Unloaded : new Material(){ Type = materialType },
-					partID = partID
+					material = Material.FromItem(materialType),
+					partID = partIDs[i]
 				};
 			}
 
@@ -58,11 +61,6 @@ namespace TerrariansConstructLib.API.Commands {
 
 			Item item = new(mItem.Type);
 			BaseTCItem tc = (item.ModItem as BaseTCItem)!;
-
-			if (data.validPartIDs.Length != tc.PartsCount || !Array.TrueForAll(parts, part => tc.parts.IsPartIDValidForAnySlot(part.partID))) {
-				caller.Reply($"Requested part IDs did not match the expected sequence of valid part IDs for the registered item ID #{registeredItemID} ({data.mod.Name}:{data.internalName}).", Color.Red);
-				return;
-			}
 
 			//Assign the parts
 			tc.InitializeWithParts(parts);

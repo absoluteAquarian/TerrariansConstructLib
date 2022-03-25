@@ -508,20 +508,20 @@ namespace TerrariansConstructLib.Items {
 			return (int)head;
 		}
 
-		public int GetPickaxePower() => AverageToolStats(SelectToolPickaxeStats());
+		public int GetPickaxePower() => AverageToolStats(SelectToolPickaxeStats(), p => p.pickPower);
 
-		public int GetAxePower() => AverageToolStats(SelectToolAxeStats()) / 5;
+		public int GetAxePower() => AverageToolStats(SelectToolAxeStats(), p => p.axePower) / 5;
 
-		public int GetHammerPower() => AverageToolStats(SelectToolHammerStats());
+		public int GetHammerPower() => AverageToolStats(SelectToolHammerStats(), p => p.hammerPower);
 
-		private static int AverageToolStats(IEnumerable<HeadPartStats> stats) {
-			double average = stats.Average(p => p.toolPower);
+		private static int AverageToolStats(IEnumerable<HeadPartStats> stats, Func<HeadPartStats, double> func) {
+			double average = stats.Average(func);
 
 			return average > 0 ? (int)Math.Ceiling(average) : 0;
 		}
 
 		public bool HasAnyToolPower()
-			=> SelectToolAxeStats().Any(p => p.toolPower > 0) || SelectToolPickaxeStats().Any(p => p.toolPower > 0) || SelectToolHammerStats().Any(p => p.toolPower > 0);
+			=> SelectToolAxeStats().Any(p => p.axePower > 0) || SelectToolPickaxeStats().Any(p => p.pickPower > 0) || SelectToolHammerStats().Any(p => p.hammerPower > 0);
 
 		public void TryIncreaseDurability(int amount) {
 			if (amount <= 0)
@@ -542,6 +542,8 @@ namespace TerrariansConstructLib.Items {
 
 			if (CurrentDurability > 0 && TCConfig.Instance.UseDurability) {
 				CurrentDurability -= amount;
+
+				// TODO: mining tools aren't losing durability... figure out why
 
 				if (CurrentDurability < 0)
 					CurrentDurability = 0;

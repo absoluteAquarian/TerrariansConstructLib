@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Terraria;
 using Terraria.ID;
 using Terraria.Localization;
@@ -198,6 +199,14 @@ namespace TerrariansConstructLib.Items {
 
 		public override void LoadData(TagCompound tag) {
 			part = tag.Get<ItemPart>("part");
+		}
+
+		public override void NetSend(BinaryWriter writer) {
+			part.NetSend(writer);
+		}
+
+		public override void NetReceive(BinaryReader reader) {
+			part.NetReceive(reader);
 		}
 	}
 }

@@ -82,7 +82,6 @@ namespace TerrariansConstructLib {
 			PartMold.registeredMolds = new();
 			Material.statsByMaterialID = new();
 			Material.worthByMaterialID = new();
-			ForgeUISlotConfiguration.Initialize();
 			AbilityCollection.registeredAbilities = new();
 
 			ItemStatCollection.Load();
@@ -162,13 +161,13 @@ namespace TerrariansConstructLib {
 
 			AddMoldItems();
 
-			//head part: damage, knockback, crit, useSpeed, toolPower
+			//head part: damage, knockback, crit, useSpeed, pickaxe power, axe power, hammer power, durability
 			RegisterMaterialStats(RegisteredMaterials.Unloaded, 1, null,
-				new HeadPartStats(0, 0, 0, 20, 0, 1),
+				new HeadPartStats(0, 0, 0, 20, 0, 0, 0, 1),
 				new HandlePartStats(),
 				new ExtraPartStats());
 			RegisterMaterialStats(RegisteredMaterials.Unknown, 1, null,
-				new HeadPartStats(0, 0, 0, 20, 0, 1),
+				new HeadPartStats(0, 0, 0, 20, 0, 0, 0, 1),
 				new HandlePartStats(),
 				new ExtraPartStats());
 
@@ -354,7 +353,6 @@ namespace TerrariansConstructLib {
 			PartMold.registeredMolds = null!;
 			Material.statsByMaterialID = null!;
 			Material.worthByMaterialID = null!;
-			ForgeUISlotConfiguration.Unload();
 			AbilityCollection.registeredAbilities = null!;
 
 			ItemStatCollection.Unload();
@@ -423,16 +421,37 @@ namespace TerrariansConstructLib {
 		/// <param name="itemInternalName">The item type that this registered item ID will be applied to.  Use the string you'd use to access the item via <seealso cref="Mod.Find{T}(string)"/></param>
 		/// <param name="partVisualsFolder">The folder where the item's part visuals is located, relative to the mod they're from</param>
 		/// <param name="useSpeedMultiplier">A modifier applied to the base use speed generated from the item's parts</param>
-		/// <param name="validPartIDs">The array of parts that comprise the weapon</param>
+		/// <param name="configuration">The array of parts that comprise the weapon and their slot contexts in the Forge UI</param>
 		/// <returns>The ID of the registered item</returns>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterItem(Mod mod, string internalName, string name, string itemInternalName, string partVisualsFolder, float useSpeedMultiplier, params int[] validPartIDs) {
+		public static int RegisterItem(Mod mod, string internalName, string name, string itemInternalName, string partVisualsFolder, float useSpeedMultiplier, params ForgeUISlotConfiguration[] configuration) {
 			if (!isLoadingParts)
 				throw new Exception(GetLateLoadReason("RegisterTCItems"));
 
-			return ItemRegistry.Register(mod, internalName, name, itemInternalName, partVisualsFolder, useSpeedMultiplier, validPartIDs);
+			return ItemRegistry.Register(mod, internalName, name, itemInternalName, partVisualsFolder, useSpeedMultiplier, configuration);
+		}
+
+		/// <summary>
+		/// Registers a name and valid <seealso cref="ItemPart"/> IDs for an item
+		/// </summary>
+		/// <param name="mod">The mod that the weapon belongs to</param>
+		/// <param name="internalName">The internal name of the weapon</param>
+		/// <param name="name">The default item type name used by <seealso cref="BaseTCItem.RegisteredItemTypeName"/></param>
+		/// <param name="itemInternalName">The item type that this registered item ID will be applied to.  Use the string you'd use to access the item via <seealso cref="Mod.Find{T}(string)"/></param>
+		/// <param name="partVisualsFolder">The folder where the item's part visuals is located, relative to the mod they're from</param>
+		/// <param name="useSpeedMultiplier">A modifier applied to the base use speed generated from the item's parts</param>
+		/// <param name="configuration">The array of parts that comprise the weapon and their slot contexts in the Forge UI</param>
+		/// <returns>The ID of the registered item</returns>
+		/// <exception cref="Exception"/>
+		/// <exception cref="ArgumentException"/>
+		/// <exception cref="ArgumentNullException"/>
+		public static int RegisterItem(Mod mod, string internalName, string name, string itemInternalName, string partVisualsFolder, float useSpeedMultiplier, params (int slot, int position, int partID)[] configuration) {
+			if (!isLoadingParts)
+				throw new Exception(GetLateLoadReason("RegisterTCItems"));
+
+			return ItemRegistry.Register(mod, internalName, name, itemInternalName, partVisualsFolder, useSpeedMultiplier, configuration.Select(t => (ForgeUISlotConfiguration)t).ToArray());
 		}
 
 		/// <summary>
@@ -770,7 +789,9 @@ namespace TerrariansConstructLib {
 			public const string HeadKnockback = "head.knockback";
 			public const string HeadCrit = "head.crit";
 			public const string HeadUseSpeed = "head.useSpeed";
-			public const string HeadToolPower = "head.toolPower";
+			public const string HeadPickPower = "head.pickPower";
+			public const string HeadAxePower = "head.axePower";
+			public const string HeadHammerPower = "head.hammerPower";
 			public const string HeadDurability = "head.durability";
 
 			public const string HandleMiningSpeed = "handle.miningSpeed";

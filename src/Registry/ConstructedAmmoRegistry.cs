@@ -44,7 +44,7 @@ namespace TerrariansConstructLib.Registry {
 		internal static Dictionary<int, Data> registeredIDs;
 		internal static int nextID;
 
-		internal static bool TryFindData(Mod mod, string name, out int id) {
+		public static bool TryFindData(Mod mod, string name, out int id) {
 			foreach (var (i, d) in registeredIDs) {
 				if (d.mod == mod && d.name == name) {
 					id = i;

@@ -154,5 +154,12 @@ namespace TerrariansConstructLib {
 				LocalizationLoader_SetLocalizedText.Invoke(null, new object[] { dict, text });
 			}
 		}
+
+		public static T[] Create1DArray<T>(T value, uint length) where T : struct {
+			T[] arr = new T[length];
+			for(uint i = 0; i < length; i++)
+				arr[i] = value;
+			return arr;
+		}
 	}
 }

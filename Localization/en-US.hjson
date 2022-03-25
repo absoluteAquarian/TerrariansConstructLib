@@ -29,7 +29,9 @@
 				Knockback: "Knockback: {0}"
 				Crit: "Crit Chance: {0:+#;-#;+0}"
 				UseSpeed: "Use Speed: {0} ticks"
-				ToolPower: "Power: {0}%"
+				PickPower: "Pickaxe Power: {0}%"
+				AxePower: "Axe Power: {0}%"
+				HammerPower: "Hammer Power: {0}%"
 
 				Durability: "Durability: {0}"
 			}

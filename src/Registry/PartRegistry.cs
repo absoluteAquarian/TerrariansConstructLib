@@ -64,7 +64,7 @@ namespace TerrariansConstructLib.Registry {
 		internal static BitArray isPickPart;
 		internal static BitArray isHammerPart;
 
-		internal static bool TryFindData(Mod mod, string internalName, out int id) {
+		public static bool TryFindData(Mod mod, string internalName, out int id) {
 			foreach (var (i, d) in registeredIDs) {
 				if (d.mod == mod && d.internalName == internalName) {
 					id = i;

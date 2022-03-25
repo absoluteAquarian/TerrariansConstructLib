@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using TerrariansConstructLib.API;
 using TerrariansConstructLib.API.Stats;
 
 namespace TerrariansConstructLib.Materials {
-	public class Material : TagSerializable {
+	public class Material : TagSerializable, INetHooks {
 		/// <summary>
 		/// The ID of the item used as the material
 		/// </summary>
-		public int Type { get; internal init; } = -1;
+		public int Type { get; protected set; } = -1;
 
 		internal static Dictionary<int, IPartStats[]> statsByMaterialID;
 		internal static Dictionary<int, int> worthByMaterialID;
@@ -94,6 +96,14 @@ namespace TerrariansConstructLib.Materials {
 				Type = type
 			};
 		};
+
+		public virtual void NetSend(BinaryWriter writer) {
+			writer.Write(Type);
+		}
+
+		public virtual void NetReceive(BinaryReader reader) {
+			Type = reader.ReadInt32();
+		}
 
 		public override bool Equals(object? obj)
 			=> obj is Material material && Type == material.Type;

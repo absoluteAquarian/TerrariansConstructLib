@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
@@ -9,7 +10,7 @@ using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.Items {
-	public class ItemPart : TagSerializable {
+	public class ItemPart : TagSerializable, INetHooks {
 		/// <summary>
 		/// <see langword="int"/> <paramref name="partID"/>,
 		/// <see cref="Item"/> <paramref name="item"/>
@@ -255,6 +256,21 @@ namespace TerrariansConstructLib.Items {
 
 			return (ItemPart)partData!.Get(material, id).MemberwiseClone();
 		};
+
+		public void NetSend(BinaryWriter writer) {
+			writer.Write(material.Type);
+			material.NetSend(writer);
+			writer.Write(partID);
+		}
+
+		public void NetReceive(BinaryReader reader) {
+			material = Material.FromItem(reader.ReadInt32());
+			material.NetReceive(reader);
+			partID = reader.ReadInt32();
+
+			tooltip = partData.Get(material, partID).tooltip;
+			modifierText = partData.Get(material, partID).modifierText;
+		}
 
 		public override bool Equals(object? obj)
 			=> obj is ItemPart part && material.Type == part.material.Type && partID == part.partID;

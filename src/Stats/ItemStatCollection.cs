@@ -16,7 +16,9 @@ namespace TerrariansConstructLib.Stats {
 			AddStat(CoreLibMod.KnownStatModifiers.HeadKnockback, "Mods.TerrariansConstructLib.StatFormats.Head.Knockback");
 			AddStat(CoreLibMod.KnownStatModifiers.HeadCrit, "Mods.TerrariansConstructLib.StatFormats.Head.Crit");
 			AddStat(CoreLibMod.KnownStatModifiers.HeadUseSpeed, "Mods.TerrariansConstructLib.StatFormats.Head.UseSpeed");
-			AddStat(CoreLibMod.KnownStatModifiers.HeadToolPower, "Mods.TerrariansConstructLib.StatFormats.Head.ToolPower");
+			AddStat(CoreLibMod.KnownStatModifiers.HeadPickPower, "Mods.TerrariansConstructLib.StatFormats.Head.PickPower");
+			AddStat(CoreLibMod.KnownStatModifiers.HeadAxePower, "Mods.TerrariansConstructLib.StatFormats.Head.AxePower");
+			AddStat(CoreLibMod.KnownStatModifiers.HeadHammerPower, "Mods.TerrariansConstructLib.StatFormats.Head.HammerPower");
 			AddStat(CoreLibMod.KnownStatModifiers.HeadDurability, "Mods.TerrariansConstructLib.StatFormats.Head.Durability");
 
 			AddStat(CoreLibMod.KnownStatModifiers.HandleMiningSpeed, "Mods.TerrariansConstructLib.StatFormats.Handle.MiningSpeed");

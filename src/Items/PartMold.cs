@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -156,6 +157,22 @@ namespace TerrariansConstructLib.Items {
 				isSimpleMold = false;
 				isPlatinumMold = true;
 			}
+		}
+
+		public override void NetSend(BinaryWriter writer) {
+			writer.Write(partID);
+
+			BitsByte bb = new(isSimpleMold, isPlatinumMold);
+
+			writer.Write(bb);
+		}
+
+		public override void NetReceive(BinaryReader reader) {
+			partID = reader.ReadInt32();
+
+			BitsByte bb = reader.ReadByte();
+
+			bb.Retrieve(ref isSimpleMold, ref isPlatinumMold);
 		}
 
 		internal class Data {

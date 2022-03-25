@@ -26,20 +26,30 @@ namespace TerrariansConstructLib.API.Stats {
 		/// </summary>
 		public readonly int useSpeed;
 		/// <summary>
-		/// The tool power for the part
+		/// The pickaxe power for the part
 		/// </summary>
-		public readonly int toolPower;
+		public readonly int pickPower;
+		/// <summary>
+		/// The axe power for the part, multiplied by 5
+		/// </summary>
+		public readonly int axePower;
+		/// <summary>
+		/// The hammer power for the part
+		/// </summary>
+		public readonly int hammerPower;
 		/// <summary>
 		/// The durability for the part
 		/// </summary>
 		public readonly int durability;
 
-		public HeadPartStats(int damage, float knockback, int crit, int useSpeed, int toolPower, int durability) {
+		public HeadPartStats(int damage, float knockback, int crit, int useSpeed, int pickPower, int axePower, int hammerPower, int durability) {
 			this.damage = damage;
 			this.knockback = knockback;
 			this.crit = crit;
 			this.useSpeed = useSpeed;
-			this.toolPower = toolPower;
+			this.pickPower = pickPower;
+			this.axePower = axePower;
+			this.hammerPower = hammerPower;
 			this.durability = durability;
 		}
 
@@ -57,8 +67,8 @@ namespace TerrariansConstructLib.API.Stats {
 			if (useSpeed > 0)
 				sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadUseSpeed, useSpeed));
 
-			if (toolPower > 0)
-				sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadToolPower, toolPower));
+			if (pickPower > 0)
+				sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadPickPower, pickPower));
 
 			sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.ExtraDurability + ".add", durability));
 
