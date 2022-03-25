@@ -7,22 +7,28 @@ namespace TerrariansConstructLib.API {
 	/// Represents a line of text for a part's modifier
 	/// </summary>
 	public sealed class ModifierText {
-		public readonly string? langText;
+		public readonly string? langKey;
 
 		public readonly Material material;
 		public readonly int partID;
 
 		public StatModifier Stat { get; internal set; }
 
-		public ModifierText(string? langText, Material material, int partID, StatModifier stat) {
-			this.langText = langText;
+		/// <summary>
+		/// Whether the lang key should be treated as a formatted language key (<see langword="false"/>) or a string literal (<see langword="true"/>)<br/>
+		/// Defaults to <see langword="false"/>
+		/// </summary>
+		public bool LangKeyIsLiteral { get; set; }
+
+		public ModifierText(string? langKey, Material material, int partID, StatModifier stat) {
+			this.langKey = langKey;
 			this.material = material;
 			this.partID = partID;
 			Stat = stat;
 		}
 
-		public ModifierText(string langText, ItemPart part, StatModifier stat) {
-			this.langText = langText;
+		public ModifierText(string langKey, ItemPart part, StatModifier stat) {
+			this.langKey = langKey;
 			material = part.material;
 			partID = part.partID;
 			Stat = stat;

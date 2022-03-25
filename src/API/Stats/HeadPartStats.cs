@@ -43,7 +43,7 @@ namespace TerrariansConstructLib.API.Stats {
 			this.durability = durability;
 		}
 
-		public string GetTooltipLines(bool isAxeHeadPart) {
+		public string GetTooltipLines() {
 			StringBuilder sb = new();
 
 			sb.Append(ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadDamage, damage));
@@ -57,11 +57,8 @@ namespace TerrariansConstructLib.API.Stats {
 			if (useSpeed > 0)
 				sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadUseSpeed, useSpeed));
 
-			if (toolPower > 0) {
-				int power = isAxeHeadPart ? toolPower * 5 : toolPower;
-
-				sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadToolPower, power));
-			}
+			if (toolPower > 0)
+				sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadToolPower, toolPower));
 
 			sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.ExtraDurability + ".add", durability));
 

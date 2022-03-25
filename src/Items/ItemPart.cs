@@ -141,13 +141,8 @@ namespace TerrariansConstructLib.Items {
 		/// </summary>
 		/// <param name="material">The material</param>
 		/// <param name="partID">The part ID</param>
-		public static ModifierText? GetGlobalModifierText(Material material, int partID) {
-			//Unloaded/Unknown material should not be tampered with
-			if (material is not UnloadedMaterial or UnknownMaterial)
-				return partData.Get(material, partID).modifierText;
-
-			return null;
-		}
+		public static ModifierText? GetGlobalModifierText(Material material, int partID)
+			=> partData.Get(material, partID).modifierText;
 
 		/// <summary>
 		/// The material used to create this item part
@@ -170,7 +165,7 @@ namespace TerrariansConstructLib.Items {
 			modifierText = modifierText
 		};
 
-		public PartItemFunc? SetItemDefaults => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).setItemDefaults;
+		public PartItemFunc? OnInitialized => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onInitialized;
 
 		public PartProjectileFunc? SetProjectileDefaults => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).setProjectileDefaults;
 
@@ -251,13 +246,13 @@ namespace TerrariansConstructLib.Items {
 		};
 
 		public override bool Equals(object? obj)
-			=> obj is ItemPart part && material == part.material && partID == part.partID;
+			=> obj is ItemPart part && material.Type == part.material.Type && partID == part.partID;
 
 		public override int GetHashCode()
-			=> HashCode.Combine(material, partID);
+			=> HashCode.Combine(material.Type, partID);
 
 		public static bool operator ==(ItemPart left, ItemPart right)
-			=> left.material == right.material && left.partID == right.partID;
+			=> left.material.Type == right.material.Type && left.partID == right.partID;
 
 		public static bool operator !=(ItemPart left, ItemPart right)
 			=> !(left == right);

@@ -65,8 +65,7 @@ namespace TerrariansConstructLib.API.Commands {
 			}
 
 			//Assign the parts
-			for (int i = 0; i < parts.Length; i++)
-				tc.parts[i] = parts[i];
+			tc.InitializeWithParts(parts);
 
 			//Drop the item in the world
 			caller.Player.QuickSpawnClonedItem(new EntitySource_DebugCommand(), tc.Item, tc.Item.stack);

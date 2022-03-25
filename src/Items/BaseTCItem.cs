@@ -34,13 +34,13 @@ namespace TerrariansConstructLib.Items {
 		/// <summary>
 		/// The current durability for the item
 		/// </summary>
-		public int CurrentDurability { get; private set; }
+		public int CurrentDurability { get; internal set; }
 
 		public virtual int PartsCount => 0;
 
 		protected ReadOnlySpan<ItemPart> GetParts() => parts.ToArray();
 
-		private IEnumerable<S> GetPartStats<S>(StatType type) where S : class, IPartStats
+		protected IEnumerable<S> GetPartStats<S>(StatType type) where S : class, IPartStats
 			=> parts.Select(p => p.material.GetStat<S>(type)!).Where(s => s is not null);
 
 		protected IEnumerable<HeadPartStats> GetHeadParts() => GetPartStats<HeadPartStats>(StatType.Head);
@@ -48,6 +48,15 @@ namespace TerrariansConstructLib.Items {
 		protected IEnumerable<HandlePartStats> GetHandleParts() => GetPartStats<HandlePartStats>(StatType.Handle);
 
 		protected IEnumerable<ExtraPartStats> GetExtraParts() => GetPartStats<ExtraPartStats>(StatType.Extra);
+
+		protected IEnumerable<HeadPartStats> SelectToolPickaxeStats()
+			=> parts.Where(p => PartRegistry.isPickPart[p.partID]).Select(p => p.material.GetStat<HeadPartStats>(StatType.Head)!).Where(s => s is not null);
+
+		protected IEnumerable<HeadPartStats> SelectToolAxeStats()
+			=> parts.Where(p => PartRegistry.isAxePart[p.partID]).Select(p => p.material.GetStat<HeadPartStats>(StatType.Head)!).Where(s => s is not null);
+
+		protected IEnumerable<HeadPartStats> SelectToolHammerStats()
+			=> parts.Where(p => PartRegistry.isHammerPart[p.partID]).Select(p => p.material.GetStat<HeadPartStats>(StatType.Head)!).Where(s => s is not null);
 
 		public ItemPart this[int index] {
 			get => parts[index];
@@ -146,18 +155,33 @@ namespace TerrariansConstructLib.Items {
 
 			SafeSetDefaults();
 
+			Item.maxStack = 1;
+			Item.consumable = false;
+		}
+
+		internal void InitializeWithParts(params ItemPart[] parts) {
+			for (int i = 0; i < parts.Length; i++)
+				this.parts[i] = parts[i];
+
 			Item.damage = GetBaseDamage();
 			Item.knockBack = GetBaseKnockback();
-			Item.useTime = Item.useAnimation = GetBaseUseSpeed();
+			Item.crit = GetBaseCrit();
+			InitializeUseTimeAndUseSpeed();
+
+			Item.value = (int)parts.Select(p => (p.material.AsItem()?.value ?? 0f) * PartRegistry.registeredIDs[p.partID].materialCost * Material.worthByMaterialID[p.material.Type] / 2f).Sum();
 
 			CurrentDurability = GetMaxDurability();
 
 			for (int i = 0; i < parts.Length; i++)
-				parts[i].SetItemDefaults?.Invoke(parts[i].partID, Item);
+				parts[i].OnInitialized?.Invoke(parts[i].partID, Item);
 
-			Item.maxStack = 1;
-			Item.consumable = false;
+			OnInitializedWithParts();
 		}
+
+		/// <summary>
+		/// Called after setting the parts on the item.  Use this hook to initialize fields in the item such as <seealso cref="Item.pick"/>
+		/// </summary>
+		public virtual void OnInitializedWithParts() { }
 
 		/// <inheritdoc cref="SetDefaults"/>
 		public virtual void SafeSetDefaults() { }
@@ -179,13 +203,13 @@ namespace TerrariansConstructLib.Items {
 			SafeModifyTooltips(tooltips);
 
 			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TYPES>", i => "PartType_" + i,
-				string.Join('\n', parts.Select(GetItemNameWithRarity).Distinct()));
+				string.Join('\n', GetPartNamesForTooltip()));
 
 			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TOOLTIPS>", i => "PartTooltip_" + i,
-				string.Join('\n', parts.Select(p => CoreLibMod.GetPartTooltip(p.material, p.partID)).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct()));
+				string.Join('\n', GetModifierTooltipLines()));
 
 			Utility.FindAndInsertLines(Mod, tooltips, "<MODIFIERS>", i => "Modifier_" + i,
-				string.Join('\n', EvaluateModifiers(parts.Select(p => CoreLibMod.GetPartModifierText(p.material, p.partID))).Where(s => !string.IsNullOrWhiteSpace(s))));
+				string.Join('\n', GetModifierLines()));
 
 			if (ammoReserveMax > 0) {
 				float pct = (float)ammoReserve / ammoReserveMax;
@@ -208,6 +232,15 @@ namespace TerrariansConstructLib.Items {
 				Utility.FindAndRemoveLine(tooltips, "<DURABILITY>");
 		}
 
+		public IEnumerable<string> GetPartNamesForTooltip()
+			=> parts.Select(GetItemNameWithRarity).Distinct();
+
+		public IEnumerable<string> GetModifierTooltipLines()
+			=> parts.Select(p => CoreLibMod.GetPartTooltip(p.material, p.partID)!).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct();
+
+		public IEnumerable<string> GetModifierLines()
+			=> EvaluateModifiers(parts.Select(p => CoreLibMod.GetPartModifierText(p.material, p.partID)!)).Where(s => !string.IsNullOrWhiteSpace(s));
+
 		private static string GetItemNameWithRarity(ItemPart part) {
 			Item? material = part.material.AsItem();
 
@@ -216,34 +249,30 @@ namespace TerrariansConstructLib.Items {
 			return $"  [c/{hex}:{part.material.GetItemName()} {CoreLibMod.GetPartName(part.partID)}]";
 		}
 
-		private static IEnumerable<string?> EvaluateModifiers(IEnumerable<ModifierText?> orig) {
+		private static IEnumerable<string> EvaluateModifiers(IEnumerable<ModifierText> orig) {
 			//Evaluate all of the lines from the enumeration
 			List<ModifierText?> lines = new(orig);
 
-			Dictionary<ItemPart, ModifierText?> modifiers = new();
+			Dictionary<string, ModifierText> modifiers = new();
 
 			foreach (ModifierText? modifier in lines) {
-				var part = modifier?.GetPart();
+				string? langKey = modifier?.langKey;
 
-				if (part?.GetModifierText()?.langText is null)
+				if (langKey is null)
 					continue;
 
-				if (!modifiers.ContainsKey(part) || modifiers[part] is null)
-					modifiers[part] = modifier?.Clone();
-				else {
-					var mod = modifiers[part];
-
-					if (mod is not null)
-						mod.Stat = mod.Stat.CombineWith(modifier?.Stat ?? StatModifier.One);
-				}
+				if (modifiers.ContainsKey(langKey))
+					modifiers[langKey].Stat = modifiers[langKey].Stat.CombineWith(modifier!.Stat);
+				else
+					modifiers[langKey] = modifier!.Clone();
 			}
 
 			return modifiers
 				.Select(kvp => {
-					if (kvp.Value is null)
-						return null;
+					if (kvp.Value.LangKeyIsLiteral)
+						return kvp.Key;
 
-					string format = Language.GetTextValue(kvp.Value.langText);
+					string format = Language.GetTextValue(kvp.Key);
 
 					return string.Format(format, ((float)kvp.Value.Stat - 1f) * 100);
 				});
@@ -272,6 +301,9 @@ namespace TerrariansConstructLib.Items {
 				parts[i].ModifyWeaponDamage?.Invoke(parts[i].partID, player, ref damage, ref flat);
 
 			SafeModifyWeaponDamage(player, ref damage, ref flat);
+
+			if (TCConfig.Instance.UseDurability && CurrentDurability <= 0)
+				damage -= 0.7f;
 		}
 
 		/// <inheritdoc cref="ModifyWeaponDamage(Player, ref StatModifier, ref float)"/>
@@ -282,6 +314,9 @@ namespace TerrariansConstructLib.Items {
 				parts[i].ModifyWeaponKnockback?.Invoke(parts[i].partID, player, ref knockback, ref flat);
 
 			SafeModifyWeaponKnockback(player, ref knockback, ref flat);
+
+			if (TCConfig.Instance.UseDurability && CurrentDurability <= 0)
+				knockback *= 0f;
 		}
 
 		/// <inheritdoc cref="ModifyWeaponKnockback(Player, ref StatModifier, ref float)"/>
@@ -292,10 +327,19 @@ namespace TerrariansConstructLib.Items {
 				parts[i].ModifyWeaponCrit?.Invoke(parts[i].partID, player, ref crit);
 
 			SafeModifyWeaponCrit(player, ref crit);
+
+			if (TCConfig.Instance.UseDurability && CurrentDurability <= 0)
+				crit = 0;
 		}
 
 		/// <inheritdoc cref="ModifyWeaponCrit(Player, ref int)"/>
 		public virtual void SafeModifyWeaponCrit(Player player, ref int crit) { }
+
+		public sealed override float UseSpeedMultiplier(Player player)
+			=> (TCConfig.Instance.UseDurability && CurrentDurability <= 0 ? 1f / 1.5f : 1f) * SafeUseSpeedMultiplier(player);
+
+		/// <inheritdoc cref="UseSpeedMultiplier(Player)"/>
+		public virtual float SafeUseSpeedMultiplier(Player player) => 1f;
 
 		public bool HasPartOfType(int type, out int partIndex) {
 			for (int i = 0; i < parts.Length; i++) {
@@ -358,7 +402,7 @@ namespace TerrariansConstructLib.Items {
 		public virtual void SafeUseItem(Player player) { }
 
 		public sealed override void OnHitNPC(Player player, NPC target, int damage, float knockBack, bool crit) {
-			TryReduceDurability(player, GetToolPower() > 0 ? 2 : 1);
+			TryReduceDurability(player, HasAnyToolPower() ? 2 : 1);
 
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnItemHitNPC?.Invoke(parts[i].partID, Item, player, target, damage, knockBack, crit);
@@ -370,7 +414,7 @@ namespace TerrariansConstructLib.Items {
 		public virtual void SafeOnHitNPC(Player player, NPC target, int damage, float knockBack, bool crit) { }
 
 		public sealed override void OnHitPvp(Player player, Player target, int damage, bool crit) {
-			TryReduceDurability(player, GetToolPower() > 0 ? 2 : 1);
+			TryReduceDurability(player, HasAnyToolPower() ? 2 : 1);
 
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnItemHitPlayer?.Invoke(parts[i].partID, Item, player, target, damage, crit);
@@ -425,19 +469,63 @@ namespace TerrariansConstructLib.Items {
 			return (int)Math.Max(1, (averageHead + handleAdd) * averageHandle);
 		}
 
+		protected void InitializeUseTimeAndUseSpeed() {
+			float mult = ItemRegistry.registeredIDs[registeredItemID].useSpeedMultiplier;
+
+			if (!HasAnyToolPower())
+				Item.useTime = Item.useAnimation = (int)Math.Max(1, GetBaseUseSpeed() * mult);
+			else {
+				float time = Math.Max(1, GetBaseMiningSpeed() * mult);
+
+				Item.useTime = (int)Math.Max(1, time / 2);
+				Item.useAnimation = (int)time;
+			}
+		}
+
 		public int GetBaseUseSpeed() {
 			double averageHead = GetHeadParts().Average(p => p.useSpeed);
-			double averageHandle = GetHandleParts().Average(p => p.attackSpeed.Additive);
-			double handleAdd = GetHandleParts().Sum(p => p.attackSpeed.Additive);
+			StatModifier handle = GetHandleParts().Sum(p => p.attackSpeed);
 
-			return (int)Math.Max(1, (averageHead + handleAdd) * averageHandle);
+			return (int)Math.Max(1, averageHead * handle);
 		}
 
-		public int GetToolPower() {
-			double averageHead = GetHeadParts().Average(p => p.toolPower);
+		/// <summary>
+		/// Gets the base mining speed for the item
+		/// </summary>
+		/// <returns>Zero if the item isn't a mining tool, the base mining speed otherwise</returns>
+		public int GetBaseMiningSpeed() {
+			if (!HasAnyToolPower())
+				return 0;
 
-			return (int)averageHead;
+			double averageHead = GetHeadParts().Average(p => p.useSpeed);
+			double handle = 1f;
+
+			foreach (var stat in GetHandleParts().Select(p => p.miningSpeed))
+				handle *= stat;
+
+			return (int)Math.Max(1, averageHead * handle);
 		}
+
+		public int GetBaseCrit() {
+			double head = GetHeadParts().Sum(p => p.crit);
+
+			return (int)head;
+		}
+
+		public int GetPickaxePower() => AverageToolStats(SelectToolPickaxeStats());
+
+		public int GetAxePower() => AverageToolStats(SelectToolAxeStats()) / 5;
+
+		public int GetHammerPower() => AverageToolStats(SelectToolHammerStats());
+
+		private static int AverageToolStats(IEnumerable<HeadPartStats> stats) {
+			double average = stats.Average(p => p.toolPower);
+
+			return average > 0 ? (int)(average + 1) : 0;
+		}
+
+		public bool HasAnyToolPower()
+			=> SelectToolAxeStats().Any(p => p.toolPower > 0) || SelectToolPickaxeStats().Any(p => p.toolPower > 0) || SelectToolHammerStats().Any(p => p.toolPower > 0);
 
 		private void TryReduceDurability(Player player, int amount) {
 			if (CurrentDurability > 0 && TCConfig.Instance.UseDurability) {
@@ -449,6 +537,12 @@ namespace TerrariansConstructLib.Items {
 				if (CurrentDurability == 0) {
 					SoundEngine.PlaySound(SoundID.Tink, player.Center, style: 0);
 					SoundEngine.PlaySound(SoundID.Item50, player.Center);
+
+					const int sizeX = 6 * 16;
+					const int sizeY = 10 * 16;
+					Point tl = (player.Center + new Vector2(-sizeX / 2f, -sizeY / 2f)).ToPoint();
+					Rectangle area = new(tl.X, tl.Y, sizeX, sizeY);
+					CombatText.NewText(area, CombatText.DamagedFriendlyCrit, Language.GetTextValue("Prefix.Broken").ToUpper(), dramatic: true);
 				}
 			}
 		}
@@ -461,7 +555,8 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public override void LoadData(TagCompound tag) {
-			parts = new(tag.GetList<ItemPart>("parts").ToArray());
+			InitializeWithParts(tag.GetList<ItemPart>("parts").ToArray());
+
 			CurrentDurability = tag.GetInt("durability");
 			ammoReserve = tag.GetInt("ammo");
 			ammoReserveMax = tag.GetInt("ammoMax");
@@ -493,14 +588,14 @@ namespace TerrariansConstructLib.Items {
 
 			spriteBatch.Draw(texture, position, frame, drawColor, 0f, origin, scale, SpriteEffects.None, 0);
 
-			if (CurrentDurability > 0) {
-				Texture2D durabilityBar = CoreLibMod.Instance.Assets.Request<Texture2D>("Assets/DurabliityBar").Value;
+			int max = GetMaxDurability();
+			if (TCConfig.Instance.UseDurability && CurrentDurability < max) {
+				Texture2D durabilityBar = CoreLibMod.Instance.Assets.Request<Texture2D>("Assets/DurabilityBar").Value;
 
-				int max = GetMaxDurability();
-				int frameY = CurrentDurability >= max ? 0 : (int)(15 * (1 - (float)CurrentDurability / max));
-				Rectangle barFrame = durabilityBar.Frame(1, 15, 0, frameY);
+				int frameY = (int)(15 * (1 - (float)CurrentDurability / max));
+				Rectangle barFrame = durabilityBar.Frame(1, 16, 0, frameY);
 
-				spriteBatch.Draw(durabilityBar, position, barFrame, Color.White, 0f, barFrame.Size() / 2f, 1f, SpriteEffects.None, 0);
+				spriteBatch.Draw(durabilityBar, position, barFrame, Color.White, 0f, Vector2.Zero, Main.inventoryScale, SpriteEffects.None, 0);
 			}
 
 			return false;

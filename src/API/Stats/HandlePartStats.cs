@@ -38,13 +38,22 @@ namespace TerrariansConstructLib.API.Stats {
 			this.durability = durability ?? StatModifier.One;
 		}
 
-		public string GetTooltipLines(bool isAxeHeadPart) {
+		public string GetTooltipLines() {
 			StringBuilder sb = new();
 
 			bool needsNewline = false;
-			if (miningSpeed != 1f) {
-				sb.Append(ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HandleMiningSpeed, miningSpeed));
-				needsNewline = true;
+			
+			void AppendFormatSingle(string identifier, float stat) {
+				string? fmt = ItemStatCollection.Format(identifier, stat);
+
+				if (fmt is not null) {
+					if (needsNewline)
+						sb.Append('\n');
+
+					sb.Append(fmt);
+
+					needsNewline = true;
+				}
 			}
 
 			void AppendFormat(string identifier, StatModifier modifier) {
@@ -59,7 +68,8 @@ namespace TerrariansConstructLib.API.Stats {
 				}
 			}
 
-			AppendFormat(CoreLibMod.KnownStatModifiers.HandleAttackSpeed, attackSpeed);
+			AppendFormatSingle(CoreLibMod.KnownStatModifiers.HandleMiningSpeed, miningSpeed);
+			AppendFormatSingle(CoreLibMod.KnownStatModifiers.HandleAttackSpeed, attackSpeed);
 			AppendFormat(CoreLibMod.KnownStatModifiers.HandleAttackDamage, attackDamage);
 			AppendFormat(CoreLibMod.KnownStatModifiers.HandleAttackKnockback, attackKnockback);
 			AppendFormat(CoreLibMod.KnownStatModifiers.HandleDurability, durability);

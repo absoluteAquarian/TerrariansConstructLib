@@ -54,7 +54,7 @@ namespace TerrariansConstructLib.Materials {
 		public Item? AsItem() => this is UnloadedMaterial or UnknownMaterial ? null : new(Type);
 
 		public static Material FromItem(int type)
-			=> new(){ Type = type };
+			=> type == UnloadedMaterial.StaticType ? new UnloadedMaterial() : type == UnknownMaterial.StaticType ? new UnknownMaterial() : new Material(){ Type = type };
 
 		public virtual TagCompound SerializeData() {
 			TagCompound tag = new();

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using Terraria;
 using Terraria.ID;
@@ -115,6 +116,30 @@ namespace TerrariansConstructLib {
 
 			foreach (var (id, data) in PartRegistry.registeredIDs) {
 				writer.WriteLine($"Item Part \"{data.name}\" (ID: {id}) added by {data.mod.Name}");
+				
+				StringBuilder sb = new();
+				bool needComma = false;
+				if (PartRegistry.isAxePart[id]) {
+					sb.Append("Axe");
+					needComma = true;
+				}
+				if (PartRegistry.isPickPart[id]) {
+					if (needComma)
+						sb.Append(", ");
+
+					sb.Append("Pickaxe");
+					needComma = true;
+				}
+				if (PartRegistry.isHammerPart[id]) {
+					if (needComma)
+						sb.Append(", ");
+
+					sb.Append("Hammer");
+					needComma = true;
+				}
+
+				if (sb.Length > 0)
+					writer.WriteLine($"  Tool flags: {sb}");
 				writer.Flush();
 			}
 
@@ -148,9 +173,10 @@ namespace TerrariansConstructLib {
 			LoadAllOfTheThings("RegisterTCMaterials");
 
 			foreach (var (type, stats) in Material.statsByMaterialID) {
-				Material copy = type == UnloadedMaterial.StaticType ? RegisteredMaterials.Unloaded : type == UnknownMaterial.StaticType ? RegisteredMaterials.Unknown : Material.FromItem(type);
+				Material copy = Material.FromItem(type);
 
-				writer.WriteLine($"Stats for material \"{copy.GetModName()}:{copy.GetName()}\" was registered with the following part types: " + string.Join(", ", stats.Select(s => s.ToString())));
+				writer.WriteLine($"Stats for material \"{copy.GetModName()}:{copy.GetName()}\" was registered with the following part types:\n"
+					+ "  " + string.Join(", ", stats.Select(s => s.ToString())));
 				writer.Flush();
 			}
 
@@ -393,16 +419,17 @@ namespace TerrariansConstructLib {
 		/// <param name="name">The default item type name used by <seealso cref="BaseTCItem.RegisteredItemTypeName"/></param>
 		/// <param name="itemInternalName">The item type that this registered item ID will be applied to.  Use the string you'd use to access the item via <seealso cref="Mod.Find{T}(string)"/></param>
 		/// <param name="partVisualsFolder">The folder where the item's part visuals is located, relative to the mod they're from</param>
+		/// <param name="useSpeedMultiplier">A modifier applied to the base use speed generated from the item's parts</param>
 		/// <param name="validPartIDs">The array of parts that comprise the weapon</param>
 		/// <returns>The ID of the registered item</returns>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterItem(Mod mod, string internalName, string name, string itemInternalName, string partVisualsFolder, params int[] validPartIDs) {
+		public static int RegisterItem(Mod mod, string internalName, string name, string itemInternalName, string partVisualsFolder, float useSpeedMultiplier, params int[] validPartIDs) {
 			if (!isLoadingParts)
 				throw new Exception(GetLateLoadReason("RegisterTCItems"));
 
-			return ItemRegistry.Register(mod, internalName, name, itemInternalName, partVisualsFolder, validPartIDs);
+			return ItemRegistry.Register(mod, internalName, name, itemInternalName, partVisualsFolder, useSpeedMultiplier, validPartIDs);
 		}
 
 		/// <summary>
@@ -440,12 +467,14 @@ namespace TerrariansConstructLib {
 			=> new ListUsedMaterials().GetRegistry().Values;
 
 		/// <summary>
-		/// Flags or clears a part ID as being an axe part
+		/// Flags or clears a part ID as being certain tool types
 		/// </summary>
 		/// <param name="partID">The part ID</param>
-		/// <param name="isAxe">Whether the part is an axe part</param>
+		/// <param name="isAxe">Whether the part is an axe head part</param>
+		/// <param name="isPick">Whether the part is a pickaxe head part</param>
+		/// <param name="isHammer">Whetehr the part is a hammer head part</param>
 		/// <exception cref="ArgumentException"/>
-		public static void SetPartAsAxeToolPart(int partID, bool isAxe) {
+		public static void SetToolPartFlags(int partID, bool isAxe = false, bool isPick = false, bool isHammer = false) {
 			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new ArgumentException("Part ID was invalid");
 
@@ -453,6 +482,16 @@ namespace TerrariansConstructLib {
 				PartRegistry.isAxePart.Length = partID + 1;
 
 			PartRegistry.isAxePart[partID] = isAxe;
+
+			if (PartRegistry.isPickPart.Length < partID)
+				PartRegistry.isPickPart.Length = partID + 1;
+
+			PartRegistry.isPickPart[partID] = isPick;
+
+			if (PartRegistry.isHammerPart.Length < partID)
+				PartRegistry.isHammerPart.Length = partID + 1;
+
+			PartRegistry.isHammerPart[partID] = isHammer;
 		}
 
 		/// <summary>

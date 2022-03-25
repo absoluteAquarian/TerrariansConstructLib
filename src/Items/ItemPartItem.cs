@@ -184,7 +184,7 @@ namespace TerrariansConstructLib.Items {
 		public override void ModifyTooltips(List<TooltipLine> tooltips) {
 			StatType type = PartRegistry.registeredIDs[part.partID].type;
 
-			string? lines = part.material.GetStat(type)?.GetTooltipLines(PartRegistry.isAxePart[part.partID]);
+			string? lines = part.material.GetStat(type)?.GetTooltipLines();
 
 			if (lines is not null)
 				Utility.FindAndInsertLines(Mod, tooltips, "<STATS>", i => "PartStat_" + i, lines);

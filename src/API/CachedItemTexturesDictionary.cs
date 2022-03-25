@@ -89,7 +89,7 @@ namespace TerrariansConstructLib.API {
 		}
 
 		private static Dictionary<int, int> GenerateHashmap(ItemPart[] parts)
-			=> parts.ToDictionary(part => part.partID, part => (from p in parts where p.partID == part.partID select p).Count());
+			=> parts.DistinctBy(p => p.partID).ToDictionary(part => part.partID, part => (from p in parts where p.partID == part.partID select p).Count());
 
 		private static Texture2D BuildTexture(int registeredItemID, ItemPart[] parts) {
 			string visualsFolder = ItemRegistry.registeredIDs[registeredItemID].partVisualsFolder;

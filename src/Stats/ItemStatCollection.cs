@@ -20,7 +20,7 @@ namespace TerrariansConstructLib.Stats {
 			AddStat(CoreLibMod.KnownStatModifiers.HeadDurability, "Mods.TerrariansConstructLib.StatFormats.Head.Durability");
 
 			AddStat(CoreLibMod.KnownStatModifiers.HandleMiningSpeed, "Mods.TerrariansConstructLib.StatFormats.Handle.MiningSpeed");
-			AddStats(CoreLibMod.KnownStatModifiers.HandleAttackSpeed, "Mods.TerrariansConstructLib.StatFormats.Handle.AttackSpeed");
+			AddStat(CoreLibMod.KnownStatModifiers.HandleAttackSpeed, "Mods.TerrariansConstructLib.StatFormats.Handle.AttackSpeed");
 			AddStats(CoreLibMod.KnownStatModifiers.HandleAttackDamage, "Mods.TerrariansConstructLib.StatFormats.Handle.AttackDamage");
 			AddStats(CoreLibMod.KnownStatModifiers.HandleAttackKnockback, "Mods.TerrariansConstructLib.StatFormats.Handle.AttackKnockback");
 			AddStats(CoreLibMod.KnownStatModifiers.HandleDurability, "Mods.TerrariansConstructLib.StatFormats.Handle.Durability");

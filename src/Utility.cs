@@ -52,7 +52,9 @@ namespace TerrariansConstructLib {
 			float num4 = Main.mouseTextColor / 255f;
 			int a = Main.mouseTextColor;
 			//Main.instance._mouseTextCache.diff
-			byte diff = (byte)typeof(Main).GetNestedType("MouseTextCache")!.GetField("diff", BindingFlags.Public | BindingFlags.Instance)!.GetValue(ReflectionHelper<Main>.InvokeGetterFunction("_mouseTextCache", Main.instance))!;
+			byte diff = (byte)typeof(Main).GetNestedType("MouseTextCache", BindingFlags.NonPublic | BindingFlags.Instance)!
+				.GetField("diff", BindingFlags.Public | BindingFlags.Instance)!
+				.GetValue(ReflectionHelper<Main>.InvokeGetterFunction("_mouseTextCache", Main.instance))!;
 
 			Color black = new(num4, num4, num4, num4);
 
@@ -115,6 +117,20 @@ namespace TerrariansConstructLib {
 
 		public static double Average<T>(this IEnumerable<T> collection, Func<T, double> func, double defaultValueIfEmpty = 0)
 			=> !collection.Any() ? defaultValueIfEmpty : Enumerable.Average(collection, func);
+
+		public static StatModifier Sum<T>(this IEnumerable<T> collection, Func<T, StatModifier> func, StatModifier? defaultValueIfEmpty = null) {
+			StatModifier def = defaultValueIfEmpty ?? StatModifier.One;
+
+			if (!collection.Any())
+				return def;
+
+			StatModifier modifier = StatModifier.One;
+
+			foreach (var stat in collection.Select(func))
+				modifier = modifier.CombineWith(stat);
+
+			return modifier;
+		}
 
 		internal static MethodInfo LocalizationLoader_AutoloadTranslations, LocalizationLoader_SetLocalizedText;
 		internal static FieldInfo LanguageManager__localizedTexts;

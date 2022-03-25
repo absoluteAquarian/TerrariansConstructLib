@@ -63,7 +63,7 @@ namespace TerrariansConstructLib.API.Stats {
 			set => With(identifier, value);
 		}
 
-		public string GetTooltipLines(bool isAxeHeadPart) {
+		public string GetTooltipLines() {
 			StringBuilder sb = new();
 
 			foreach (var (name, stat) in modifiers)

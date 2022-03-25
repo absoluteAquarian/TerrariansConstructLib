@@ -42,12 +42,16 @@ namespace TerrariansConstructLib.Registry {
 		internal static void Load() {
 			registeredIDs = new();
 			isAxePart = new(16);
+			isPickPart = new(16);
+			isHammerPart = new(16);
 			nextID = 0;
 		}
 
 		internal static void Unload() {
 			registeredIDs = null!;
 			isAxePart = null!;
+			isPickPart = null!;
+			isHammerPart = null!;
 			nextID = 0;
 		}
 
@@ -57,6 +61,8 @@ namespace TerrariansConstructLib.Registry {
 
 		internal static Dictionary<int, Data> registeredIDs;
 		internal static BitArray isAxePart;
+		internal static BitArray isPickPart;
+		internal static BitArray isHammerPart;
 
 		internal static bool TryFindData(Mod mod, string internalName, out int id) {
 			foreach (var (i, d) in registeredIDs) {

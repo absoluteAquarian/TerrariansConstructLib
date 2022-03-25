@@ -18,7 +18,8 @@ namespace TerrariansConstructLib.API.Edits {
 			try {
 				MonoModHooks.RequestNativeAccess();
 
-				// TODO: make detours that need to happen before Mod.Load()
+				// Usage: freeing the custom writer so that the log file can be viewed
+				DetourHook(typeof(ModContent).GetCachedMethod("Load"), typeof(Detours.TML).GetCachedMethod(nameof(Detours.TML.Hook_ModContent_Load)));
 			} catch (Exception ex) {
 				throw new Exception("An error occurred while doing patching in TerrariansConstructLib." +
 				                    "\nReport this error to the mod devs and disable the mod in the meantime." +

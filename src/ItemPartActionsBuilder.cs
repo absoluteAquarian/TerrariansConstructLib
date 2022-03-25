@@ -2,7 +2,7 @@
 
 namespace TerrariansConstructLib {
 	public class ItemPartActionsBuilder {
-		internal ItemPart.PartItemFunc setItemDefaults;
+		internal ItemPart.PartItemFunc onInitialized;
 		internal ItemPart.PartProjectileFunc setProjectileDefaults;
 		internal ItemPart.PartPlayerFunc onUse;
 		internal ItemPart.PartPlayerFunc onHold;
@@ -32,11 +32,11 @@ namespace TerrariansConstructLib {
 			return builder;
 		}
 
-		public ItemPartActionsBuilder WithItemDefaults(ItemPart.PartItemFunc setItemDefaults) {
+		public ItemPartActionsBuilder WithItemDefaults(ItemPart.PartItemFunc onInitialized) {
 			if (isReadonly)
-				return Clone().WithItemDefaults(setItemDefaults);
+				return Clone().WithItemDefaults(onInitialized);
 
-			this.setItemDefaults = setItemDefaults;
+			this.onInitialized = onInitialized;
 			return this;
 		}
 
