@@ -115,6 +115,13 @@ namespace TerrariansConstructLib.Items {
 		/// <see langword="bool"/> <paramref name="crit"/>
 		/// </summary>
 		public delegate void PartItemHitPlayerFunc(int partID, Item item, Player owner, Player target, int damage, bool crit);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Item"/> <paramref name="item"/>,
+		/// <see cref="Player"/> <paramref name="player"/>,
+		/// <see langword="ref float"/> <paramref name="multiplier"/>
+		/// </summary>
+		public delegate void PartItemUseSpeedMultiplier(int partID, Item item, Player player, ref float multiplier);
 
 		internal static PartsDictionary<ItemPart> partData;
 
@@ -196,6 +203,10 @@ namespace TerrariansConstructLib.Items {
 		public PartItemHitNPCFunc? OnItemHitNPC => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onItemHitNPC;
 
 		public PartItemHitPlayerFunc? OnItemHitPlayer => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onItemHitPlayer;
+
+		public PartItemUseSpeedMultiplier? UseSpeedMultiplier => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).useSpeedMultiplier;
+
+		public PartPlayerFunc? OnUpdateInventory => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onUpdateInventory;
 
 		public TagCompound SerializeData() {
 			TagCompound tag = new();

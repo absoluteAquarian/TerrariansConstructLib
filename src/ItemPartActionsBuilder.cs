@@ -18,6 +18,8 @@ namespace TerrariansConstructLib {
 		internal ItemPart.PartTileDestructionFunc onTileDestroyed;
 		internal ItemPart.PartItemHitNPCFunc onItemHitNPC;
 		internal ItemPart.PartItemHitPlayerFunc onItemHitPlayer;
+		internal ItemPart.PartItemUseSpeedMultiplier useSpeedMultiplier;
+		internal ItemPart.PartPlayerFunc onUpdateInventory;
 
 		private bool isReadonly;
 
@@ -157,6 +159,22 @@ namespace TerrariansConstructLib {
 				return Clone().WithOnItemHitPlayer(onItemHitPlayer);
 
 			this.onItemHitPlayer = onItemHitPlayer;
+			return this;
+		}
+
+		public ItemPartActionsBuilder WithUseSpeedMultiplier(ItemPart.PartItemUseSpeedMultiplier useSpeedMultiplier) {
+			if (isReadonly)
+				return Clone().WithUseSpeedMultiplier(useSpeedMultiplier);
+
+			this.useSpeedMultiplier = useSpeedMultiplier;
+			return this;
+		}
+
+		public ItemPartActionsBuilder WithOnUpdateInventory(ItemPart.PartPlayerFunc onUpdateInventory) {
+			if (isReadonly)
+				return Clone().WithOnUpdateInventory(onUpdateInventory);
+
+			this.onUpdateInventory = onUpdateInventory;
 			return this;
 		}
 	}

@@ -11,6 +11,7 @@ using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Core;
+using TerrariansConstructLib.Abilities;
 using TerrariansConstructLib.API;
 using TerrariansConstructLib.API.Commands;
 using TerrariansConstructLib.API.Edits;
@@ -82,6 +83,7 @@ namespace TerrariansConstructLib {
 			Material.statsByMaterialID = new();
 			Material.worthByMaterialID = new();
 			ForgeUISlotConfiguration.Initialize();
+			AbilityCollection.registeredAbilities = new();
 
 			ItemStatCollection.Load();
 
@@ -161,11 +163,11 @@ namespace TerrariansConstructLib {
 			AddMoldItems();
 
 			//head part: damage, knockback, crit, useSpeed, toolPower
-			RegisterMaterialStats(RegisteredMaterials.Unloaded, 1,
+			RegisterMaterialStats(RegisteredMaterials.Unloaded, 1, null,
 				new HeadPartStats(0, 0, 0, 20, 0, 1),
 				new HandlePartStats(),
 				new ExtraPartStats());
-			RegisterMaterialStats(RegisteredMaterials.Unknown, 1,
+			RegisterMaterialStats(RegisteredMaterials.Unknown, 1, null,
 				new HeadPartStats(0, 0, 0, 20, 0, 1),
 				new HandlePartStats(),
 				new ExtraPartStats());
@@ -353,6 +355,7 @@ namespace TerrariansConstructLib {
 			Material.statsByMaterialID = null!;
 			Material.worthByMaterialID = null!;
 			ForgeUISlotConfiguration.Unload();
+			AbilityCollection.registeredAbilities = null!;
 
 			ItemStatCollection.Unload();
 
@@ -437,19 +440,20 @@ namespace TerrariansConstructLib {
 		/// </summary>
 		/// <param name="material">The material for the item part stats</param>
 		/// <param name="worth">How much material is needed to create one Shard part</param>
+		/// <param name="ability">The ability instance for the material</param>
 		/// <param name="stats">The stats for the material</param>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
-		public static Material RegisterMaterialStats(int material, int worth, params IPartStats[] stats) {
+		public static Material RegisterMaterialStats(int material, int worth, BaseAbility? ability, params IPartStats[] stats) {
 			Material instance = Material.FromItem(material);
 			
-			RegisterMaterialStats(instance, worth, stats);
+			RegisterMaterialStats(instance, worth, ability, stats);
 
 			return instance;
 		}
 
 		//Used to load the stats for the Unloaded and Unknown materials
-		private static void RegisterMaterialStats(Material material, int worth, params IPartStats[] stats) {
+		private static void RegisterMaterialStats(Material material, int worth, BaseAbility? ability, params IPartStats[] stats) {
 			if (stats is null || stats.Length == 0)
 				throw new ArgumentException("Stats array was null or had a zero length");
 			
@@ -458,6 +462,8 @@ namespace TerrariansConstructLib {
 
 			Material.statsByMaterialID[material.Type] = (IPartStats[])stats.Clone();
 			Material.worthByMaterialID[material.Type] = worth;
+
+			AbilityCollection.registeredAbilities[material] = ability?.Clone();
 		}
 
 		/// <summary>

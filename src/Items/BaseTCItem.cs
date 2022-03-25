@@ -13,6 +13,7 @@ using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using TerrariansConstructLib.Abilities;
 using TerrariansConstructLib.API;
 using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.API.Stats;
@@ -26,6 +27,10 @@ namespace TerrariansConstructLib.Items {
 	/// </summary>
 	public class BaseTCItem : ModItem {
 		internal ItemPartSlotCollection parts = new(2);
+		internal AbilityCollection abilities;
+
+		public IEnumerable<T> GetAbilities<T>() where T : BaseAbility
+			=> abilities.Where(a => a is T).Select(a => (a as T)!);
 
 		public int ammoReserve, ammoReserveMax;
 
@@ -92,13 +97,6 @@ namespace TerrariansConstructLib.Items {
 			Item.shoot = CoreLibMod.GetAmmoProjectileType(constructedAmmoID);
 			Item.useAmmo = CoreLibMod.GetAmmoID(constructedAmmoID);
 		}
-
-		// TODO: move these to an Ability object maybe?
-		public float copperPartCharge;
-		public const float CopperPartChargeMax = 6f * 2.5f * 60 * 60;  //6 velocity for at least 2.5 minutes
-		public bool copperChargeActivated;
-
-		public bool CopperChargeReady => !copperChargeActivated && copperPartCharge >= CopperPartChargeMax;
 
 		/// <summary>
 		/// The name for the item, used in <see cref="SetStaticDefaults"/><br/>
@@ -176,6 +174,8 @@ namespace TerrariansConstructLib.Items {
 				parts[i].OnInitialized?.Invoke(parts[i].partID, Item);
 
 			OnInitializedWithParts();
+
+			abilities = new(this);
 		}
 
 		/// <summary>
@@ -335,8 +335,16 @@ namespace TerrariansConstructLib.Items {
 		/// <inheritdoc cref="ModifyWeaponCrit(Player, ref int)"/>
 		public virtual void SafeModifyWeaponCrit(Player player, ref int crit) { }
 
-		public sealed override float UseSpeedMultiplier(Player player)
-			=> (TCConfig.Instance.UseDurability && CurrentDurability <= 0 ? 1f / 1.5f : 1f) * SafeUseSpeedMultiplier(player);
+		public sealed override float UseSpeedMultiplier(Player player) {
+			float speed = 1f;
+
+			for (int i = 0; i < parts.Length; i++)
+				parts[i].UseSpeedMultiplier?.Invoke(parts[i].partID, Item, player, ref speed);
+
+			abilities.UseSpeedMultiplier(player, this, ref speed);
+
+			return (TCConfig.Instance.UseDurability && CurrentDurability <= 0 ? 1f / 1.5f : speed) * SafeUseSpeedMultiplier(player);
+		}
 
 		/// <inheritdoc cref="UseSpeedMultiplier(Player)"/>
 		public virtual float SafeUseSpeedMultiplier(Player player) => 1f;
@@ -357,37 +365,25 @@ namespace TerrariansConstructLib.Items {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnHold?.Invoke(parts[i].partID, player, Item);
 
-			//Hardcoded here to make the ability only apply once, regardless of how many parts are Copper
-			// TODO: have a flag or something dictate if a part's ability should only activate once
-			if (HasPartOfType(ItemID.CopperBar, out _)) {
-				if (copperChargeActivated) {
-					copperPartCharge -= CopperPartChargeMax / (7 * 60);  //7 seconds of usage
-
-					const int area = 6;
-
-					if (Main.rand.NextFloat() < 0.3f) {
-						Vector2 velocity = Vector2.UnitX.RotatedByRandom(MathHelper.Pi) * 3f;
-
-						Dust.NewDust(player.Center - new Vector2(area / 2f), area, area, DustID.MartianSaucerSpark, velocity.X, velocity.Y);
-					}
-
-					if (copperPartCharge < 0) {
-						copperPartCharge = 0;
-						copperChargeActivated = false;
-					}
-				} else if (player.velocity.Y == 0 && (player.controlLeft || player.controlRight)) {
-					copperPartCharge += Math.Abs(player.velocity.X);
-
-					if (copperPartCharge > CopperPartChargeMax)
-						copperPartCharge = CopperPartChargeMax;
-				}
-			}
+			abilities.HoldItem(player, this);
 
 			SafeHoldItem(player);
 		}
 
 		/// <inheritdoc cref="HoldItem(Player)"/>
 		public virtual void SafeHoldItem(Player player) { }
+
+		public sealed override void UpdateInventory(Player player) {
+			for (int i = 0; i < parts.Length; i++)
+				parts[i].OnUpdateInventory?.Invoke(parts[i].partID, player, Item);
+
+			abilities.UpdateInventory(player, this);
+
+			SafeUpdateInventory(player);
+		}
+
+		/// <inheritdoc cref="UpdateInventory(Player)"/>
+		public virtual void SafeUpdateInventory(Player player) { }
 
 		public sealed override bool? UseItem(Player player) {
 			for (int i = 0; i < parts.Length; i++)
@@ -527,7 +523,23 @@ namespace TerrariansConstructLib.Items {
 		public bool HasAnyToolPower()
 			=> SelectToolAxeStats().Any(p => p.toolPower > 0) || SelectToolPickaxeStats().Any(p => p.toolPower > 0) || SelectToolHammerStats().Any(p => p.toolPower > 0);
 
-		private void TryReduceDurability(Player player, int amount) {
+		public void TryIncreaseDurability(int amount) {
+			if (amount <= 0)
+				return;
+
+			int max = GetMaxDurability();
+			if (CurrentDurability < max && TCConfig.Instance.UseDurability) {
+				CurrentDurability += amount;
+
+				if (CurrentDurability > max)
+					CurrentDurability = max;
+			}
+		}
+
+		public void TryReduceDurability(Player player, int amount) {
+			if (amount <= 0)
+				return;
+
 			if (CurrentDurability > 0 && TCConfig.Instance.UseDurability) {
 				CurrentDurability -= amount;
 
@@ -552,6 +564,8 @@ namespace TerrariansConstructLib.Items {
 			tag["durability"] = CurrentDurability;
 			tag["ammo"] = ammoReserve;
 			tag["ammoMax"] = ammoReserveMax;
+			
+			abilities.SaveData(tag);
 		}
 
 		public override void LoadData(TagCompound tag) {
@@ -560,6 +574,10 @@ namespace TerrariansConstructLib.Items {
 			CurrentDurability = tag.GetInt("durability");
 			ammoReserve = tag.GetInt("ammo");
 			ammoReserveMax = tag.GetInt("ammoMax");
+
+			abilities = new(this);
+			
+			abilities.LoadData(tag);
 
 			if (parts.Length != PartsCount)
 				throw new IOException($"Saved parts list length ({parts.Length}) was not equal to the expected length of {PartsCount}");
