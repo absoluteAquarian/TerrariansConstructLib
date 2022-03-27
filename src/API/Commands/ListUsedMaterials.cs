@@ -14,6 +14,7 @@ namespace TerrariansConstructLib.API.Commands {
 
 		public override Dictionary<int, Material> GetRegistry() => Material.statsByMaterialID
 			.Select(kvp => new KeyValuePair<int, Material>(kvp.Key, Material.FromItem(kvp.Key)))
+			.OrderBy(kvp => kvp.Key)
 			.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 		public override string GetReplyString(int id, Material data)
