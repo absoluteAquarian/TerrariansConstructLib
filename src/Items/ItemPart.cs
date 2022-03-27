@@ -124,6 +124,12 @@ namespace TerrariansConstructLib.Items {
 		/// <see langword="ref float"/> <paramref name="multiplier"/>
 		/// </summary>
 		public delegate void PartItemUseSpeedMultiplier(int partID, Item item, Player player, ref float multiplier);
+		/// <summary>
+		/// <see langword="int"/> <paramref name="partID"/>,
+		/// <see cref="Player"/> <paramref name="player"/>,
+		/// <see cref="Item"/> <paramref name="item"/>
+		/// </summary>
+		public delegate bool PartCanLoseDurability(int partID, Player player, Item item);
 
 		internal static PartsDictionary<ItemPart> partData;
 
@@ -209,6 +215,8 @@ namespace TerrariansConstructLib.Items {
 		public PartItemUseSpeedMultiplier? UseSpeedMultiplier => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).useSpeedMultiplier;
 
 		public PartPlayerFunc? OnUpdateInventory => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onUpdateInventory;
+
+		public PartCanLoseDurability? CanLoseDurability => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).canLoseDurability;
 
 		public TagCompound SerializeData() {
 			TagCompound tag = new();

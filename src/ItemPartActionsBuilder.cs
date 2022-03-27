@@ -20,6 +20,7 @@ namespace TerrariansConstructLib {
 		internal ItemPart.PartItemHitPlayerFunc onItemHitPlayer;
 		internal ItemPart.PartItemUseSpeedMultiplier useSpeedMultiplier;
 		internal ItemPart.PartPlayerFunc onUpdateInventory;
+		internal ItemPart.PartCanLoseDurability canLoseDurability;
 
 		private bool isReadonly;
 
@@ -175,6 +176,14 @@ namespace TerrariansConstructLib {
 				return Clone().WithOnUpdateInventory(onUpdateInventory);
 
 			this.onUpdateInventory = onUpdateInventory;
+			return this;
+		}
+
+		public ItemPartActionsBuilder WithCanLoseDurability(ItemPart.PartCanLoseDurability canLoseDurability) {
+			if (isReadonly)
+				return Clone().WithCanLoseDurability(canLoseDurability);
+
+			this.canLoseDurability = canLoseDurability;
 			return this;
 		}
 	}

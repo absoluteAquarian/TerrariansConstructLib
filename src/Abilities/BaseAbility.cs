@@ -137,6 +137,11 @@ namespace TerrariansConstructLib.Abilities {
 		public virtual void OnTileDestroyed(Player player, BaseTCItem item, int x, int y, TileDestructionContext context) { }
 
 		/// <summary>
+		/// Return false in this hook to prevent the <paramref name="item"/> from losing durability
+		/// </summary>
+		public virtual bool CanLoseDurability(Player player, BaseTCItem item) => true;
+
+		/// <summary>
 		/// Allows you to save custom data for this ability.<br/>
 		/// <br/>
 		/// <b>NOTE:</b> The provided tag is always empty by default, and is provided as an argument only for the sake of convenience and optimization.<br/>

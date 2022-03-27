@@ -61,6 +61,14 @@ namespace TerrariansConstructLib.Abilities {
 
 		internal void OnTileDestroyed(Player player, BaseTCItem item, int x, int y, TileDestructionContext context) => PerformActions(player, (a, p) => a.OnTileDestroyed(p, item, x, y, context));
 
+		internal bool CanLoseDurability(Player player, BaseTCItem item) {
+			bool lose = true;
+
+			PerformActions(player, (a, p) => lose &= a.CanLoseDurability(p, item));
+
+			return lose;
+		}
+
 		private void PerformActions(Player player, Action<BaseAbility, Player> func) {
 			foreach (var member in members.Values) {
 				//No need to check for IsSingleton here, since that's handled in the ctor

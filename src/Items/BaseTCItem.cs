@@ -15,6 +15,7 @@ using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.Abilities;
 using TerrariansConstructLib.API;
+using TerrariansConstructLib.API.Numbers;
 using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.API.Stats;
 using TerrariansConstructLib.DataStructures;
@@ -235,8 +236,19 @@ namespace TerrariansConstructLib.Items {
 		public IEnumerable<string> GetPartNamesForTooltip()
 			=> parts.Select(GetItemNameWithRarity).Distinct();
 
-		public IEnumerable<string> GetModifierTooltipLines()
-			=> parts.Select(p => CoreLibMod.GetPartTooltip(p.material, p.partID)!).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct();
+		public IEnumerable<string> GetModifierTooltipLines() {
+			List<string> tooltips = parts.Select(p => CoreLibMod.GetPartTooltip(p.material, p.partID)!).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+
+			return tooltips
+				.Distinct()
+				.Select(tooltip => {
+					if (tooltip.Contains("{R}"))
+						tooltip = tooltip.Replace("{R}", Roman.Convert(tooltips.Count(s => s == tooltip)));
+
+					return tooltip;
+				});
+		}
+			//=> parts.Select(p => CoreLibMod.GetPartTooltip(p.material, p.partID)!).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct();
 
 		public IEnumerable<string> GetModifierLines() {
 			IReadOnlyList<ModifierText> dummy = new List<ModifierText>();
@@ -549,10 +561,18 @@ namespace TerrariansConstructLib.Items {
 			if (amount <= 0)
 				return;
 
-			if (CurrentDurability > 0 && TCConfig.Instance.UseDurability) {
-				CurrentDurability -= amount;
+			bool lose = TCConfig.Instance.UseDurability;
 
-				// TODO: mining tools aren't losing durability... figure out why
+			if (!lose)
+				return;
+
+			for (int i = 0; i < parts.Length; i++)
+				lose &= parts[i].CanLoseDurability?.Invoke(parts[i].partID, player, Item) ?? true;
+
+			lose &= abilities.CanLoseDurability(player, this);
+
+			if (lose && CurrentDurability > 0) {
+				CurrentDurability -= amount;
 
 				if (CurrentDurability < 0)
 					CurrentDurability = 0;
