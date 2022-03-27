@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,7 @@ namespace TerrariansConstructLib {
 
 		internal static event Action UnloadReflection;
 
-		internal static CachedItemTexturesDictionary itemTextures;
+		public static CachedItemTexturesDictionary ItemTextures { get; internal set; }
 
 		internal static CoreLibMod directDetourInstance;
 
@@ -86,7 +87,7 @@ namespace TerrariansConstructLib {
 
 			ItemStatCollection.Load();
 
-			itemTextures = new();
+			ItemTextures = new();
 
 			if (!Main.dedServ) {
 				ActivateAbility = KeybindLoader.RegisterKeybind(this, "Activate Tool Ability", Keys.G);
@@ -163,13 +164,17 @@ namespace TerrariansConstructLib {
 
 			//head part: damage, knockback, crit, useSpeed, pickaxe power, axe power, hammer power, durability
 			RegisterMaterialStats(RegisteredMaterials.Unloaded, 1, null,
-				new HeadPartStats(0, 0, 0, 20, 0, 0, 0, 1),
+				new HeadPartStats(),
 				new HandlePartStats(),
 				new ExtraPartStats());
 			RegisterMaterialStats(RegisteredMaterials.Unknown, 1, null,
-				new HeadPartStats(0, 0, 0, 20, 0, 0, 0, 1),
+				new HeadPartStats(),
 				new HandlePartStats(),
 				new ExtraPartStats());
+
+			//Unused, but they're needed for displaying the parts in the Forge UI
+			for (ColorMaterialType c = ColorMaterialType.Red; c < ColorMaterialType.Count; c++)
+				RegisterMaterialStats(new ColorMaterial(c), 1, null);
 
 			LoadAllOfTheThings("RegisterTCMaterials");
 
@@ -357,8 +362,8 @@ namespace TerrariansConstructLib {
 
 			ItemStatCollection.Unload();
 
-			itemTextures?.Clear();
-			itemTextures = null!;
+			ItemTextures?.Clear();
+			ItemTextures = null!;
 
 			Interlocked.Exchange(ref UnloadReflection!, null)?.Invoke();
 

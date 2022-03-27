@@ -161,5 +161,17 @@ namespace TerrariansConstructLib {
 				arr[i] = value;
 			return arr;
 		}
+
+		public static Point16 TileCoord(this Tile tile)
+			=> new(tile.TileFrameX / 18, tile.TileFrameY / 18);
+
+		public static bool TryGetTileEntity<T>(Point16 position, out T? tileEntity) where T : TileEntity {
+			tileEntity = null;
+
+			if(TileEntity.ByPosition.TryGetValue(position, out var entity))
+				tileEntity = entity as T;  //'as' will make 'tileEntity' null if the TileEntity at the position isn't the same type
+
+			return tileEntity != null;
+		}
 	}
 }

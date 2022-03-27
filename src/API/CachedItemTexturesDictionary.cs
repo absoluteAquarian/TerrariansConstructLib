@@ -17,7 +17,7 @@ namespace TerrariansConstructLib.API {
 	/// <summary>
 	/// A collection of textures indexed by registered item type and item parts
 	/// </summary>
-	internal class CachedItemTexturesDictionary {
+	public class CachedItemTexturesDictionary {
 		internal static bool SaveGeneratedTexturesToFiles = true;
 
 		private readonly Dictionary<int, PartsDictionary<object>> dictionary = new();
@@ -25,7 +25,14 @@ namespace TerrariansConstructLib.API {
 		public Texture2D Get(int registeredItemID, ItemPartSlotCollection partsCollection) {
 			//Get the parts
 			ItemPart[] parts = partsCollection.ToArray();
-			
+
+			return Get(registeredItemID, parts);
+		}
+
+		public Texture2D Get(BaseTCItem tc)
+			=> Get(tc.registeredItemID, tc.parts);
+
+		public Texture2D Get(int registeredItemID, ItemPart[] parts) {
 			//Step down through the tree
 			if (!dictionary.TryGetValue(registeredItemID, out var partsDictionary))
 				partsDictionary = dictionary[registeredItemID] = new();
@@ -64,7 +71,7 @@ namespace TerrariansConstructLib.API {
 			return (texture as Texture2D)!;
 		}
 
-		public void Clear()
+		internal void Clear()
 			=> Clear(dictionary);
 
 		private static void Clear<T>(Dictionary<int, T> dictionary) {
@@ -110,7 +117,13 @@ namespace TerrariansConstructLib.API {
 
 			if (SaveGeneratedTexturesToFiles) {
 				string textureImage = ItemRegistry.registeredIDs[registeredItemID].internalName + "_"
-					+ string.Join("_", parts.Select(p => "M" + (p.material is UnloadedMaterial ? "U" : p.material is UnknownMaterial ? "K" : p.material.Type.ToString())
+					+ string.Join("_", parts.Select(p => "M" + (p.material is UnloadedMaterial
+						? "U"
+						: p.material is UnknownMaterial
+							? "K"
+							: p.material is ColorMaterial 
+								? "C" + p.material.GetName()[0]
+								: p.material.Type.ToString())
 						+ "+P" + p.partID));
 
 				string path = Program.SavePath;

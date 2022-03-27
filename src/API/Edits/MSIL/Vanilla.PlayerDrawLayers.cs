@@ -31,7 +31,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 
 			c.EmitDelegate<Func<Item, Texture2D, Texture2D>>((heldItem, value) => {
 				if (heldItem.ModItem is BaseTCItem tc)
-					return CoreLibMod.itemTextures.Get(tc.registeredItemID, tc.parts);
+					return CoreLibMod.ItemTextures.Get(tc.registeredItemID, tc.parts);
 
 				return value;
 			});

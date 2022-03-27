@@ -38,7 +38,7 @@ namespace TerrariansConstructLib.API.Stats {
 			this.durability = durability ?? StatModifier.One;
 		}
 
-		public string GetTooltipLines() {
+		public string GetTooltipLines(int partID) {
 			StringBuilder sb = new();
 
 			bool needsNewline = false;

@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Terraria;
+using TerrariansConstructLib.Registry;
 using TerrariansConstructLib.Stats;
 
 namespace TerrariansConstructLib.API.Stats {
@@ -42,7 +43,7 @@ namespace TerrariansConstructLib.API.Stats {
 		/// </summary>
 		public readonly int durability;
 
-		public HeadPartStats(int damage, float knockback, int crit, int useSpeed, int pickPower, int axePower, int hammerPower, int durability) {
+		public HeadPartStats(int damage = 0, float knockback = 0, int crit = 0, int useSpeed = 20, int pickPower = 0, int axePower = 0, int hammerPower = 0, int durability = 1) {
 			this.damage = damage;
 			this.knockback = knockback;
 			this.crit = crit;
@@ -53,8 +54,10 @@ namespace TerrariansConstructLib.API.Stats {
 			this.durability = durability;
 		}
 
-		public string GetTooltipLines() {
+		public string GetTooltipLines(int partID) {
 			StringBuilder sb = new();
+			
+			bool axeHeadPart = PartRegistry.isAxePart[partID], pickHeadPart = PartRegistry.isPickPart[partID], hammerHeadPart = PartRegistry.isHammerPart[partID];
 
 			sb.Append(ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadDamage, damage));
 
@@ -67,8 +70,14 @@ namespace TerrariansConstructLib.API.Stats {
 			if (useSpeed > 0)
 				sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadUseSpeed, useSpeed));
 
-			if (pickPower > 0)
+			if (pickHeadPart && pickPower > 0)
 				sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadPickPower, pickPower));
+
+			if (axeHeadPart && axePower > 0)
+				sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadAxePower, axePower));
+
+			if (hammerHeadPart && hammerPower > 0)
+				sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadHammerPower, hammerPower));
 
 			sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.ExtraDurability + ".add", durability));
 

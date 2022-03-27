@@ -190,10 +190,10 @@ namespace TerrariansConstructLib.Items {
 			//Need to get an asset instance just so that we can replace the texture...
 			Asset<Texture2D> asset = TextureAssets.Item[Item.type] = ReflectionHelper<Asset<Texture2D>>.InvokeCloneMethod(CoreLibMod.Instance.Assets.Request<Texture2D>("Assets/DummyItem", AssetRequestMode.ImmediateLoad));
 
-			ReflectionHelper<Asset<Texture2D>>.InvokeSetterFunction("ownValue", asset, CoreLibMod.itemTextures.Get(registeredItemID,
-				new(CoreLibMod.GetItemValidPartIDs(registeredItemID)
-					.Select((p, i) => new ItemPartSlot(i){ part = new(){ material = CoreLibMod.RegisteredMaterials.Unknown, partID = p }, isPartIDValid = id => id == p })
-					.ToArray())));
+			ReflectionHelper<Asset<Texture2D>>.InvokeSetterFunction("ownValue", asset, CoreLibMod.ItemTextures.Get(registeredItemID,
+				CoreLibMod.GetItemValidPartIDs(registeredItemID)
+					.Select(p => new ItemPart(){ material = CoreLibMod.RegisteredMaterials.Unknown, partID = p })
+					.ToArray()));
 
 			if (DisplayName.IsDefault())
 				DisplayName.SetDefault(Regex.Replace(Name, "([A-Z])", " $1").Trim());
@@ -604,7 +604,7 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public sealed override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale) {
-			Texture2D texture = CoreLibMod.itemTextures.Get(registeredItemID, parts);
+			Texture2D texture = CoreLibMod.ItemTextures.Get(registeredItemID, parts);
 
 			spriteBatch.Draw(texture, position, frame, drawColor, 0f, origin, scale, SpriteEffects.None, 0);
 
@@ -622,7 +622,7 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public sealed override bool PreDrawInWorld(SpriteBatch spriteBatch, Color lightColor, Color alphaColor, ref float rotation, ref float scale, int whoAmI) {
-			Texture2D texture = CoreLibMod.itemTextures.Get(registeredItemID, parts);
+			Texture2D texture = CoreLibMod.ItemTextures.Get(registeredItemID, parts);
 
 			Rectangle frame = texture.Frame();
 

@@ -13,6 +13,8 @@ namespace TerrariansConstructLib.API.Stats {
 
 		private readonly Dictionary<string, StatModifier> modifiers = new();
 
+		private readonly Dictionary<string, int[]?> validPartIDsForTooltipKey = new();
+
 		/// <summary>
 		/// Sets the stat with the given identifier.  Calling this method more than once for the same identifier will throw an exception
 		/// </summary>
@@ -50,6 +52,11 @@ namespace TerrariansConstructLib.API.Stats {
 			return instance;
 		}
 
+		public ExtraPartStats SetValidPartIDs(string identifier, params int[]? validIDs) {
+			validPartIDsForTooltipKey[identifier] = validIDs;
+			return this;
+		}
+
 		/// <summary>
 		/// Gets the stat with the given identifier
 		/// </summary>
@@ -63,11 +70,12 @@ namespace TerrariansConstructLib.API.Stats {
 			set => With(identifier, value);
 		}
 
-		public string GetTooltipLines() {
+		public string GetTooltipLines(int partID) {
 			StringBuilder sb = new();
 
 			foreach (var (name, stat) in modifiers)
-				sb.Append((sb.Length > 0 ? "\n" : "") + ItemStatCollection.Format(name, stat));
+				if (!validPartIDsForTooltipKey.TryGetValue(name, out var ids) || ids is null || Array.IndexOf(ids, partID) >= 0)
+					sb.Append((sb.Length > 0 ? "\n" : "") + ItemStatCollection.Format(name, stat));
 
 			return sb.ToString();
 		}

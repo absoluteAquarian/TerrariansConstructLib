@@ -88,7 +88,8 @@ namespace TerrariansConstructLib.Projectiles {
 		public sealed override bool PreDraw(ref Color lightColor) {
 			SafePreDraw(ref lightColor);
 
-			Texture2D texture = CoreLibMod.itemTextures.Get(itemSource_registeredItemID, new(parts));
+			// TODO: cached projectile textures
+			Texture2D texture = CoreLibMod.ItemTextures.Get(itemSource_registeredItemID, parts);
 
 			//Mimick the normal projectile drawing code
 			int num136 = 0;

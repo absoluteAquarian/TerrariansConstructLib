@@ -2,6 +2,6 @@
 	public interface IPartStats {
 		StatType Type { get; }
 
-		string GetTooltipLines();
+		string GetTooltipLines(int partID);
 	}
 }

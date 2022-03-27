@@ -15,7 +15,7 @@ namespace TerrariansConstructLib.Materials {
 
 		public override string GetItemName() => GetName();
 
-		public static readonly int StaticType = -100413;
+		public const int StaticType = -100413;
 
 		public UnloadedMaterial() {
 			Type = StaticType;
