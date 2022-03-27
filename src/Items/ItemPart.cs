@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Terraria;
 using Terraria.DataStructures;
@@ -141,7 +142,7 @@ namespace TerrariansConstructLib.Items {
 				partData.Get(material, partID).tooltip = tooltip;
 		}
 
-		public ModifierText? GetModifierText()
+		public IReadOnlyList<ModifierText>? GetModifierText()
 			=> GetGlobalModifierText(material, partID);
 
 		/// <summary>
@@ -149,8 +150,8 @@ namespace TerrariansConstructLib.Items {
 		/// </summary>
 		/// <param name="material">The material</param>
 		/// <param name="partID">The part ID</param>
-		public static ModifierText? GetGlobalModifierText(Material material, int partID)
-			=> partData.Get(material, partID).modifierText;
+		public static IReadOnlyList<ModifierText>? GetGlobalModifierText(Material material, int partID)
+			=> partData.Get(material, partID).modifierText?.AsReadOnly();
 
 		/// <summary>
 		/// The material used to create this item part
@@ -164,7 +165,7 @@ namespace TerrariansConstructLib.Items {
 
 		internal string? tooltip;
 
-		internal ModifierText? modifierText;
+		internal List<ModifierText>? modifierText;
 
 		public virtual ItemPart Clone() => new(){
 			material = material.Clone(),

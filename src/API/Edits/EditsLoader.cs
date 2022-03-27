@@ -19,6 +19,7 @@ namespace TerrariansConstructLib.API.Edits {
 			IL.Terraria.Player.PickAmmo += MSIL.Vanilla.Patch_Player_PickAmmo;
 			IL.Terraria.Player.ItemCheck_UseMiningTools_ActuallyUseMiningTool += MSIL.Vanilla.Patch_Player_ItemCheck_UseMiningTools_ActuallyUseMiningTool;
 			IL.Terraria.Player.ItemCheck_UseMiningTools_TryHittingWall += MSIL.Vanilla.Patch_Player_ItemCheck_UseMiningTools_TryHittingWall;
+			IL.Terraria.Player.PickTile += MSIL.Vanilla.Patch_Player_PickTile;
 
 			ILHelper.DeInitMonoModDumps();
 

@@ -238,8 +238,10 @@ namespace TerrariansConstructLib.Items {
 		public IEnumerable<string> GetModifierTooltipLines()
 			=> parts.Select(p => CoreLibMod.GetPartTooltip(p.material, p.partID)!).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct();
 
-		public IEnumerable<string> GetModifierLines()
-			=> EvaluateModifiers(parts.Select(p => CoreLibMod.GetPartModifierText(p.material, p.partID)!)).Where(s => !string.IsNullOrWhiteSpace(s));
+		public IEnumerable<string> GetModifierLines() {
+			IReadOnlyList<ModifierText> dummy = new List<ModifierText>();
+			return EvaluateModifiers(parts.SelectMany(p => CoreLibMod.GetPartModifierText(p.material, p.partID) ?? dummy)).Where(s => !string.IsNullOrWhiteSpace(s));
+		}
 
 		private static string GetItemNameWithRarity(ItemPart part) {
 			Item? material = part.material.AsItem();
@@ -272,9 +274,14 @@ namespace TerrariansConstructLib.Items {
 					if (kvp.Value.LangKeyIsLiteral)
 						return kvp.Key;
 
+					float value = kvp.Value.useMultiplicativeOnly ? (kvp.Value.Stat.Multiplicative - 1f) * 100 : kvp.Value.useAdditiveOnly ? kvp.Value.Stat.Additive : ((float)kvp.Value.Stat - 1f) * 100;
+
+					if (value == 0)
+						return null!;
+
 					string format = Language.GetTextValue(kvp.Key);
 
-					return string.Format(format, ((float)kvp.Value.Stat - 1f) * 100);
+					return string.Format(format, value);
 				});
 		}
 
@@ -426,6 +433,8 @@ namespace TerrariansConstructLib.Items {
 
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnTileDestroyed?.Invoke(parts[i].partID, player, Item, x, y, context);
+
+			abilities.OnTileDestroyed(player, this, x, y, context);
 
 			SafeOnTileDestroyed(player, x, y, context);
 		}

@@ -20,22 +20,45 @@ namespace TerrariansConstructLib.API {
 		/// </summary>
 		public bool LangKeyIsLiteral { get; set; }
 
-		public ModifierText(string? langKey, Material material, int partID, StatModifier stat) {
-			this.langKey = langKey;
+		public readonly bool useMultiplicativeOnly, useAdditiveOnly;
+
+		public ModifierText(Material material, int partID, CreationContext context) {
 			this.material = material;
 			this.partID = partID;
-			Stat = stat;
+			
+			langKey = context.langKey;
+			Stat = context.Stat;
+			useMultiplicativeOnly = context.useMultiplicativeOnly;
+			useAdditiveOnly = context.useAdditiveOnly;
 		}
 
-		public ModifierText(string langKey, ItemPart part, StatModifier stat) {
-			this.langKey = langKey;
+		public ModifierText(ItemPart part, CreationContext context) {
 			material = part.material;
 			partID = part.partID;
-			Stat = stat;
+			
+			langKey = context.langKey;
+			Stat = context.Stat;
+			useMultiplicativeOnly = context.useMultiplicativeOnly;
+			useAdditiveOnly = context.useAdditiveOnly;
 		}
 
 		public ItemPart GetPart() => ItemPart.partData.Get(material, partID);
 
 		public ModifierText Clone() => (ModifierText)MemberwiseClone();
+
+		public struct CreationContext {
+			public string? langKey;
+
+			public StatModifier Stat;
+
+			public bool useMultiplicativeOnly, useAdditiveOnly;
+
+			public CreationContext(string? langKey, StatModifier? stat = null, bool useMultiplicativeOnly = false, bool useAdditiveOnly = false) {
+				this.langKey = langKey;
+				Stat = stat ?? StatModifier.One;
+				this.useMultiplicativeOnly = useMultiplicativeOnly;
+				this.useAdditiveOnly = useAdditiveOnly;
+			}
+		}
 	}
 }

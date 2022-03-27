@@ -566,18 +566,8 @@ namespace TerrariansConstructLib {
 		/// <param name="material">The material</param>
 		/// <param name="partID">The part ID</param>
 		/// <returns>The global modifier text</returns>
-		public static ModifierText? GetPartModifierText(Material material, int partID)
-			=> ItemPart.partData.Get(material, partID).modifierText;
-
-		/// <summary>
-		/// Gets the global modifier text's stat of an <seealso cref="ItemPart"/>, or a default value if there is none
-		/// </summary>
-		/// <param name="material">The material</param>
-		/// <param name="partID">The part ID</param>
-		/// <param name="defaultValue">The value to use if the part does not have a global modifier text instance</param>
-		/// <returns>The global modifier stat, or the default value if it's not defined</returns>
-		public static StatModifier GetPartModifierStatOrDefault(Material material, int partID, StatModifier defaultValue)
-			=> ItemPart.partData.Get(material, partID).modifierText?.Stat ?? defaultValue;
+		public static IReadOnlyList<ModifierText>? GetPartModifierText(Material material, int partID)
+			=> ItemPart.partData.Get(material, partID).modifierText?.AsReadOnly();
 
 		/// <summary>
 		/// Sets the global modifier text of an <seealso cref="ItemPart"/>
@@ -751,16 +741,15 @@ namespace TerrariansConstructLib {
 		/// <param name="partID">The part ID</param>
 		/// <param name="actions">The actions</param>
 		/// <param name="tooltip">The tooltip for this part.  Can be modified via <seealso cref="ItemPart.SetGlobalTooltip(Material, int, string)"/></param>
-		/// <param name="modifierTextLangKey">The lang key for the <see cref="ModifierText"/>.  If <see langword="null"/>, the item part will have no modifier text.</param>
-		/// <param name="modifierStat">The <seealso cref="StatModifier"/> for the modifier text.  If <paramref name="modifierTextLangKey"/> is <see langword="null"/>, this parameter is ignored.  Defaults to <seealso cref="StatModifier.One"/></param>
-		public static void AddPart(Mod mod, Material material, int partID, ItemPartActionsBuilder actions, string? tooltip, string? modifierTextLangKey = null, StatModifier? modifierStat = null) {
+		/// <param name="modifierText">A collection of creation contexts for this part's modifier text.  If <see langword="null"/>, the part will have no modifier text.</param>
+		public static void AddPart(Mod mod, Material material, int partID, ItemPartActionsBuilder actions, string? tooltip, params ModifierText.CreationContext[]? modifierText) {
 			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new ArgumentException("Part ID was invalid");
 
 			if (!Material.statsByMaterialID.ContainsKey(material.Type))
 				throw new ArgumentException($"Material was not registered: \"{material.GetItemName()}\" (ID: {material.Type})");
 
-			ItemPartItem item = ItemPartItem.Create(material, partID, actions, tooltip, modifierTextLangKey is null ? null : new ModifierText(modifierTextLangKey, material, partID, modifierStat ?? StatModifier.One));
+			ItemPartItem item = ItemPartItem.Create(material, partID, actions, tooltip, modifierText?.Select(c => new ModifierText(material, partID, c)).ToList());
 
 			ReflectionHelper<Mod>.InvokeSetterFunction("loading", mod, true);
 

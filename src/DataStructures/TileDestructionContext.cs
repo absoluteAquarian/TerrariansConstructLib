@@ -22,12 +22,18 @@
 		/// </summary>
 		public readonly int damage;
 
-		internal TileDestructionContext(int damage, bool pickaxe = false, bool axe = false, bool hammer = false, bool hammerWall = false) {
+		/// <summary>
+		/// The ID of the tile that was destroyed
+		/// </summary>
+		public readonly ushort type;
+
+		internal TileDestructionContext(int damage, ushort type, bool pickaxe = false, bool axe = false, bool hammer = false, bool hammerWall = false) {
 			this.pickaxe = pickaxe;
 			this.axe = axe;
 			this.hammer = hammer;
 			this.hammerWall = hammerWall;
 			this.damage = damage;
+			this.type = type;
 		}
 	}
 }

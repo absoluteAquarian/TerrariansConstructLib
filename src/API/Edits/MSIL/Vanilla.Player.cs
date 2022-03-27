@@ -1,9 +1,7 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using Terraria;
 using Terraria.GameContent.Achievements;
@@ -123,13 +121,14 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 
 			c.Emit(OpCodes.Ldarg_1);
 			c.Emit(OpCodes.Ldloc_1);
-			c.EmitDelegate<Func<Player, Item, int, int>>((self, sItem, num2) => {
+			c.Emit(OpCodes.Ldloc_2);
+			c.EmitDelegate<Func<Player, Item, int, Tile, int>>((self, sItem, num2, tile) => {
 				if (sItem.ModItem is BaseTCItem tc) {
 					if (tc.CurrentDurability <= 0 && TCConfig.Instance.UseDurability)
 						num2 = 0;
 					else {
 						for (int i = 0; i < tc.parts.Length; i++)
-							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num2, hammer: true), ref num2);
+							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num2, tile.TileType, hammer: true), ref num2);
 					}
 				}
 
@@ -148,10 +147,10 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			c.Emit(OpCodes.Ldarg_3);
 			c.Emit(OpCodes.Ldarg, 4);
 			c.Emit(OpCodes.Ldloc_1);
-
-			c.EmitDelegate<Action<Player, Item, int, int, int>>((self, sItem, x, y, num2) => {
+			c.Emit(OpCodes.Ldloc_2);
+			c.EmitDelegate<Action<Player, Item, int, int, int, Tile>>((self, sItem, x, y, num2, tile) => {
 				if (sItem.ModItem is BaseTCItem tc)
-					tc.OnTileDestroyed(self, x, y, new TileDestructionContext(num2, hammer: true));
+					tc.OnTileDestroyed(self, x, y, new TileDestructionContext(num2, tile.TileType, hammer: true));
 			});
 
 			if(!FindSequence())
@@ -165,13 +164,14 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 
 			c.Emit(OpCodes.Ldarg_1);
 			c.Emit(OpCodes.Ldloc_1);
-			c.EmitDelegate<Func<Player, Item, int, int>>((self, sItem, num2) => {
+			c.Emit(OpCodes.Ldloc_2);
+			c.EmitDelegate<Func<Player, Item, int, Tile, int>>((self, sItem, num2, tile) => {
 				if (sItem.ModItem is BaseTCItem tc) {
 					if (tc.CurrentDurability <= 0 && TCConfig.Instance.UseDurability)
 						num2 = 0;
 					else {
 						for (int i = 0; i < tc.parts.Length; i++)
-							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num2, axe: true), ref num2);
+							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num2, tile.TileType, axe: true), ref num2);
 					}
 				}
 
@@ -190,10 +190,10 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			c.Emit(OpCodes.Ldarg_3);
 			c.Emit(OpCodes.Ldarg, 4);
 			c.Emit(OpCodes.Ldloc_1);
-
-			c.EmitDelegate<Action<Player, Item, int, int, int>>((self, sItem, x, y, num2) => {
+			c.Emit(OpCodes.Ldloc_2);
+			c.EmitDelegate<Action<Player, Item, int, int, int, Tile>>((self, sItem, x, y, num2, tile) => {
 				if (sItem.ModItem is BaseTCItem tc)
-					tc.OnTileDestroyed(self, x, y, new TileDestructionContext(num2, axe: true));
+					tc.OnTileDestroyed(self, x, y, new TileDestructionContext(num2, tile.TileType, axe: true));
 			});
 
 			ILHelper.UpdateInstructionOffsets(c);
@@ -225,13 +225,14 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			c.Emit(OpCodes.Ldarg_0);
 			c.Emit(OpCodes.Ldarg_1);
 			c.Emit(OpCodes.Ldloc_2);
-			c.EmitDelegate<Func<Player, Item, int, int>>((self, sItem, num) => {
+			c.Emit(OpCodes.Ldloc_3);
+			c.EmitDelegate<Func<Player, Item, int, Tile, int>>((self, sItem, num, tile) => {
 				if (sItem.ModItem is BaseTCItem tc) {
 					if (tc.CurrentDurability <= 0 && TCConfig.Instance.UseDurability)
 						num = 0;
 					else {
 						for (int i = 0; i < tc.parts.Length; i++)
-							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num, hammerWall: true), ref num);
+							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num, tile.WallType, hammerWall: true), ref num);
 					}
 				}
 
@@ -248,10 +249,10 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			c.Emit(OpCodes.Ldarg_2);
 			c.Emit(OpCodes.Ldarg_3);
 			c.Emit(OpCodes.Ldloc_2);
-
-			c.EmitDelegate<Action<Player, Item, int, int, int>>((self, sItem, wX, wY, num) => {
+			c.Emit(OpCodes.Ldloc_3);
+			c.EmitDelegate<Action<Player, Item, int, int, int, Tile>>((self, sItem, wX, wY, num, tile) => {
 				if (sItem.ModItem is BaseTCItem tc)
-					tc.OnTileDestroyed(self, wX, wY, new TileDestructionContext(num, hammerWall: true));
+					tc.OnTileDestroyed(self, wX, wY, new TileDestructionContext(num, tile.TileType, hammerWall: true));
 			});
 
 			ILHelper.UpdateInstructionOffsets(c);
@@ -299,7 +300,8 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			c.Emit(OpCodes.Ldc_I4_1);
 			c.Emit(OpCodes.Ldc_I4_0);
 			c.Emit(OpCodes.Newobj, StackTrace_ctor);
-			c.EmitDelegate<Func<Player, int, StackTrace, int>>((self, num2, trace) => {
+			c.Emit(OpCodes.Ldloc_1);
+			c.EmitDelegate<Func<Player, int, StackTrace, Tile, int>>((self, num2, trace, tile) => {
 				MethodInfo miningMethod = typeof(Player).GetCachedMethod("ItemCheck_UseMiningTools_ActuallyUseMiningTool")!;
 
 				//Only do things if PickTile was called from ItemCheck_UseMiningTools_ActuallyUseMiningTool
@@ -311,7 +313,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 							num2 = 0;
 						else {
 							for (int i = 0; i < tc.parts.Length; i++)
-								tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num2, pickaxe: true), ref num2);
+								tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num2, tile.TileType, pickaxe: true), ref num2);
 						}
 					}
 				}
@@ -332,8 +334,8 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			c.Emit(OpCodes.Ldarg_1);
 			c.Emit(OpCodes.Ldarg_2);
 			c.Emit(OpCodes.Ldloc_2);
-
-			c.EmitDelegate<Action<Player, StackTrace, int, int, int>>((self, trace, x, y, num2) => {
+			c.Emit(OpCodes.Ldloc_1);
+			c.EmitDelegate<Action<Player, StackTrace, int, int, int, Tile>>((self, trace, x, y, num2, tile) => {
 				MethodInfo miningMethod = typeof(Player).GetCachedMethod("ItemCheck_UseMiningTools_ActuallyUseMiningTool")!;
 
 				//Only do things if PickTile was called from ItemCheck_UseMiningTools_ActuallyUseMiningTool
@@ -341,7 +343,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 					Item sItem = self.HeldItem;
 
 					if (sItem.ModItem is BaseTCItem tc)
-						tc.OnTileDestroyed(self, x, y, new TileDestructionContext(num2, pickaxe: true));
+						tc.OnTileDestroyed(self, x, y, new TileDestructionContext(num2, tile.TileType, pickaxe: true));
 				}
 			});
 

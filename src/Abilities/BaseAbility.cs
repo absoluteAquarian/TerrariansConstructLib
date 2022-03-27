@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Items;
 
 namespace TerrariansConstructLib.Abilities {
@@ -124,6 +125,16 @@ namespace TerrariansConstructLib.Abilities {
 		/// <param name="item">The item instance</param>
 		/// <param name="multiplier">The multiplier</param>
 		public virtual void UseSpeedMultiplier(Player player, BaseTCItem item, ref float multiplier) { }
+
+		/// <summary>
+		/// This hook runs after the player has destroyed a tile using a <see cref="BaseTCItem"/> item
+		/// </summary>
+		/// <param name="player">The player doing the mining</param>
+		/// <param name="item">The item used to destroy the tile</param>
+		/// <param name="x">The tile X-coordinate</param>
+		/// <param name="y">The tile Y-coordinate</param>
+		/// <param name="context">The context.  Contains information about what tool type was used to destroy the tile and how much damage was dealt to destroy the tile</param>
+		public virtual void OnTileDestroyed(Player player, BaseTCItem item, int x, int y, TileDestructionContext context) { }
 
 		/// <summary>
 		/// Allows you to save custom data for this ability.<br/>

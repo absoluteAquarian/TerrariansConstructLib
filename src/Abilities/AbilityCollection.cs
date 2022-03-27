@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Terraria;
 using Terraria.ModLoader.IO;
+using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
 
@@ -13,12 +14,12 @@ namespace TerrariansConstructLib.Abilities {
 		private class Member {
 			public BaseAbility? singleton;
 
-			public List<BaseAbility> abilities;
+			public List<BaseAbility>? abilities;
 
 			public List<TagCompound> unloadedData;
 		}
 
-		private Dictionary<Material, Member> members = new();
+		private readonly Dictionary<Material, Member> members = new();
 
 		public AbilityCollection(BaseTCItem tc) {
 			var materials = tc.parts.DistinctBy(p => p.material.Type).Select(p => p.material);
@@ -58,6 +59,8 @@ namespace TerrariansConstructLib.Abilities {
 			multiplier = mult;
 		}
 
+		internal void OnTileDestroyed(Player player, BaseTCItem item, int x, int y, TileDestructionContext context) => PerformActions(player, (a, p) => a.OnTileDestroyed(p, item, x, y, context));
+
 		private void PerformActions(Player player, Action<BaseAbility, Player> func) {
 			foreach (var member in members.Values) {
 				//No need to check for IsSingleton here, since that's handled in the ctor
@@ -85,7 +88,7 @@ namespace TerrariansConstructLib.Abilities {
 					["material"] = material
 				};
 
-				List<BaseAbility> values = member.singleton is not null ? new() { member.singleton } : member.abilities;
+				List<BaseAbility>? values = member.singleton is not null ? new() { member.singleton } : member.abilities;
 
 				if (values is not null)  {
 					data["singleton"] = values[0].IsSingleton;

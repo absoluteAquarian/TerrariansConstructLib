@@ -71,7 +71,7 @@ namespace TerrariansConstructLib.Items {
 			this.part = part;
 		}
 
-		public static ItemPartItem Create(Material material, int partID, ItemPartActionsBuilder builder, string? tooltip, ModifierText? modifierText) {
+		public static ItemPartItem Create(Material material, int partID, ItemPartActionsBuilder builder, string? tooltip, List<ModifierText>? modifierText) {
 			int materialType = material.Type;
 
 			if (!PartActions.builders.TryGetValue(materialType, out var buildersByPartID))
