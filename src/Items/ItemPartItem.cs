@@ -7,6 +7,7 @@ using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
+using TerrariansConstructLib.API.Numbers;
 using TerrariansConstructLib.API.Stats;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
@@ -113,7 +114,7 @@ namespace TerrariansConstructLib.Items {
 
 			DisplayName.SetDefault(name + " " + PartRegistry.registeredIDs[part.partID].name);
 
-			Tooltip.SetDefault((part.tooltip is not null ? part.tooltip + "\n" : "")
+			Tooltip.SetDefault("<TOOLTIP>\n"
 				+ "<STATS>");
 		}
 
@@ -184,6 +185,16 @@ namespace TerrariansConstructLib.Items {
 
 		public override void ModifyTooltips(List<TooltipLine> tooltips) {
 			StatType type = PartRegistry.registeredIDs[part.partID].type;
+
+			string? tooltip = CoreLibMod.GetPartTooltip(part.material, part.partID);
+
+			if (tooltip is not null) {
+				if (tooltip.Contains("{R}"))
+					tooltip = tooltip.Replace("{R}", Roman.Convert(1));
+
+				Utility.FindAndModify(tooltips, "<TOOLTIP>", tooltip);
+			} else
+				Utility.FindAndRemoveLine(tooltips, "<TOOLTIP>");
 
 			string? lines = part.material.GetStat(type)?.GetTooltipLines(part.partID);
 

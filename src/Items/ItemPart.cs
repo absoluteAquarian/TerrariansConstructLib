@@ -13,121 +13,121 @@ using TerrariansConstructLib.Registry;
 namespace TerrariansConstructLib.Items {
 	public class ItemPart : TagSerializable, INetHooks {
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Item"/> <paramref name="item"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Item"/>&#160;<paramref name="item"/>
 		/// </summary>
 		public delegate void PartItemFunc(int partID, Item item);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Player"/> <paramref name="player"/>,
-		/// <see cref="Item"/> <paramref name="item"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Player"/>&#160;<paramref name="player"/>,
+		/// <see cref="Item"/>&#160;<paramref name="item"/>
 		/// </summary>
 		public delegate void PartPlayerFunc(int partID, Player player, Item item);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Projectile"/> <paramref name="projectile"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Projectile"/>&#160;<paramref name="projectile"/>
 		/// </summary>
 		public delegate void PartProjectileFunc(int partID, Projectile projectile);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Projectile"/> <paramref name="projectile"/>,
-		/// <see cref="IEntitySource"/> <paramref name="source"/>,
-		/// <see langword="float"/> <paramref name="X"/>,
-		/// <see langword="float"/> <paramref name="Y"/>,
-		/// <see langword="float"/> <paramref name="SpeedX"/>,
-		/// <see langword="float"/> <paramref name="SpeedY"/>,
-		/// <see langword="int"/> <paramref name="Type"/>,
-		/// <see langword="int"/> <paramref name="Damage"/>,
-		/// <see langword="float"/> <paramref name="KnockBack"/>,
-		/// <see langword="int"/> <paramref name="Owner"/>,
-		/// <see langword="float"/> <paramref name="ai0"/>,
-		/// <see langword="float"/> <paramref name="ai1"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Projectile"/>&#160;<paramref name="projectile"/>,
+		/// <see cref="IEntitySource"/>&#160;<paramref name="source"/>,
+		/// <see langword="float"/>&#160;<paramref name="X"/>,
+		/// <see langword="float"/>&#160;<paramref name="Y"/>,
+		/// <see langword="float"/>&#160;<paramref name="SpeedX"/>,
+		/// <see langword="float"/>&#160;<paramref name="SpeedY"/>,
+		/// <see langword="int"/>&#160;<paramref name="Type"/>,
+		/// <see langword="int"/>&#160;<paramref name="Damage"/>,
+		/// <see langword="float"/>&#160;<paramref name="KnockBack"/>,
+		/// <see langword="int"/>&#160;<paramref name="Owner"/>,
+		/// <see langword="float"/>&#160;<paramref name="ai0"/>,
+		/// <see langword="float"/>&#160;<paramref name="ai1"/>
 		/// </summary>
 		public delegate void PartProjectileSpawnFunc(int partID, Projectile projectile, IEntitySource source, float X, float Y, float SpeedX, float SpeedY, int Type, int Damage, float KnockBack, int Owner, float ai0, float ai1);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Projectile"/> <paramref name="projectile"/>,
-		/// <see cref="NPC"/> <paramref name="target"/>,
-		/// <see langword="int"/> <paramref name="damage"/>,
-		/// <see langword="float"/> <paramref name="knockback"/>,
-		/// <see langword="bool"/> <paramref name="crit"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Projectile"/>&#160;<paramref name="projectile"/>,
+		/// <see cref="NPC"/>&#160;<paramref name="target"/>,
+		/// <see langword="int"/>&#160;<paramref name="damage"/>,
+		/// <see langword="float"/>&#160;<paramref name="knockback"/>,
+		/// <see langword="bool"/>&#160;<paramref name="crit"/>
 		/// </summary>
 		public delegate void PartProjectileHitNPCFunc(int partID, Projectile projectile, NPC target, int damage, float knockback, bool crit);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Projectile"/> <paramref name="projectile"/>,
-		/// <see cref="Player"/> <paramref name="target"/>,
-		/// <see langword="int"/> <paramref name="damage"/>,
-		/// <see langword="bool"/> <paramref name="crit"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Projectile"/>&#160;<paramref name="projectile"/>,
+		/// <see cref="Player"/>&#160;<paramref name="target"/>,
+		/// <see langword="int"/>&#160;<paramref name="damage"/>,
+		/// <see langword="bool"/>&#160;<paramref name="crit"/>
 		/// </summary>
 		public delegate void PartProjectileHitPlayerFunc(int partID, Projectile projectile, Player target, int damage, bool crit);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Player"/> <paramref name="player"/>,
-		/// <see cref="StatModifier"/> <paramref name="damage"/>,
-		/// <see langword="ref float"/> <paramref name="flat"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Player"/>&#160;<paramref name="player"/>,
+		/// <see cref="StatModifier"/>&#160;<paramref name="damage"/>,
+		/// <see langword="ref float"/>&#160;<paramref name="flat"/>
 		/// </summary>
 		public delegate void PartModifyWeaponDamageFunc(int partID, Player player, ref StatModifier damage, ref float flat);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Player"/> <paramref name="player"/>,
-		/// <see cref="StatModifier"/> <paramref name="knockback"/>,
-		/// <see langword="ref float"/> <paramref name="flat"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Player"/>&#160;<paramref name="player"/>,
+		/// <see cref="StatModifier"/>&#160;<paramref name="knockback"/>,
+		/// <see langword="ref float"/>&#160;<paramref name="flat"/>
 		/// </summary>
 		public delegate void PartModifyWeaponKnockbackFunc(int partID, Player player, ref StatModifier knockback, ref float flat);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Player"/> <paramref name="player"/>,
-		/// <see langword="ref int"/> <paramref name="crit"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Player"/>&#160;<paramref name="player"/>,
+		/// <see langword="ref int"/>&#160;<paramref name="crit"/>
 		/// </summary>
 		public delegate void PartModifyWeaponCritFunc(int partID, Player player, ref int crit);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Player"/> <paramref name="player"/>,
-		/// <see cref="Item"/> <paramref name="item"/>,
-		/// <see cref="TileDestructionContext"/> <paramref name="context"/>,
-		/// <see langword="ref int"/> <paramref name="power"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Player"/>&#160;<paramref name="player"/>,
+		/// <see cref="Item"/>&#160;<paramref name="item"/>,
+		/// <see cref="TileDestructionContext"/>&#160;<paramref name="context"/>,
+		/// <see langword="ref int"/>&#160;<paramref name="power"/>
 		/// </summary>
 		public delegate void PartToolPowerFunc(int partID, Player player, Item item, TileDestructionContext context, ref int power);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Player"/> <paramref name="player"/>,
-		/// <see cref="Item"/> <paramref name="item"/>,
-		/// <see langword="int"/> <paramref name="x"/>
-		/// <see langword="int"/> <paramref name="y"/>
-		/// <see cref="TileDestructionContext"/> <paramref name="context"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Player"/>&#160;<paramref name="player"/>,
+		/// <see cref="Item"/>&#160;<paramref name="item"/>,
+		/// <see langword="int"/>&#160;<paramref name="x"/>
+		/// <see langword="int"/>&#160;<paramref name="y"/>
+		/// <see cref="TileDestructionContext"/>&#160;<paramref name="context"/>
 		/// </summary>
 		public delegate void PartTileDestructionFunc(int partID, Player player, Item item, int x, int y, TileDestructionContext context);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Item"/> <paramref name="item"/>,
-		/// <see cref="Player"/> <paramref name="owner"/>,
-		/// <see cref="NPC"/> <paramref name="target"/>,
-		/// <see langword="int"/> <paramref name="damage"/>,
-		/// <see langword="float"/> <paramref name="knockback"/>,
-		/// <see langword="bool"/> <paramref name="crit"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Item"/>&#160;<paramref name="item"/>,
+		/// <see cref="Player"/>&#160;<paramref name="owner"/>,
+		/// <see cref="NPC"/>&#160;<paramref name="target"/>,
+		/// <see langword="int"/>&#160;<paramref name="damage"/>,
+		/// <see langword="float"/>&#160;<paramref name="knockback"/>,
+		/// <see langword="bool"/>&#160;<paramref name="crit"/>
 		/// </summary>
 		public delegate void PartItemHitNPCFunc(int partID, Item item, Player owner, NPC target, int damage, float knockback, bool crit);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Item"/> <paramref name="item"/>,
-		/// <see cref="Player"/> <paramref name="owner"/>,
-		/// <see cref="Player"/> <paramref name="target"/>,
-		/// <see langword="int"/> <paramref name="damage"/>,
-		/// <see langword="bool"/> <paramref name="crit"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Item"/>&#160;<paramref name="item"/>,
+		/// <see cref="Player"/>&#160;<paramref name="owner"/>,
+		/// <see cref="Player"/>&#160;<paramref name="target"/>,
+		/// <see langword="int"/>&#160;<paramref name="damage"/>,
+		/// <see langword="bool"/>&#160;<paramref name="crit"/>
 		/// </summary>
 		public delegate void PartItemHitPlayerFunc(int partID, Item item, Player owner, Player target, int damage, bool crit);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Item"/> <paramref name="item"/>,
-		/// <see cref="Player"/> <paramref name="player"/>,
-		/// <see langword="ref float"/> <paramref name="multiplier"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Item"/>&#160;<paramref name="item"/>,
+		/// <see cref="Player"/>&#160;<paramref name="player"/>,
+		/// <see langword="ref float"/>&#160;<paramref name="multiplier"/>
 		/// </summary>
 		public delegate void PartItemUseSpeedMultiplier(int partID, Item item, Player player, ref float multiplier);
 		/// <summary>
-		/// <see langword="int"/> <paramref name="partID"/>,
-		/// <see cref="Player"/> <paramref name="player"/>,
-		/// <see cref="Item"/> <paramref name="item"/>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Player"/>&#160;<paramref name="player"/>,
+		/// <see cref="Item"/>&#160;<paramref name="item"/>
 		/// </summary>
 		public delegate bool PartCanLoseDurability(int partID, Player player, Item item);
 

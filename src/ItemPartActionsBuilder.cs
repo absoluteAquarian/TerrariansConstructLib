@@ -34,7 +34,8 @@ namespace TerrariansConstructLib {
 			builder.isReadonly = isReadonly;
 			return builder;
 		}
-
+		
+		/// <inheritdoc cref="ItemPart.PartItemFunc"/>
 		public ItemPartActionsBuilder WithItemDefaults(ItemPart.PartItemFunc onInitialized) {
 			if (isReadonly)
 				return Clone().WithItemDefaults(onInitialized);
@@ -43,6 +44,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartProjectileFunc"/>
 		public ItemPartActionsBuilder WithProjectileDefaults(ItemPart.PartProjectileFunc setProjectileDefaults) {
 			if (isReadonly)
 				return Clone().WithProjectileDefaults(setProjectileDefaults);
@@ -51,6 +53,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartPlayerFunc"/>
 		public ItemPartActionsBuilder WithOnUse(ItemPart.PartPlayerFunc onUse) {
 			if (isReadonly)
 				return Clone().WithOnUse(onUse);
@@ -59,6 +62,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartPlayerFunc"/>
 		public ItemPartActionsBuilder WithOnHold(ItemPart.PartPlayerFunc onHold) {
 			if (isReadonly)
 				return Clone().WithOnHold(onHold);
@@ -67,6 +71,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartPlayerFunc"/>
 		public ItemPartActionsBuilder WithOnGenericHotkeyUsage(ItemPart.PartPlayerFunc onGenericHotkeyUsage) {
 			if (isReadonly)
 				return Clone().WithOnGenericHotkeyUsage(onGenericHotkeyUsage);
@@ -75,6 +80,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartProjectileSpawnFunc"/>
 		public ItemPartActionsBuilder WithOnProjectileSpawn(ItemPart.PartProjectileSpawnFunc onProjectileSpawn) {
 			if (isReadonly)
 				return Clone().WithOnProjectileSpawn(onProjectileSpawn);
@@ -83,6 +89,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartProjectileHitNPCFunc"/>
 		public ItemPartActionsBuilder WithOnProjectileHitNPC(ItemPart.PartProjectileHitNPCFunc onProjectileHitNPC) {
 			if (isReadonly)
 				return Clone().WithOnProjectileHitNPC(onProjectileHitNPC);
@@ -91,6 +98,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartProjectileHitPlayerFunc"/>
 		public ItemPartActionsBuilder WithOnProjectileHitPlayer(ItemPart.PartProjectileHitPlayerFunc onProjectileHitPlayer) {
 			if (isReadonly)
 				return Clone().WithOnProjectileHitPlayer(onProjectileHitPlayer);
@@ -99,6 +107,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartModifyWeaponDamageFunc"/>
 		public ItemPartActionsBuilder WithModifyWeaponDamage(ItemPart.PartModifyWeaponDamageFunc modifyWeaponDamage) {
 			if (isReadonly)
 				return Clone().WithModifyWeaponDamage(modifyWeaponDamage);
@@ -107,6 +116,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartModifyWeaponKnockbackFunc"/>
 		public ItemPartActionsBuilder WithModifyWeaponKnockback(ItemPart.PartModifyWeaponKnockbackFunc modifyWeaponKnockback) {
 			if (isReadonly)
 				return Clone().WithModifyWeaponKnockback(modifyWeaponKnockback);
@@ -115,6 +125,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartModifyWeaponCritFunc"/>
 		public ItemPartActionsBuilder WithModifyWeaponCrit(ItemPart.PartModifyWeaponCritFunc modifyWeaponCrit) {
 			if (isReadonly)
 				return Clone().WithModifyWeaponCrit(modifyWeaponCrit);
@@ -123,6 +134,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartProjectileFunc"/>
 		public ItemPartActionsBuilder WithAI(ItemPart.PartProjectileFunc projectileAI) {
 			if (isReadonly)
 				return Clone().WithAI(projectileAI);
@@ -131,6 +143,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartToolPowerFunc"/>
 		public ItemPartActionsBuilder WithModifyToolPower(ItemPart.PartToolPowerFunc modifyToolPower) {
 			if (isReadonly)
 				return Clone().WithModifyToolPower(modifyToolPower);
@@ -139,6 +152,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartTileDestructionFunc"/>
 		public ItemPartActionsBuilder WithOnTileDestroyed(ItemPart.PartTileDestructionFunc onTileDestroyed) {
 			if (isReadonly)
 				return Clone().WithOnTileDestroyed(onTileDestroyed);
@@ -147,6 +161,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartItemHitNPCFunc"/>
 		public ItemPartActionsBuilder WithOnItemHitNPC(ItemPart.PartItemHitNPCFunc onItemHitNPC) {
 			if (isReadonly)
 				return Clone().WithOnItemHitNPC(onItemHitNPC);
@@ -155,6 +170,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartItemHitPlayerFunc"/>
 		public ItemPartActionsBuilder WithOnItemHitPlayer(ItemPart.PartItemHitPlayerFunc onItemHitPlayer) {
 			if (isReadonly)
 				return Clone().WithOnItemHitPlayer(onItemHitPlayer);
@@ -163,6 +179,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartItemUseSpeedMultiplier"/>
 		public ItemPartActionsBuilder WithUseSpeedMultiplier(ItemPart.PartItemUseSpeedMultiplier useSpeedMultiplier) {
 			if (isReadonly)
 				return Clone().WithUseSpeedMultiplier(useSpeedMultiplier);
@@ -171,6 +188,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartPlayerFunc"/>
 		public ItemPartActionsBuilder WithOnUpdateInventory(ItemPart.PartPlayerFunc onUpdateInventory) {
 			if (isReadonly)
 				return Clone().WithOnUpdateInventory(onUpdateInventory);
@@ -179,6 +197,7 @@ namespace TerrariansConstructLib {
 			return this;
 		}
 
+		/// <inheritdoc cref="ItemPart.PartCanLoseDurability"/>
 		public ItemPartActionsBuilder WithCanLoseDurability(ItemPart.PartCanLoseDurability canLoseDurability) {
 			if (isReadonly)
 				return Clone().WithCanLoseDurability(canLoseDurability);
