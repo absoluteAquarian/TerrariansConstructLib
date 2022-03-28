@@ -293,7 +293,13 @@ namespace TerrariansConstructLib.Items {
 
 					string format = Language.GetTextValue(kvp.Key);
 
-					return string.Format(format, value);
+					float num4 = Main.mouseTextColor / 255f;
+					byte a = Main.mouseTextColor;
+					Color color = value > 0
+						? new Color((byte)(190f * num4), (byte)(120f * num4), (byte)(120f * num4), a)
+						: new Color((byte)(120f * num4), (byte)(190f * num4), (byte)(120f * num4), a);
+
+					return "[c/" + color.Hex3() + ":" + string.Format(format, value) + "]";
 				});
 		}
 
