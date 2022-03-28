@@ -320,6 +320,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 
 				return num2;
 			});
+			c.Emit(OpCodes.Stloc_2);
 
 			if (!c.TryGotoNext(MoveType.After, i => i.MatchLdcI4(0),
 				i => i.MatchCall(AchievementsHelper_set_CurrentlyMining)))
