@@ -174,7 +174,7 @@ namespace TerrariansConstructLib {
 
 			//Unused, but they're needed for displaying the parts in the Forge UI
 			for (ColorMaterialType c = ColorMaterialType.Red; c < ColorMaterialType.Count; c++)
-				RegisterMaterialStats(new ColorMaterial(c), 1, null);
+				RegisterMaterialStats(new ColorMaterial(c), 1, null, new ExtraPartStats());
 
 			LoadAllOfTheThings("RegisterTCMaterials");
 
