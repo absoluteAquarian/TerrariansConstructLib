@@ -20,7 +20,7 @@ namespace TerrariansConstructLib.API {
 		/// </summary>
 		public bool LangKeyIsLiteral { get; set; }
 
-		public readonly bool useMultiplicativeOnly, useAdditiveOnly;
+		public readonly bool useMultiplicativeOnly, useAdditiveOnly, positiveValueIsGoodModifier;
 
 		public ModifierText(Material material, int partID, CreationContext context) {
 			this.material = material;
@@ -30,6 +30,7 @@ namespace TerrariansConstructLib.API {
 			Stat = context.Stat;
 			useMultiplicativeOnly = context.useMultiplicativeOnly;
 			useAdditiveOnly = context.useAdditiveOnly;
+			positiveValueIsGoodModifier = context.positiveValueIsGoodModifier;
 		}
 
 		public ModifierText(ItemPart part, CreationContext context) {
@@ -40,6 +41,7 @@ namespace TerrariansConstructLib.API {
 			Stat = context.Stat;
 			useMultiplicativeOnly = context.useMultiplicativeOnly;
 			useAdditiveOnly = context.useAdditiveOnly;
+			positiveValueIsGoodModifier = context.positiveValueIsGoodModifier;
 		}
 
 		public ItemPart GetPart() => ItemPart.partData.Get(material, partID);
@@ -51,13 +53,14 @@ namespace TerrariansConstructLib.API {
 
 			public StatModifier Stat;
 
-			public bool useMultiplicativeOnly, useAdditiveOnly;
+			public bool useMultiplicativeOnly, useAdditiveOnly, positiveValueIsGoodModifier;
 
-			public CreationContext(string? langKey, StatModifier? stat = null, bool useMultiplicativeOnly = false, bool useAdditiveOnly = false) {
+			public CreationContext(string? langKey, StatModifier? stat = null, bool useMultiplicativeOnly = false, bool useAdditiveOnly = false, bool positiveValueIsGoodModifier = true) {
 				this.langKey = langKey;
 				Stat = stat ?? StatModifier.One;
 				this.useMultiplicativeOnly = useMultiplicativeOnly;
 				this.useAdditiveOnly = useAdditiveOnly;
+				this.positiveValueIsGoodModifier = positiveValueIsGoodModifier;
 			}
 		}
 	}

@@ -295,7 +295,10 @@ namespace TerrariansConstructLib.Items {
 
 					float num4 = Main.mouseTextColor / 255f;
 					byte a = Main.mouseTextColor;
-					Color color = value > 0
+
+					float colorvalue = kvp.Value.positiveValueIsGoodModifier ? value : -value;
+
+					Color color = colorvalue < 0
 						? new Color((byte)(190f * num4), (byte)(120f * num4), (byte)(120f * num4), a)
 						: new Color((byte)(120f * num4), (byte)(190f * num4), (byte)(120f * num4), a);
 
