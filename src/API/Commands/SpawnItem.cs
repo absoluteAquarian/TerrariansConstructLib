@@ -18,13 +18,8 @@ namespace TerrariansConstructLib.API.Commands {
 		public override string Description => "Spawns a constructed item with the specified item parts.  For \"Unloaded\" parts, you can use \"U\" for the #.  For \"Unknown\" parts, you can use \"K\" for the #.";
 
 		public override void Action(CommandCaller caller, string input, string[] args) {
-			if (args.Length < 5) {
-				caller.Reply("Expected at least 5 parameters.", Color.Red);
-				return;
-			}
-
-			if ((args.Length - 1) % 2 != 0) {
-				caller.Reply("Final material argument did not have a matching part argument.", Color.Red);
+			if (args.Length < 3) {
+				caller.Reply("Expected at least 3 parameters.", Color.Red);
 				return;
 			}
 
@@ -43,7 +38,7 @@ namespace TerrariansConstructLib.API.Commands {
 			}
 
 			for (int i = 0; i < numParts; i++) {
-				if (!GetMaterialNum(caller, args, 1 + i * 2, out int materialType))
+				if (!GetMaterialNum(caller, args, 1 + i, out int materialType))
 					return;
 
 				parts[i] = new(){

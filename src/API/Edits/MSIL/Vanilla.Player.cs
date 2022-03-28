@@ -305,7 +305,8 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 				MethodInfo miningMethod = typeof(Player).GetCachedMethod("ItemCheck_UseMiningTools_ActuallyUseMiningTool")!;
 
 				//Only do things if PickTile was called from ItemCheck_UseMiningTools_ActuallyUseMiningTool
-				if (trace.GetFrame(0)!.GetMethod()!.MethodHandle == miningMethod.MethodHandle) {
+				MethodBase? m;
+				if (Array.Exists(trace.GetFrames(), f => (m = f.GetMethod())?.DeclaringType == miningMethod.DeclaringType && m?.Name == miningMethod.Name)) {
 					Item sItem = self.HeldItem;
 
 					if (sItem.ModItem is BaseTCItem tc) {

@@ -47,7 +47,7 @@ namespace TerrariansConstructLib.Items {
 		protected ReadOnlySpan<ItemPart> GetParts() => parts.ToArray();
 
 		protected IEnumerable<S> GetPartStats<S>(StatType type) where S : class, IPartStats
-			=> parts.Select(p => p.material.GetStat<S>(type)!).Where(s => s is not null);
+			=> parts.Where(p => PartRegistry.registeredIDs[p.partID].type == type).Select(p => p.material.GetStat<S>(type)!).Where(s => s is not null);
 
 		protected IEnumerable<HeadPartStats> GetHeadParts() => GetPartStats<HeadPartStats>(StatType.Head);
 
@@ -286,7 +286,11 @@ namespace TerrariansConstructLib.Items {
 					if (kvp.Value.LangKeyIsLiteral)
 						return kvp.Key;
 
-					float value = kvp.Value.useMultiplicativeOnly ? (kvp.Value.Stat.Multiplicative - 1f) * 100 : kvp.Value.useAdditiveOnly ? kvp.Value.Stat.Additive : ((float)kvp.Value.Stat - 1f) * 100;
+					float value = kvp.Value.useMultiplicativeOnly
+						? (kvp.Value.Stat.Multiplicative - 1f) * 100
+						: kvp.Value.useAdditiveOnly
+							? (kvp.Value.treatAdditiveAsMultiplier ? (kvp.Value.Stat.Additive - 1f) * 100 : kvp.Value.Stat.Additive)
+							: ((float)kvp.Value.Stat - 1f) * 100;
 
 					if (value == 0)
 						return null!;
@@ -474,9 +478,9 @@ namespace TerrariansConstructLib.Items {
 			double averageHandle = GetHandleParts().Average(p => p.durability.Multiplicative);
 			double handleAdd = GetHandleParts().Sum(p => p.durability.Additive);
 			double averageExtra = GetExtraParts().Average(p => p.Get(CoreLibMod.KnownStatModifiers.ExtraDurability).Multiplicative);
-			double extraAdd = GetExtraParts().Average(p => p.Get(CoreLibMod.KnownStatModifiers.ExtraDurability).Additive);
+			double extraAdd = GetExtraParts().Average(p => p.Get(CoreLibMod.KnownStatModifiers.ExtraDurability, new StatModifier()).Additive);
 
-			return (int)Math.Max(1, (averageHead + handleAdd + extraAdd) * (averageHandle + averageExtra - 1));
+			return (int)Math.Max(1, averageHead * (averageHandle + averageExtra - 1) + handleAdd + extraAdd);
 		}
 
 		public int GetBaseDamage() {
@@ -484,7 +488,7 @@ namespace TerrariansConstructLib.Items {
 			double averageHandle = GetHandleParts().Average(p => p.attackDamage.Multiplicative);
 			double handleAdd = GetHandleParts().Sum(p => p.attackDamage.Additive);
 
-			return (int)Math.Max(1, (averageHead + handleAdd) * averageHandle);
+			return (int)Math.Max(1, averageHead * averageHandle + handleAdd);
 		}
 
 		public int GetBaseKnockback() {
@@ -492,7 +496,7 @@ namespace TerrariansConstructLib.Items {
 			double averageHandle = GetHandleParts().Average(p => p.attackKnockback.Multiplicative);
 			double handleAdd = GetHandleParts().Sum(p => p.attackKnockback.Additive);
 
-			return (int)Math.Max(1, (averageHead + handleAdd) * averageHandle);
+			return (int)Math.Max(1, averageHead * averageHandle + handleAdd);
 		}
 
 		protected void InitializeUseTimeAndUseSpeed() {
