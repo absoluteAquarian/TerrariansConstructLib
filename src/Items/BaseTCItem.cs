@@ -17,6 +17,7 @@ using TerrariansConstructLib.Abilities;
 using TerrariansConstructLib.API;
 using TerrariansConstructLib.API.Numbers;
 using TerrariansConstructLib.API.Reflection;
+using TerrariansConstructLib.API.Sources;
 using TerrariansConstructLib.API.Stats;
 using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Materials;
@@ -421,6 +422,8 @@ namespace TerrariansConstructLib.Items {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnUse?.Invoke(parts[i].partID, player, Item);
 
+			abilities.UseItem(player, this);
+
 			SafeUseItem(player);
 
 			return true;
@@ -430,10 +433,12 @@ namespace TerrariansConstructLib.Items {
 		public virtual void SafeUseItem(Player player) { }
 
 		public sealed override void OnHitNPC(Player player, NPC target, int damage, float knockBack, bool crit) {
-			TryReduceDurability(player, HasAnyToolPower() ? 2 : 1);
+			TryReduceDurability(player, 1, new DurabilityModificationSource_HitEntity(target, HasAnyToolPower()));
 
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnItemHitNPC?.Invoke(parts[i].partID, Item, player, target, damage, knockBack, crit);
+
+			abilities.OnHitNPC(player, target, this, damage, knockBack, crit);
 
 			SafeOnHitNPC(player, target, damage, knockBack, crit);
 		}
@@ -442,7 +447,7 @@ namespace TerrariansConstructLib.Items {
 		public virtual void SafeOnHitNPC(Player player, NPC target, int damage, float knockBack, bool crit) { }
 
 		public sealed override void OnHitPvp(Player player, Player target, int damage, bool crit) {
-			TryReduceDurability(player, HasAnyToolPower() ? 2 : 1);
+			TryReduceDurability(player, 1, new DurabilityModificationSource_HitEntity(target, HasAnyToolPower()));
 
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnItemHitPlayer?.Invoke(parts[i].partID, Item, player, target, damage, crit);
@@ -453,8 +458,20 @@ namespace TerrariansConstructLib.Items {
 		/// <inheritdoc cref="OnHitPvp(Player, Player, int, bool)"/>
 		public virtual void SafeOnHitPvp(Player player, Player target, int damage, bool crit) { }
 
+		public sealed override void ModifyHitNPC(Player player, NPC target, ref int damage, ref float knockBack, ref bool crit) {
+			for (int i = 0; i < parts.Length; i++)
+				parts[i].ModifyHitNPC?.Invoke(parts[i].partID, player, target, ref damage, ref knockBack, ref crit);
+
+			abilities.ModifyHitNPC(player, target, this, ref damage, ref knockBack, ref crit);
+
+			SafeModifyHitNPC(player, target, ref damage, ref knockBack, ref crit);
+		}
+
+		/// <inheritdoc cref="ModifyHitNPC(Player, NPC, ref int, ref float, ref bool)"/>
+		public virtual void SafeModifyHitNPC(Player player, NPC target, ref int damage, ref float knockBack, ref bool crit) { }
+
 		internal void OnTileDestroyed(Player player, int x, int y, TileDestructionContext context) {
-			TryReduceDurability(player, 1);
+			TryReduceDurability(player, 1, new DurabilityModificationSource_Mining(context, x, y));
 
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnTileDestroyed?.Invoke(parts[i].partID, player, Item, x, y, context);
@@ -557,12 +574,23 @@ namespace TerrariansConstructLib.Items {
 		public bool HasAnyToolPower()
 			=> SelectToolAxeStats().Any(p => p.axePower > 0) || SelectToolPickaxeStats().Any(p => p.pickPower > 0) || SelectToolHammerStats().Any(p => p.hammerPower > 0);
 
-		public void TryIncreaseDurability(int amount) {
+		public void TryIncreaseDurability(Player player, int amount, IDurabilityModificationSource source) {
 			if (amount <= 0)
 				return;
 
 			int max = GetMaxDurability();
 			if (CurrentDurability < max && TCConfig.Instance.UseDurability) {
+				for (int i = 0; i < parts.Length; i++)
+					parts[i].PreModifyDurability?.Invoke(parts[i].partID, player, Item, source, ref amount);
+
+				if (amount <= 0)
+					return;
+
+				abilities.PreModifyDurability(player, this, source, ref amount);
+
+				if (amount <= 0)
+					return;
+
 				CurrentDurability += amount;
 
 				if (CurrentDurability > max)
@@ -570,7 +598,7 @@ namespace TerrariansConstructLib.Items {
 			}
 		}
 
-		public void TryReduceDurability(Player player, int amount) {
+		public void TryReduceDurability(Player player, int amount, IDurabilityModificationSource source) {
 			if (amount <= 0)
 				return;
 
@@ -580,11 +608,30 @@ namespace TerrariansConstructLib.Items {
 				return;
 
 			for (int i = 0; i < parts.Length; i++)
-				lose &= parts[i].CanLoseDurability?.Invoke(parts[i].partID, player, Item) ?? true;
+				lose &= parts[i].CanLoseDurability?.Invoke(parts[i].partID, player, Item, source) ?? true;
 
-			lose &= abilities.CanLoseDurability(player, this);
+			lose &= abilities.CanLoseDurability(player, this, source);
 
 			if (lose && CurrentDurability > 0) {
+				//Indicate to the API that the modification is a removal
+				amount = -amount;
+
+				for (int i = 0; i < parts.Length; i++)
+					parts[i].PreModifyDurability?.Invoke(parts[i].partID, player, Item, source, ref amount);
+
+				if (amount >= 0)
+					return;
+
+				abilities.PreModifyDurability(player, this, source, ref amount);
+
+				if (amount >= 0)
+					return;
+
+				amount = -amount;
+
+				if (source is DurabilityModificationSource_HitEntity hitEntity && hitEntity.doubledLossFromUsingMiningTool)
+					amount *= 2;
+
 				CurrentDurability -= amount;
 
 				if (CurrentDurability < 0)

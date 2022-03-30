@@ -3,6 +3,7 @@ using MonoMod.Cil;
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Terraria;
 using Terraria.GameContent.Achievements;
 using TerrariansConstructLib.API.Reflection;
@@ -296,8 +297,8 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			label.Target = c.Prev;
 
 			c.Emit(OpCodes.Ldloc_2);
-
-			c.Emit(OpCodes.Ldc_I4_1);
+			
+			c.Emit(OpCodes.Ldc_I4_0);
 			c.Emit(OpCodes.Ldc_I4_0);
 			c.Emit(OpCodes.Newobj, StackTrace_ctor);
 			c.Emit(OpCodes.Ldloc_1);
@@ -305,8 +306,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 				MethodInfo miningMethod = typeof(Player).GetCachedMethod("ItemCheck_UseMiningTools_ActuallyUseMiningTool")!;
 
 				//Only do things if PickTile was called from ItemCheck_UseMiningTools_ActuallyUseMiningTool
-				MethodBase? m;
-				if (Array.Exists(trace.GetFrames(), f => (m = f.GetMethod())?.DeclaringType == miningMethod.DeclaringType && m?.Name == miningMethod.Name)) {
+				if (Utility.MethodExistsInStackTrace(trace, miningMethod)) {
 					Item sItem = self.HeldItem;
 
 					if (sItem.ModItem is BaseTCItem tc) {
@@ -330,7 +330,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			patchNum++;
 
 			c.Emit(OpCodes.Ldarg_0);
-			c.Emit(OpCodes.Ldc_I4_1);
+			c.Emit(OpCodes.Ldc_I4_0);
 			c.Emit(OpCodes.Ldc_I4_0);
 			c.Emit(OpCodes.Newobj, StackTrace_ctor);
 			c.Emit(OpCodes.Ldarg_1);
@@ -341,11 +341,13 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 				MethodInfo miningMethod = typeof(Player).GetCachedMethod("ItemCheck_UseMiningTools_ActuallyUseMiningTool")!;
 
 				//Only do things if PickTile was called from ItemCheck_UseMiningTools_ActuallyUseMiningTool
-				if (trace.GetFrame(0)!.GetMethod()!.MethodHandle == miningMethod.MethodHandle) {
+				if (Utility.MethodExistsInStackTrace(trace, miningMethod)) {
 					Item sItem = self.HeldItem;
 
 					if (sItem.ModItem is BaseTCItem tc)
 						tc.OnTileDestroyed(self, x, y, new TileDestructionContext(num2, tile.TileType, pickaxe: true));
+
+					Main.NewText($"Destroyed tile (TC item? {sItem.ModItem is BaseTCItem})");
 				}
 			});
 

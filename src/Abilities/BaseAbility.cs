@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using TerrariansConstructLib.API.Sources;
 using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Items;
 
@@ -29,7 +31,7 @@ namespace TerrariansConstructLib.Abilities {
 		/// This property is ignored if <see cref="ShouldUpdateCounter(Player)"/> returns <see langword="false"/><br/>
 		/// This property defaults to <see langword="true"/>
 		/// </summary>
-		public bool CounterIncrements { get; protected set; } = true;
+		public virtual bool CounterIncrements => true;
 
 		protected sealed override void Register() {
 			ModTypeLookup<BaseAbility>.Register(this);
@@ -139,7 +141,45 @@ namespace TerrariansConstructLib.Abilities {
 		/// <summary>
 		/// Return false in this hook to prevent the <paramref name="item"/> from losing durability
 		/// </summary>
-		public virtual bool CanLoseDurability(Player player, BaseTCItem item) => true;
+		public virtual bool CanLoseDurability(Player player, BaseTCItem item, IDurabilityModificationSource source) => true;
+
+		/// <summary>
+		/// This hook runs in <see cref="BaseTCItem.ModifyHitNPC(Player, NPC, ref int, ref float, ref bool)"/>
+		/// </summary>
+		/// <param name="player">The player</param>
+		/// <param name="target">The target</param>
+		/// <param name="item">The item doing the hitting</param>
+		/// <param name="damage">The damage</param>
+		/// <param name="knockBack">The knockback</param>
+		/// <param name="crit">If set to <see langword="true"/> [crit]</param>
+		public virtual void ModifyHitNPC(Player player, NPC target, BaseTCItem item, ref int damage, ref float knockBack, ref bool crit) { }
+
+		/// <summary>
+		/// This hook runs in <see cref="BaseTCItem.OnHitNPC(Player, NPC, int, float, bool)"/>
+		/// </summary>
+		/// <param name="player">The player</param>
+		/// <param name="target">The target</param>
+		/// <param name="item">The item that hit the target</param>
+		/// <param name="damage">The damage</param>
+		/// <param name="knockBack">The knockback</param>
+		/// <param name="crit">If set to <see langword="true"/> [crit]</param>
+		public virtual void OnHitNPC(Player player, NPC target, BaseTCItem item, int damage, float knockBack, bool crit) { }
+
+		/// <summary>
+		/// This hook runs before durability is added to or subtracted from the <paramref name="item"/>
+		/// </summary>
+		/// <param name="player">The player</param>
+		/// <param name="item">The item</param>
+		/// <param name="source">The modification source</param>
+		/// <param name="amount">The amount to modify the durability by.  If the value is &lt; 0, then the modification was a durability removal, otherwise it's a durability addition</param>
+		public virtual void PreModifyDurability(Player player, BaseTCItem item, IDurabilityModificationSource source, ref int amount) { }
+
+		/// <summary>
+		/// This hook runs in <see cref="BaseTCItem.UseItem(Player)"/>
+		/// </summary>
+		/// <param name="player">The player</param>
+		/// <param name="item">The item</param>
+		public virtual void UseItem(Player player, BaseTCItem item) { }
 
 		/// <summary>
 		/// Allows you to save custom data for this ability.<br/>
@@ -159,6 +199,14 @@ namespace TerrariansConstructLib.Abilities {
 		/// <param name="tag">The TagCompound to load data from.</param>
 		public virtual void LoadData(TagCompound tag) {
 			Counter = tag.GetDouble("counter");
+		}
+
+		public static void DisplayMessageAbovePlayer(Player player, Color color, string message) {
+			const int sizeX = 6 * 16;
+			const int sizeY = 10 * 16;
+			Point tl = (player.Center + new Vector2(-sizeX / 2f, -sizeY / 2f)).ToPoint();
+			Rectangle area = new(tl.X, tl.Y, sizeX, sizeY);
+			CombatText.NewText(area, color, message);
 		}
 	}
 }

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Terraria;
 using Terraria.ModLoader.IO;
+using TerrariansConstructLib.API.Sources;
 using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
@@ -61,13 +62,37 @@ namespace TerrariansConstructLib.Abilities {
 
 		internal void OnTileDestroyed(Player player, BaseTCItem item, int x, int y, TileDestructionContext context) => PerformActions(player, (a, p) => a.OnTileDestroyed(p, item, x, y, context));
 
-		internal bool CanLoseDurability(Player player, BaseTCItem item) {
+		internal bool CanLoseDurability(Player player, BaseTCItem item, IDurabilityModificationSource source) {
 			bool lose = true;
 
-			PerformActions(player, (a, p) => lose &= a.CanLoseDurability(p, item));
+			PerformActions(player, (a, p) => lose &= a.CanLoseDurability(p, item, source));
 
 			return lose;
 		}
+
+		internal void ModifyHitNPC(Player player, NPC target, BaseTCItem item, ref int damage, ref float knockBack, ref bool crit) {
+			int d = damage;
+			float k = knockBack;
+			bool c = crit;
+
+			PerformActions(player, (a, p) => a.ModifyHitNPC(p, target, item, ref d, ref k, ref c));
+
+			damage = d;
+			knockBack = k;
+			crit = c;
+		}
+
+		internal void OnHitNPC(Player player, NPC target, BaseTCItem item, int damage, float knockBack, bool crit) => PerformActions(player, (a, p) => a.OnHitNPC(p, target, item, damage, knockBack, crit));
+
+		internal void PreModifyDurability(Player player, BaseTCItem item, IDurabilityModificationSource source, ref int amount) {
+			int amt = amount;
+
+			PerformActions(player, (a, p) => a.PreModifyDurability(player, item, source, ref amt));
+
+			amount = amt;
+		}
+
+		internal void UseItem(Player player, BaseTCItem item) => PerformActions(player, (a, p) => a.UseItem(p, item));
 
 		private void PerformActions(Player player, Action<BaseAbility, Player> func) {
 			foreach (var member in members.Values) {

@@ -21,6 +21,8 @@ namespace TerrariansConstructLib {
 		internal ItemPart.PartItemUseSpeedMultiplier useSpeedMultiplier;
 		internal ItemPart.PartPlayerFunc onUpdateInventory;
 		internal ItemPart.PartCanLoseDurability canLoseDurability;
+		internal ItemPart.PartModifyHitNPCFunc modifyHitNPC;
+		internal ItemPart.PartPreModifyDurability PreModifyDurability;
 
 		private bool isReadonly;
 
@@ -203,6 +205,24 @@ namespace TerrariansConstructLib {
 				return Clone().WithCanLoseDurability(canLoseDurability);
 
 			this.canLoseDurability = canLoseDurability;
+			return this;
+		}
+
+		/// <inheritdoc cref="ItemPart.PartModifyHitNPCFunc"/>
+		public ItemPartActionsBuilder WithModifyHitNPC(ItemPart.PartModifyHitNPCFunc modifyHitNPC) {
+			if (isReadonly)
+				return Clone().WithModifyHitNPC(modifyHitNPC);
+
+			this.modifyHitNPC = modifyHitNPC;
+			return this;
+		}
+
+		/// <inheritdoc cref="ItemPart.PartPreModifyDurability"/>
+		public ItemPartActionsBuilder WithPreModifyDurability(ItemPart.PartPreModifyDurability PreModifyDurability) {
+			if (isReadonly)
+				return Clone().WithPreModifyDurability(PreModifyDurability);
+
+			this.PreModifyDurability = PreModifyDurability;
 			return this;
 		}
 	}

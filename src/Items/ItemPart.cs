@@ -6,6 +6,7 @@ using Terraria.DataStructures;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
+using TerrariansConstructLib.API.Sources;
 using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
@@ -127,9 +128,27 @@ namespace TerrariansConstructLib.Items {
 		/// <summary>
 		/// <see langword="int"/>&#160;<paramref name="partID"/>,
 		/// <see cref="Player"/>&#160;<paramref name="player"/>,
-		/// <see cref="Item"/>&#160;<paramref name="item"/>
+		/// <see cref="Item"/>&#160;<paramref name="item"/>,
+		/// <see cref="IDurabilityModificationSource"/>&#160;<paramref name="source"/>
 		/// </summary>
-		public delegate bool PartCanLoseDurability(int partID, Player player, Item item);
+		public delegate bool PartCanLoseDurability(int partID, Player player, Item item, IDurabilityModificationSource source);
+		/// <summary>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Player"/>&#160;<paramref name="player"/>,
+		/// <see cref="NPC"/>&#160;<paramref name="target"/>,
+		/// <see langword="ref int"/>&#160;<paramref name="damage"/>,
+		/// <see langword="ref float"/>&#160;<paramref name="knockBack"/>,
+		/// <see langword="ref bool"/>&#160;<paramref name="crit"/>
+		/// </summary>
+		public delegate void PartModifyHitNPCFunc(int partID, Player player, NPC target, ref int damage, ref float knockBack, ref bool crit);
+		/// <summary>
+		/// <see langword="int"/>&#160;<paramref name="partID"/>,
+		/// <see cref="Player"/>&#160;<paramref name="player"/>,
+		/// <see cref="Item"/>&#160;<paramref name="item"/>,
+		/// <see cref="IDurabilityModificationSource"/>&#160;<paramref name="source"/>,
+		/// <see langword="ref int"/>&#160;<paramref name="amount"/>
+		/// </summary>
+		public delegate bool PartPreModifyDurability(int partID, Player player, Item item, IDurabilityModificationSource source, ref int amount);
 
 		internal static PartsDictionary<ItemPart> partData;
 
@@ -217,6 +236,11 @@ namespace TerrariansConstructLib.Items {
 		public PartPlayerFunc? OnUpdateInventory => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onUpdateInventory;
 
 		public PartCanLoseDurability? CanLoseDurability => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).canLoseDurability;
+
+		public PartModifyHitNPCFunc? ModifyHitNPC => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).modifyHitNPC;
+
+		/// <remarks>If the <c>amount</c> parameter is &lt; 0, then the modification was a durability removal, otherwise it's a durability addition</remarks>
+		public PartPreModifyDurability? PreModifyDurability => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).PreModifyDurability;
 
 		public TagCompound SerializeData() {
 			TagCompound tag = new();
