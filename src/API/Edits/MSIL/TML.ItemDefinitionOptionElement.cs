@@ -10,9 +10,11 @@ using TerrariansConstructLib.Items;
 namespace TerrariansConstructLib.API.Edits.MSIL {
 	internal static partial class TML {
 		internal static void Patch_ItemDefinitionOptionElement_DrawSelf(ILContext il) {
-			FieldInfo ItemDefinitionOptionElement_item = typeof(Mod).Assembly.GetType("Terraria.ModLoader.Config.UI.ItemDefinitionOptionElement")!.GetField("item", BindingFlags.Public | BindingFlags.Instance)!;
+			MethodInfo ItemDefinitionOptionElement_get_Item = typeof(Mod).Assembly.GetType("Terraria.ModLoader.Config.UI.ItemDefinitionOptionElement")!
+				.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance)!
+				.GetGetMethod()!;
 
-			ILHelper.EnsureAreNotNull((ItemDefinitionOptionElement_item, "Terraria.ModLoader.Config.UI.ItemDefinitionOptionElement::item"));
+			ILHelper.EnsureAreNotNull((ItemDefinitionOptionElement_get_Item, "Terraria.ModLoader.Config.UI.ItemDefinitionOptionElement::get_Item()"));
 
 			ILCursor c = new(il);
 
@@ -33,7 +35,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			patchNum++;
 
 			c.Emit(OpCodes.Ldarg_0);
-			c.Emit(OpCodes.Ldfld, ItemDefinitionOptionElement_item);
+			c.Emit(OpCodes.Call, ItemDefinitionOptionElement_get_Item);
 			c.Emit(OpCodes.Ldloc_3);
 
 			c.EmitDelegate<Func<Item, Texture2D, Texture2D>>((item, value) => {

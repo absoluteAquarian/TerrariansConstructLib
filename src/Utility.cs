@@ -26,19 +26,19 @@ namespace TerrariansConstructLib {
 		}
 
 		public static void FindAndModify(List<TooltipLine> tooltips, string searchPhrase, string replacePhrase){
-			int searchIndex = tooltips.FindIndex(t => t.text.Contains(searchPhrase));
+			int searchIndex = tooltips.FindIndex(t => t.Text.Contains(searchPhrase));
 			if(searchIndex >= 0)
-				tooltips[searchIndex].text = tooltips[searchIndex].text.Replace(searchPhrase, replacePhrase);
+				tooltips[searchIndex].Text = tooltips[searchIndex].Text.Replace(searchPhrase, replacePhrase);
 		}
 
 		public static void FindAndRemoveLine(List<TooltipLine> tooltips, string fullLine){
-			int searchIndex = tooltips.FindIndex(t => t.text == fullLine);
+			int searchIndex = tooltips.FindIndex(t => t.Text == fullLine);
 			if(searchIndex >= 0)
 				tooltips.RemoveAt(searchIndex);
 		}
 
 		public static void FindAndInsertLines(Mod mod, List<TooltipLine> tooltips, string searchLine, Func<int, string> lineNames, string replaceLines){
-			int searchIndex = tooltips.FindIndex(t => t.text == searchLine);
+			int searchIndex = tooltips.FindIndex(t => t.Text == searchLine);
 			if(searchIndex >= 0){
 				tooltips.RemoveAt(searchIndex);
 

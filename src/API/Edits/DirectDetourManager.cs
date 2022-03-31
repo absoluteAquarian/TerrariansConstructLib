@@ -58,12 +58,17 @@ namespace TerrariansConstructLib.API.Edits {
 		}
 
 		public static void Unload() {
-			foreach (Hook hook in detours)
-				if (hook.IsValid && hook.IsApplied)
-					hook.Undo();
+			try {
+				foreach (Hook hook in detours)
+					if (hook.IsValid && hook.IsApplied)
+						hook.Undo();
 
-			foreach ((MethodInfo method, Delegate hook) in delegates)
-				HookEndpointManager.Unmodify(method, hook);
+				foreach ((MethodInfo method, Delegate hook) in delegates)
+					HookEndpointManager.Unmodify(method, hook);
+			} catch (Exception ex) {
+				//If an exception was thrown (e.g. due to hooks not being added fully), just ignore it and put the error in the log
+				CoreLibMod.Instance.Logger.Error("DirectDetourManager was not able to unload properly", ex);
+			}
 		}
 
 		private static void IntermediateLanguageHook(MethodInfo orig, MethodInfo modify) {

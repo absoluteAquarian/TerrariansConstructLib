@@ -347,7 +347,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 					if (sItem.ModItem is BaseTCItem tc)
 						tc.OnTileDestroyed(self, x, y, new TileDestructionContext(num2, tile.TileType, pickaxe: true));
 
-					Main.NewText($"Destroyed tile (TC item? {sItem.ModItem is BaseTCItem})");
+				//	Main.NewText($"Destroyed tile (TC item? {sItem.ModItem is BaseTCItem})");
 				}
 			});
 
