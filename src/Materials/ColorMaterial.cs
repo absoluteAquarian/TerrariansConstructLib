@@ -31,6 +31,8 @@ namespace TerrariansConstructLib.Materials {
 
 		public override string GetName() => GetItemName();
 
+		public ColorMaterialType ColorType => (ColorMaterialType)(Type - StaticBaseType);
+
 		public ColorMaterial(ColorMaterialType type) {
 			Type = StaticBaseType + (int)type;
 		}

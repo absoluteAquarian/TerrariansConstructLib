@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
@@ -12,7 +13,7 @@ namespace TerrariansConstructLib.Abilities {
 	/// <summary>
 	/// The base class for any abilities (passive or not) that are activated via item parts
 	/// </summary>
-	public abstract class BaseAbility : ModType {
+	public abstract class BaseAbility {
 		public double Counter;
 
 		/// <summary>
@@ -26,18 +27,20 @@ namespace TerrariansConstructLib.Abilities {
 		/// </summary>
 		public virtual BaseAbility Clone() => (BaseAbility)MemberwiseClone();
 
+		public int GetTierFromItem(BaseTCItem item) {
+			Type type = GetType();
+			return item.abilities.Count(a => type.IsAssignableFrom(a.GetType()));
+		}
+
+		public static int GetTierFromItem<T>(BaseTCItem item) where T : BaseAbility
+			=> item.abilities.Count(a => a is T);
+
 		/// <summary>
 		/// Whether the <see cref="Counter"/> automatically increments (<see langword="true"/>) or decrements (<see langword="false"/>)<br/>
 		/// This property is ignored if <see cref="ShouldUpdateCounter(Player)"/> returns <see langword="false"/><br/>
 		/// This property defaults to <see langword="true"/>
 		/// </summary>
 		public virtual bool CounterIncrements => true;
-
-		protected sealed override void Register() {
-			ModTypeLookup<BaseAbility>.Register(this);
-		}
-
-		public sealed override void SetupContent() => SetStaticDefaults();
 
 		/// <summary>
 		/// Whether <see cref="Counter"/> should be automatically modified by 1 per tick.<br/>

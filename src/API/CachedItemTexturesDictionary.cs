@@ -121,8 +121,8 @@ namespace TerrariansConstructLib.API {
 						? "U"
 						: p.material is UnknownMaterial
 							? "K"
-							: p.material is ColorMaterial 
-								? "C" + p.material.GetName()[0]
+							: p.material is ColorMaterial cm
+								? "C" + Enum.GetName(cm.ColorType)![0]
 								: p.material.Type.ToString())
 						+ "+P" + p.partID));
 

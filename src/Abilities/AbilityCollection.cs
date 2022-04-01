@@ -18,6 +18,8 @@ namespace TerrariansConstructLib.Abilities {
 			public List<BaseAbility>? abilities;
 
 			public List<TagCompound> unloadedData;
+
+			public IEnumerable<BaseAbility> GetAbilities() => singleton is not null ? new BaseAbility[] { singleton } : abilities is not null ? abilities : Array.Empty<BaseAbility>();
 		}
 
 		private readonly Dictionary<Material, Member> members = new();
@@ -100,12 +102,8 @@ namespace TerrariansConstructLib.Abilities {
 				if (member.unloadedData is not null)
 					continue;
 
-				if (member.singleton is not null)
-					func(member.singleton, player);
-				else if (member.abilities is not null) {
-					foreach (var ability in member.abilities)
-						func(ability, player);
-				}
+				foreach (var ability in member.GetAbilities())
+					func(ability, player);
 			}
 		}
 
@@ -121,7 +119,9 @@ namespace TerrariansConstructLib.Abilities {
 					["material"] = material
 				};
 
-				List<BaseAbility>? values = member.singleton is not null ? new() { member.singleton } : member.abilities;
+				List<BaseAbility>? values = new(member.GetAbilities());
+				if (values.Count == 0)
+					values = null;
 
 				if (values is not null)  {
 					data["singleton"] = values[0].IsSingleton;
@@ -189,7 +189,7 @@ namespace TerrariansConstructLib.Abilities {
 		public IEnumerator<BaseAbility> GetEnumerator()
 			=> members.Values
 				.Where(m => m.unloadedData is null)
-				.SelectMany(m => m.singleton is not null ? new BaseAbility[] { m.singleton } : m.abilities is not null ? m.abilities.ToArray() : Array.Empty<BaseAbility>())
+				.SelectMany(m => m.GetAbilities())
 				.GetEnumerator();
 
 		IEnumerator IEnumerable.GetEnumerator()

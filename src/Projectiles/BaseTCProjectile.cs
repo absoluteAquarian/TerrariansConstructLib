@@ -2,12 +2,14 @@
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using System;
+using System.Linq;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.Items;
+using TerrariansConstructLib.Materials;
 
 namespace TerrariansConstructLib.Projectiles {
 	/// <summary>
@@ -18,6 +20,9 @@ namespace TerrariansConstructLib.Projectiles {
 		internal int itemSource_registeredItemID = -1;
 
 		protected ReadOnlySpan<ItemPart> GetParts() => parts;
+
+		public int CountParts(Material material)
+			=> parts.Count(p => p.material.Type == material.Type);
 
 		protected ItemPart GetPart(int index) => parts[index];
 

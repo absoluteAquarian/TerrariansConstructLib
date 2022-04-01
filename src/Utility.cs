@@ -12,6 +12,8 @@ using Terraria.DataStructures;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using TerrariansConstructLib.API.Reflection;
+using TerrariansConstructLib.Items;
+using TerrariansConstructLib.Projectiles;
 
 namespace TerrariansConstructLib {
 	public static class Utility {
@@ -290,5 +292,11 @@ namespace TerrariansConstructLib {
 
 			return false;
 		}
+
+		public static BaseTCItem? AsTCItem(this Item item)
+			=> item.ModItem as BaseTCItem;
+
+		public static BaseTCProjectile? AsTCProjectile(this Projectile projectile)
+			=> projectile.ModProjectile as BaseTCProjectile;
 	}
 }

@@ -42,8 +42,12 @@ namespace TerrariansConstructLib.API.Stats {
 		/// The durability for the part
 		/// </summary>
 		public readonly int durability;
+		/// <summary>
+		/// The tool range modifier
+		/// </summary>
+		public readonly int toolRange;
 
-		public HeadPartStats(int damage = 0, float knockback = 0, int crit = 0, int useSpeed = 20, int pickPower = 0, int axePower = 0, int hammerPower = 0, int durability = 1) {
+		public HeadPartStats(int damage = 0, float knockback = 0, int crit = 0, int useSpeed = 20, int pickPower = 0, int axePower = 0, int hammerPower = 0, int durability = 1, int toolRange = 0) {
 			this.damage = damage;
 			this.knockback = knockback;
 			this.crit = crit;
@@ -52,6 +56,7 @@ namespace TerrariansConstructLib.API.Stats {
 			this.axePower = axePower;
 			this.hammerPower = hammerPower;
 			this.durability = durability;
+			this.toolRange = toolRange;
 		}
 
 		public string GetTooltipLines(int partID) {

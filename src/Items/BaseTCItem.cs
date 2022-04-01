@@ -34,6 +34,9 @@ namespace TerrariansConstructLib.Items {
 		public IEnumerable<T> GetAbilities<T>() where T : BaseAbility
 			=> abilities.Where(a => a is T).Select(a => (a as T)!);
 
+		public int CountParts(Material material)
+			=> parts.Count(p => p.material.Type == material.Type);
+
 		public int ammoReserve, ammoReserveMax;
 
 		public readonly int registeredItemID = -1;

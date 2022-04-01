@@ -162,7 +162,7 @@ namespace TerrariansConstructLib {
 
 			AddMoldItems();
 
-			//head part: damage, knockback, crit, useSpeed, pickaxe power, axe power, hammer power, durability
+			//head part: damage, knockback, crit, useSpeed, pickaxe power, axe power, hammer power, durability, tool range
 			RegisterMaterialStats(RegisteredMaterials.Unloaded, 1, null,
 				new HeadPartStats(),
 				new HandlePartStats(),
