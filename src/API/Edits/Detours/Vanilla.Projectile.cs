@@ -30,6 +30,10 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 
 						tcProj.parts[i].OnProjectileSpawn?.Invoke(tcProj.parts[i].partID, projectile, spawnSource, X, Y, SpeedX, SpeedY, Type, Damage, KnockBack, Owner, ai0, ai1);
 					}
+
+					tcProj.abilities = tcItem.abilities.Clone();
+					
+					tcProj.abilities.OnProjectileSpawn(tcProj, spawnSource, X, Y, SpeedX, SpeedY, Type, Damage, KnockBack, Owner, ai0, ai1);
 				} else {
 					projectile.Kill();
 					return Main.maxProjectiles;

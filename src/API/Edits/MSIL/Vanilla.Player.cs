@@ -128,8 +128,12 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 					if (tc.CurrentDurability <= 0 && TCConfig.Instance.UseDurability)
 						num2 = 0;
 					else {
+						var ctx = new TileDestructionContext(num2, tile.TileType, hammer: true);
+
 						for (int i = 0; i < tc.parts.Length; i++)
-							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num2, tile.TileType, hammer: true), ref num2);
+							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, ctx, ref num2);
+						
+						tc.abilities.ModifyToolPower(self, tc, ctx, ref num2);
 					}
 				}
 
@@ -171,8 +175,12 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 					if (tc.CurrentDurability <= 0 && TCConfig.Instance.UseDurability)
 						num2 = 0;
 					else {
+						var ctx = new TileDestructionContext(num2, tile.TileType, axe: true);
+
 						for (int i = 0; i < tc.parts.Length; i++)
-							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num2, tile.TileType, axe: true), ref num2);
+							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, ctx, ref num2);
+						
+						tc.abilities.ModifyToolPower(self, tc, ctx, ref num2);
 					}
 				}
 
@@ -232,8 +240,12 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 					if (tc.CurrentDurability <= 0 && TCConfig.Instance.UseDurability)
 						num = 0;
 					else {
+						var ctx = new TileDestructionContext(num, tile.TileType, hammerWall: true);
+
 						for (int i = 0; i < tc.parts.Length; i++)
-							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num, tile.WallType, hammerWall: true), ref num);
+							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, ctx, ref num);
+						
+						tc.abilities.ModifyToolPower(self, tc, ctx, ref num);
 					}
 				}
 
@@ -313,8 +325,12 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 						if (tc.CurrentDurability <= 0 && TCConfig.Instance.UseDurability)
 							num2 = 0;
 						else {
-							for (int i = 0; i < tc.parts.Length; i++)
-								tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, new TileDestructionContext(num2, tile.TileType, pickaxe: true), ref num2);
+							var ctx = new TileDestructionContext(num2, tile.TileType, pickaxe: true);
+
+						for (int i = 0; i < tc.parts.Length; i++)
+							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, ctx, ref num2);
+						
+						tc.abilities.ModifyToolPower(self, tc, ctx, ref num2);
 						}
 					}
 				}

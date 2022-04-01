@@ -7,6 +7,7 @@ using Terraria;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
+using TerrariansConstructLib.Abilities;
 using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
@@ -17,6 +18,7 @@ namespace TerrariansConstructLib.Projectiles {
 	/// </summary>
 	public class BaseTCProjectile : ModProjectile {
 		internal ItemPart[] parts = Array.Empty<ItemPart>();
+		internal AbilityCollection abilities = null!;
 		internal int itemSource_registeredItemID = -1;
 
 		protected ReadOnlySpan<ItemPart> GetParts() => parts;
@@ -67,6 +69,8 @@ namespace TerrariansConstructLib.Projectiles {
 		public sealed override void OnHitNPC(NPC target, int damage, float knockback, bool crit) {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnProjectileHitNPC?.Invoke(parts[i].partID, Projectile, target, damage, knockback, crit);
+
+			abilities.OnHitNPCWithProjectile(this, target, damage, knockback, crit);
 		}
 
 		/// <inheritdoc cref="OnHitNPC(NPC, int, float, bool)"/>
@@ -75,6 +79,8 @@ namespace TerrariansConstructLib.Projectiles {
 		public sealed override void OnHitPlayer(Player target, int damage, bool crit) {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnProjectileHitPlayer?.Invoke(parts[i].partID, Projectile, target, damage, crit);
+
+			abilities.OnHitPlayerWithProjectile(this, target, damage, crit);
 		}
 
 		/// <inheritdoc cref="OnHitPlayer(Player, int, bool)"/>

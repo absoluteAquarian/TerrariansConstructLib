@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Terraria;
+using Terraria.DataStructures;
+using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API.Sources;
 using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
+using TerrariansConstructLib.Projectiles;
 
 namespace TerrariansConstructLib.Abilities {
 	internal class AbilityCollection : IEnumerable<BaseAbility> {
@@ -20,9 +23,18 @@ namespace TerrariansConstructLib.Abilities {
 			public List<TagCompound> unloadedData;
 
 			public IEnumerable<BaseAbility> GetAbilities() => singleton is not null ? new BaseAbility[] { singleton } : abilities is not null ? abilities : Array.Empty<BaseAbility>();
+
+			public Member Clone()
+				=> new() {
+					singleton = singleton?.Clone(),
+					abilities = abilities?.Select(a => a.Clone()).ToList(),
+					unloadedData = unloadedData
+				};
 		}
 
-		private readonly Dictionary<Material, Member> members = new();
+		private Dictionary<Material, Member> members = new();
+
+		private AbilityCollection() { }
 
 		public AbilityCollection(BaseTCItem tc) {
 			var materials = tc.parts.DistinctBy(p => p.material.Type).Select(p => p.material);
@@ -46,28 +58,39 @@ namespace TerrariansConstructLib.Abilities {
 			}
 		}
 
-		internal void Update(Player player) => PerformActions(player, (a, p) => a.Update(p));
+		public AbilityCollection Clone()
+			=> new() { members = members.Select(k => k).ToDictionary(k => k.Key.Clone(), k => k.Value.Clone()) };
 
-		internal void UpdateInventory(Player player, BaseTCItem item) => PerformActions(player, (a, p) => a.OnUpdateInventory(p, item));
+		internal void Update(Player player) => PerformActions(a => a.Update(player));
 
-		internal void HoldItem(Player player, BaseTCItem item) => PerformActions(player, (a, p) => a.OnHoldItem(p, item));
+		internal void UpdateInventory(Player player, BaseTCItem item) => PerformActions(a => a.OnUpdateInventory(player, item));
 
-		internal void OnHotkeyPressed(Player player) => PerformActions(player, (a, p) => a.OnAbilityHotkeyPressed(p));
+		internal void HoldItem(Player player, BaseTCItem item) => PerformActions(a => a.OnHoldItem(player, item));
+
+		internal void OnHotkeyPressed(Player player) => PerformActions(a => a.OnAbilityHotkeyPressed(player));
 
 		internal void UseSpeedMultiplier(Player player, BaseTCItem item, ref float multiplier) {
 			float mult = multiplier;
 
-			PerformActions(player, (a, p) => a.UseSpeedMultiplier(p, item, ref mult));
+			PerformActions(a => a.UseSpeedMultiplier(player, item, ref mult));
 
 			multiplier = mult;
 		}
 
-		internal void OnTileDestroyed(Player player, BaseTCItem item, int x, int y, TileDestructionContext context) => PerformActions(player, (a, p) => a.OnTileDestroyed(p, item, x, y, context));
+		internal void ModifyToolPower(Player player, BaseTCItem item, TileDestructionContext context, ref int power) {
+			int pwr = power;
+
+			PerformActions(a => a.ModifyToolPower(player, item, context, ref pwr));
+
+			power = pwr;
+		}
+
+		internal void OnTileDestroyed(Player player, BaseTCItem item, int x, int y, TileDestructionContext context) => PerformActions(a => a.OnTileDestroyed(player, item, x, y, context));
 
 		internal bool CanLoseDurability(Player player, BaseTCItem item, IDurabilityModificationSource source) {
 			bool lose = true;
 
-			PerformActions(player, (a, p) => lose &= a.CanLoseDurability(p, item, source));
+			PerformActions(a => lose &= a.CanLoseDurability(player, item, source));
 
 			return lose;
 		}
@@ -77,33 +100,70 @@ namespace TerrariansConstructLib.Abilities {
 			float k = knockBack;
 			bool c = crit;
 
-			PerformActions(player, (a, p) => a.ModifyHitNPC(p, target, item, ref d, ref k, ref c));
+			PerformActions(a => a.ModifyHitNPC(player, target, item, ref d, ref k, ref c));
 
 			damage = d;
 			knockBack = k;
 			crit = c;
 		}
 
-		internal void OnHitNPC(Player player, NPC target, BaseTCItem item, int damage, float knockBack, bool crit) => PerformActions(player, (a, p) => a.OnHitNPC(p, target, item, damage, knockBack, crit));
+		internal void OnHitNPC(Player player, NPC target, BaseTCItem item, int damage, float knockBack, bool crit) => PerformActions(a => a.OnHitNPC(player, target, item, damage, knockBack, crit));
+
+		internal void OnHitPlayer(Player owner, Player target, BaseTCItem item, int damage, bool crit) => PerformActions(a => a.OnHitPlayer(owner, target, item, damage, crit));
+
+		internal void OnHitPlayerWithProjectile(BaseTCProjectile projectile, Player target, int damage, bool crit) => PerformActions(a => a.OnHitPlayerWithProjectile(projectile, target, damage, crit));
+
+		internal void OnHitNPCWithProjectile(BaseTCProjectile projectile, NPC target, int damage, float knockBack, bool crit) => PerformActions(a => a.OnHitNPCWithProjectile(projectile, target, damage, knockBack, crit));
+
+		internal void OnProjectileSpawn(BaseTCProjectile projectile, IEntitySource source, float X, float Y, float SpeedX, float SpeedY, int Type, int Damage, float KnockBack, int Owner, float ai0, float ai1)
+			=> PerformActions(a => a.OnProjectileSpawn(projectile, source, X, Y, SpeedX, SpeedY, Type, Damage, KnockBack, Owner, ai0, ai1));
+
+		internal void ModifyWeaponDamage(Player player, BaseTCItem item, ref StatModifier damage, ref float flat) {
+			StatModifier d = damage;
+			float f = flat;
+
+			PerformActions(a => a.ModifyWeaponDamage(player, item, ref d, ref f));
+
+			damage = d;
+			flat = f;
+		}
+
+		internal void ModifyWeaponKnockback(Player player, BaseTCItem item, ref StatModifier knockback, ref float flat) {
+			StatModifier k = knockback;
+			float f = flat;
+
+			PerformActions(a => a.ModifyWeaponKnockback(player, item, ref k, ref f));
+
+			knockback = k;
+			flat = f;
+		}
+		
+		internal void ModifyWeaponCrit(Player player, BaseTCItem item, ref int crit) {
+			int c = crit;
+
+			PerformActions(a => a.ModifyWeaponCrit(player, item, ref c));
+
+			crit = c;
+		}
 
 		internal void PreModifyDurability(Player player, BaseTCItem item, IDurabilityModificationSource source, ref int amount) {
 			int amt = amount;
 
-			PerformActions(player, (a, p) => a.PreModifyDurability(player, item, source, ref amt));
+			PerformActions(a => a.PreModifyDurability(player, item, source, ref amt));
 
 			amount = amt;
 		}
 
-		internal void UseItem(Player player, BaseTCItem item) => PerformActions(player, (a, p) => a.UseItem(p, item));
+		internal void UseItem(Player player, BaseTCItem item) => PerformActions(a => a.UseItem(player, item));
 
-		private void PerformActions(Player player, Action<BaseAbility, Player> func) {
+		private void PerformActions(Action<BaseAbility> func) {
 			foreach (var member in members.Values) {
 				//No need to check for IsSingleton here, since that's handled in the ctor
 				if (member.unloadedData is not null)
 					continue;
 
 				foreach (var ability in member.GetAbilities())
-					func(ability, player);
+					func(ability);
 			}
 		}
 

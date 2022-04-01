@@ -336,6 +336,8 @@ namespace TerrariansConstructLib.Items {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].ModifyWeaponDamage?.Invoke(parts[i].partID, player, ref damage, ref flat);
 
+			abilities.ModifyWeaponDamage(player, this, ref damage, ref flat);
+
 			SafeModifyWeaponDamage(player, ref damage, ref flat);
 
 			if (TCConfig.Instance.UseDurability && CurrentDurability <= 0)
@@ -349,6 +351,8 @@ namespace TerrariansConstructLib.Items {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].ModifyWeaponKnockback?.Invoke(parts[i].partID, player, ref knockback, ref flat);
 
+			abilities.ModifyWeaponKnockback(player, this, ref knockback, ref flat);
+
 			SafeModifyWeaponKnockback(player, ref knockback, ref flat);
 
 			if (TCConfig.Instance.UseDurability && CurrentDurability <= 0)
@@ -361,6 +365,8 @@ namespace TerrariansConstructLib.Items {
 		public sealed override void ModifyWeaponCrit(Player player, ref int crit) {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].ModifyWeaponCrit?.Invoke(parts[i].partID, player, ref crit);
+
+			abilities.ModifyWeaponCrit(player, this, ref crit);
 
 			SafeModifyWeaponCrit(player, ref crit);
 
@@ -454,6 +460,8 @@ namespace TerrariansConstructLib.Items {
 
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnItemHitPlayer?.Invoke(parts[i].partID, Item, player, target, damage, crit);
+
+			abilities.OnHitPlayer(player, target, this, damage, crit);
 
 			SafeOnHitPvp(player, target, damage, crit);
 		}

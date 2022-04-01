@@ -3,11 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API.Sources;
 using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Items;
+using TerrariansConstructLib.Projectiles;
 
 namespace TerrariansConstructLib.Abilities {
 	/// <summary>
@@ -132,6 +134,15 @@ namespace TerrariansConstructLib.Abilities {
 		public virtual void UseSpeedMultiplier(Player player, BaseTCItem item, ref float multiplier) { }
 
 		/// <summary>
+		/// This hook runs before the mining tool, <paramref name="item"/>, hits a tile
+		/// </summary>
+		/// <param name="player">The player</param>
+		/// <param name="item">The item doing the mining</param>
+		/// <param name="context">The context.  Contains information about what tool type was used to hit the tile and the intended damage</param>
+		/// <param name="power">The effective tool power</param>
+		public virtual void ModifyToolPower(Player player, BaseTCItem item, TileDestructionContext context, ref int power) { }
+
+		/// <summary>
 		/// This hook runs after the player has destroyed a tile using a <see cref="BaseTCItem"/> item
 		/// </summary>
 		/// <param name="player">The player doing the mining</param>
@@ -169,6 +180,35 @@ namespace TerrariansConstructLib.Abilities {
 		public virtual void OnHitNPC(Player player, NPC target, BaseTCItem item, int damage, float knockBack, bool crit) { }
 
 		/// <summary>
+		/// This hook runs in <see cref="BaseTCItem.OnHitPvp(Player, Player, int, bool)"/>
+		/// </summary>
+		/// <param name="owner">The player</param>
+		/// <param name="target">The target</param>
+		/// <param name="item">The item that hit the target</param>
+		/// <param name="damage">The damage</param>
+		/// <param name="crit">If set to <see langword="true"/> [crit]</param>
+		public virtual void OnHitPlayer(Player owner, Player target, BaseTCItem item, int damage, bool crit) { }
+
+		/// <summary>
+		/// This hook runs in <see cref="BaseTCProjectile.OnHitPlayer(Player, int, bool)"/>
+		/// </summary>
+		/// <param name="projectile">The projectile</param>
+		/// <param name="target">The target</param>
+		/// <param name="damage">The damage</param>
+		/// <param name="crit">If set to <see langword="true"/> [crit]</param>
+		public virtual void OnHitPlayerWithProjectile(BaseTCProjectile projectile, Player target, int damage, bool crit) { }
+
+		/// <summary>
+		/// This hook rusn in <see cref="BaseTCProjectile.OnHitNPC(NPC, int, float, bool)"/>
+		/// </summary>
+		/// <param name="projectile">The projectile</param>
+		/// <param name="target">The target</param>
+		/// <param name="damage">The damage</param>
+		/// <param name="knockBack">The knockback</param>
+		/// <param name="crit">If set to <see langword="true"/> [crit]</param>
+		public virtual void OnHitNPCWithProjectile(BaseTCProjectile projectile, NPC target, int damage, float knockBack, bool crit) { }
+
+		/// <summary>
 		/// This hook runs before durability is added to or subtracted from the <paramref name="item"/>
 		/// </summary>
 		/// <param name="player">The player</param>
@@ -176,6 +216,32 @@ namespace TerrariansConstructLib.Abilities {
 		/// <param name="source">The modification source</param>
 		/// <param name="amount">The amount to modify the durability by.  If the value is &lt; 0, then the modification was a durability removal, otherwise it's a durability addition</param>
 		public virtual void PreModifyDurability(Player player, BaseTCItem item, IDurabilityModificationSource source, ref int amount) { }
+
+		/// <summary>
+		/// This hook runs when a <see cref="BaseTCProjectile"/> projectile is spawned which has a part with this ability
+		/// </summary>
+		/// <param name="projectile">The spawned projectile</param>
+		/// <param name="source">The spawn source</param>
+		/// <param name="X">The X-position</param>
+		/// <param name="Y">The Y-position</param>
+		/// <param name="SpeedX">The X-velocity</param>
+		/// <param name="SpeedY">The Y-velocity</param>
+		/// <param name="Type">The ID of the projectile spawned</param>
+		/// <param name="Damage">The damage assigned to the projectile</param>
+		/// <param name="KnockBack">The knockback assigned to the projectile</param>
+		/// <param name="Owner">The projectile's owner</param>
+		/// <param name="ai0"></param>
+		/// <param name="ai1"></param>
+		public virtual void OnProjectileSpawn(BaseTCProjectile projectile, IEntitySource source, float X, float Y, float SpeedX, float SpeedY, int Type, int Damage, float KnockBack, int Owner, float ai0, float ai1) { }
+
+		/// <inheritdoc cref="BaseTCItem.ModifyWeaponDamage(Player, ref StatModifier, ref float)"/>
+		public virtual void ModifyWeaponDamage(Player player, BaseTCItem item, ref StatModifier damage, ref float flat) { }
+
+		/// <inheritdoc cref="BaseTCItem.ModifyWeaponKnockback(Player, ref StatModifier, ref float)"/>
+		public virtual void ModifyWeaponKnockback(Player player, BaseTCItem item, ref StatModifier knockback, ref float flat) { }
+
+		/// <inheritdoc cref="BaseTCItem.ModifyWeaponCrit(Player, ref int)"/>
+		public virtual void ModifyWeaponCrit(Player player, BaseTCItem item, ref int crit) { }
 
 		/// <summary>
 		/// This hook runs in <see cref="BaseTCItem.UseItem(Player)"/>
