@@ -111,6 +111,8 @@ namespace TerrariansConstructLib.Items {
 			string name = part.material.GetItemName();
 			if (name.EndsWith(" Bar"))
 				name = name.AsSpan()[..^4].ToString();
+			else if (name.EndsWith(" Block"))
+				name = name.AsSpan()[..^6].ToString();
 
 			DisplayName.SetDefault(name + " " + PartRegistry.registeredIDs[part.partID].name);
 
