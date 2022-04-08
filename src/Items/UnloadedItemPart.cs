@@ -6,9 +6,7 @@
 			mod = mod,
 			internalName = internalName,
 			material = material.Clone(),
-			partID = partID,
-			tooltip = tooltip,
-			modifierText = modifierText
+			partID = partID
 		};
 	}
 }

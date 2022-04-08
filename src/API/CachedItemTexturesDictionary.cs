@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,7 @@ using Terraria.ModLoader;
 using Terraria.ModLoader.Exceptions;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
+using TerrariansConstructLib.Modifiers;
 using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.API {
@@ -22,17 +24,26 @@ namespace TerrariansConstructLib.API {
 
 		private readonly Dictionary<int, PartsDictionary<object>> dictionary = new();
 
-		public Texture2D Get(int registeredItemID, ItemPartSlotCollection partsCollection) {
+		public Texture2D Get(int registeredItemID, ItemPartSlotCollection partsCollection, ModifierCollection modifiers) {
 			//Get the parts
 			ItemPart[] parts = partsCollection.ToArray();
 
-			return Get(registeredItemID, parts);
+			return Get(registeredItemID, parts, modifiers.ToArray());
 		}
 
 		public Texture2D Get(BaseTCItem tc)
-			=> Get(tc.registeredItemID, tc.parts);
+			=> Get(tc.registeredItemID, tc.parts, tc.modifiers);
 
-		public Texture2D Get(int registeredItemID, ItemPart[] parts) {
+		public Texture2D Get(int registeredItemID, ItemPart[] parts, BaseTrait[] modifiers) {
+			var dict = TraverseTree(registeredItemID, parts, modifiers, out string identifier);
+
+			object texture;
+			dict[identifier] = texture = BuildTextureThreadContext(registeredItemID, parts, modifiers);
+
+			return (texture as Texture2D)!;
+		}
+
+		private Dictionary<string, object> TraverseTree(int registeredItemID, ItemPart[] parts, BaseTrait[] modifiers, out string identifier) {
 			//Step down through the tree
 			if (!dictionary.TryGetValue(registeredItemID, out var partsDictionary))
 				partsDictionary = dictionary[registeredItemID] = new();
@@ -49,48 +60,61 @@ namespace TerrariansConstructLib.API {
 				partsDictionary = partsSubDictionary as PartsDictionary<object>;
 			}
 
-			//"partsDictionary" is now set to the final step in the tree.  Initialize it if necessary
 			material = parts[^1].material;
 			partID = parts[^1].partID;
-			if (!partsDictionary!.TryGet(material, partID, out object? texture)) {
-				if (!AssetRepository.IsMainThread) {
-					ManualResetEvent evt = new(false);
-				
-					Main.QueueMainThreadAction(() => {
-						texture = BuildTexture(registeredItemID, parts);
-						evt.Set();
-					});
 
-					evt.WaitOne();
-				} else
-					texture = BuildTexture(registeredItemID, parts);
+			if (!partsDictionary!.TryGet(material, partID, out object? dict))
+				partsDictionary.Set(material, partID, dict = new Dictionary<string, object>());
 
-				partsDictionary.Set(material, partID, texture!);
+			Dictionary<string, object> textureDict = (dict as Dictionary<string, object>)!;
+
+			//This identifier represents an item with no modifiers attached to it
+			identifier = "<>_Texture";
+
+			//If "modifiers" has no BaseModifier entries, then the final step has been reached; no need to do any more iteration
+			if (Array.Exists(modifiers, t => t is BaseModifier m && m.VisualTexture is not null)) {
+				BaseModifier[] casted = SelectModifiers(modifiers).ToArray();
+
+				for (int i = 0; i < casted.Length - 1; i++) {
+					var modifier = casted[i];
+					string id = modifier.GetType().FullName!;
+
+					if (!textureDict.TryGetValue(id, out var subDict))
+						subDict = textureDict[id] = new Dictionary<string, object>();
+
+					textureDict = (subDict as Dictionary<string, object>)!;
+				}
+
+				identifier = casted[^1].GetType().FullName!;
 			}
 
-			return (texture as Texture2D)!;
+			return textureDict;
 		}
 
 		internal void Clear()
-			=> Clear(dictionary);
+			=> ClearIterative(dictionary);
 
-		private static void Clear<T>(Dictionary<int, T> dictionary) {
-			int[] ids = new int[dictionary.Keys.Count];
-			dictionary.Keys.CopyTo(ids, 0);
+		private static void ClearIterative(IDictionary dictionary) {
+			if (dictionary.Count == 0)
+				return;
+			
+			Stack<object> stack = new();
+			
+			//Get the starting values
+			foreach (var v in dictionary)
+				stack.Push(v);
 
-			for (int i = 0; i < ids.Length; i++){
-				int id = ids[i];
+			while (stack.Count > 0) {
+				object v = stack.Pop();
 
-				//Step down through the tree
-				if (dictionary.TryGetValue(id, out var partsDictionary) && partsDictionary is PartsDictionary<object> dict)
-					Clear(dict);
-				else {
-					//This dictionary is the one with the textures
-					foreach (var v in dictionary.Values)
-						(v as IDisposable)?.Dispose();
+				if (v is IDictionary dict) {
+					foreach (var obj in dict)
+						stack.Push(obj);
 
-					dictionary.Clear();
-					return;
+					dict.Clear();
+				} else {
+					//Try to dispose the object, since it's likely to be a Texture2D
+					(v as IDisposable)?.Dispose();
 				}
 			}
 		}
@@ -98,13 +122,47 @@ namespace TerrariansConstructLib.API {
 		private static Dictionary<int, int> GenerateHashmap(ItemPart[] parts)
 			=> parts.DistinctBy(p => p.partID).ToDictionary(part => part.partID, part => (from p in parts where p.partID == part.partID select p).Count());
 
-		private static Texture2D BuildTexture(int registeredItemID, ItemPart[] parts) {
+		private static object BuildTextureThreadContext(int registeredItemID, ItemPart[] parts, BaseTrait[] modifiers) {
+			object? texture = null;
+
+			if (!AssetRepository.IsMainThread) {
+				ManualResetEvent evt = new(false);
+				
+				Main.QueueMainThreadAction(() => {
+					texture = BuildTexture(registeredItemID, parts, modifiers);
+					evt.Set();
+				});
+
+				evt.WaitOne();
+			} else
+				texture = BuildTexture(registeredItemID, parts, modifiers);
+
+			return texture!;
+		}
+
+		private static IEnumerable<BaseModifier> SelectModifiers(BaseTrait[] modifiers, bool? above = null)
+			=> modifiers.Where(t => t is BaseModifier m && m.VisualTexture is not null && (above is null || m.VisualIsDisplayedAboveItem == above))
+				.Select(t => (t as BaseModifier)!)
+				.Distinct();
+
+		private static Texture2D BuildTexture(int registeredItemID, ItemPart[] parts, BaseTrait[] modifiers) {
 			string visualsFolder = ItemRegistry.registeredIDs[registeredItemID].partVisualsFolder;
 
 			var hashmap = GenerateHashmap(parts);
 
 			Texture2D partTexture = GetVisualTexture(visualsFolder, parts[^1], hashmap);
 			Texture2D texture = new(Main.graphics.GraphicsDevice, partTexture.Width, partTexture.Height);
+
+			void ApplyModifierTextures(bool above) {
+				//Apply modifier textures
+				foreach (var modifier in SelectModifiers(modifiers, above)) {
+					Texture2D modifierTexture = GetVisualTexture(visualsFolder, modifier);
+
+					ApplyPixels(registeredItemID, texture, modifierTexture);
+				}
+			}
+
+			ApplyModifierTextures(above: false);
 
 			ApplyPixels(registeredItemID, texture, partTexture);
 
@@ -114,6 +172,8 @@ namespace TerrariansConstructLib.API {
 
 				ApplyPixels(registeredItemID, texture, partTexture);
 			}
+
+			ApplyModifierTextures(above: true);
 
 			if (SaveGeneratedTexturesToFiles) {
 				string textureImage = ItemRegistry.registeredIDs[registeredItemID].internalName + "_"
@@ -145,6 +205,16 @@ namespace TerrariansConstructLib.API {
 
 			string path = visualsFolder + "/" + PartRegistry.registeredIDs[part.partID].internalName + "/" + (numCount > 0 ? numCount + "_" : "") + part.material.GetName();
 
+			return GetVisualTexture(path);
+		}
+
+		private static Texture2D GetVisualTexture(string visualsFolder, BaseModifier modifier) {
+			string path = visualsFolder + "/Modifiers/" + modifier.VisualTexture;
+
+			return GetVisualTexture(path);
+		}
+
+		private static Texture2D GetVisualTexture(string path) {
 			if (CoreLibMod.Instance.RequestAssetIfExists<Texture2D>(path, out var asset))
 				return asset.Value;
 

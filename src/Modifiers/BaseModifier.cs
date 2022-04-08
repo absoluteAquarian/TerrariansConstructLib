@@ -1,11 +1,17 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.IO;
+using Terraria.ID;
+using Terraria.ModLoader.IO;
+using TerrariansConstructLib.API;
 
-namespace TerrariansConstructLib.API.Modifiers {
+namespace TerrariansConstructLib.Modifiers {
 	/// <summary>
 	/// The base class for a modifier that can be applied to a Terrarians' Construct item
 	/// </summary>
-	public abstract class BaseModifier {
-		public int ID { get; internal set; } = -1;
+	public abstract class BaseModifier : BaseTrait {
+		public sealed override bool IsSingleton => true;
+
+		public int CurrentUpgradeProgress { get; internal set; }
+		public int UpgradeTarget { get; internal set; }
 
 		/// <summary>
 		/// The highest tier that can be obtained from this modifier<br/>
@@ -14,22 +20,113 @@ namespace TerrariansConstructLib.API.Modifiers {
 		public abstract int MaxTier { get; }
 
 		/// <summary>
-		/// The colour for the modifier's name when in a tooltip
+		/// The relative path for the visual texture of this modifier<br/>
+		/// Return <see langword="null"/> if there is no visual
 		/// </summary>
-		public virtual Color TooltipColor => Color.White;
-
-		public abstract string LangKey { get; }
-
-		public abstract string VisualsFolder { get; }
+		public abstract string? VisualTexture { get; }
 
 		/// <summary>
-		/// Return whether the item types defined in <paramref name="items"/> can be used to upgrade this modifier at the current tier, <paramref name="currentTier"/>
+		/// Whether the visual texture of this modifier is drawn above the item's texture<br/>
+		/// Defaults to <see langword="true"/>
 		/// </summary>
-		/// <param name="currentTier">The current tier of the modifier</param>
-		/// <param name="items">The item IDs that are in the Forge UI slots, starting with the topmost slot and moving clockwise</param>
-		/// <param name="stacks">The item stacks for the items in <paramref name="items"/></param>
-		/// <param name="upgradeCurrent">The current progress toward the next tier.  Once <paramref name="currentTier"/> surpasses <paramref name="upgradeTarget"/>, the modifier is upgraded to the next tier</param>
+		public virtual bool VisualIsDisplayedAboveItem => true;
+
+		public abstract int GetUpgradeTarget();
+
+		/// <summary>
+		/// Return whether the item types defined in <paramref name="items"/> were used to increase <paramref name="upgradeCurrent"/>
+		/// </summary>
+		/// <param name="items">The items that are in the Forge UI slots, starting with the topmost slot and moving clockwise</param>
+		/// <param name="upgradeCurrent">The current progress toward the next tier.  Once <paramref name="upgradeCurrent"/> surpasses <paramref name="upgradeTarget"/>, the modifier is upgraded to the next tier</param>
 		/// <param name="upgradeTarget">The target progress needed to upgrade the modifier to the next tier</param>
-		public abstract bool CanAcceptItemsForUpgrade(int currentTier, int[] items, int[] stacks, ref int upgradeCurrent, ref int upgradeTarget);
+		public abstract bool CanAcceptItemsForUpgrade(ItemData[] items, ref int upgradeCurrent, in int upgradeTarget);
+
+		protected static int CountItems(ItemData[] items, int type) {
+			int count = 0;
+
+			for (int i = 0; i < items.Length; i++) {
+				if (items[i].type == ItemID.None || items[i].stack <= 0)
+					continue;
+
+				if (items[i].type == type)
+					count += items[i].stack;
+			}
+
+			return count;
+		}
+
+		/// <summary>
+		/// Removes the item of type, <paramref name="typeToRemove"/>, from <paramref name="stacks"/>
+		/// </summary>
+		/// <param name="items">The items</param>
+		/// <param name="typeToRemove">The type to remove from the stacks</param>
+		/// <param name="stackToRemove">How much of the item to remove</param>
+		/// <returns>Whether <paramref name="stackToRemove"/> was removed completely</returns>
+		protected static bool RemoveItems(ItemData[] items, int typeToRemove, int stackToRemove) {
+			for (int i = items.Length - 1; i >= 0; i--) {
+				if (items[i].type == ItemID.None || items[i].stack <= 0)
+					continue;
+
+				if (items[i].type == typeToRemove) {
+					ref int stack = ref items[i].stack;
+					
+					if (stack >= stackToRemove) {
+						stack -= stackToRemove;
+						return true;
+					} else if (stack <= stackToRemove) {
+						stackToRemove -= stack;
+						stack = 0;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Returns whether <paramref name="items"/> only contains item types found in <paramref name="validTypes"/><br/>
+		/// Empty slots are considered "valid"
+		/// </summary>
+		/// <param name="items">The items</param>
+		/// <param name="validTypes">The valid types</param>
+		protected static bool ItemsOnlyContain(ItemData[] items, params int[] validTypes) {
+			for (int i = 0; i < items.Length; i++) {
+				if (items[i].type == ItemID.None || items[i].stack <= 0)
+					continue;
+				
+				bool valid = false;
+
+				for (int j = 0; j < validTypes.Length; j++)
+					if (validTypes[j] == items[i].type)
+						valid = true;
+
+				if (!valid)
+					return false;
+			}
+
+			return true;
+		}
+
+		public override void NetSend(BinaryWriter writer) {
+			base.NetSend(writer);
+			writer.Write(CurrentUpgradeProgress);
+		}
+
+		public override void NetReceive(BinaryReader reader) {
+			base.NetReceive(reader);
+			CurrentUpgradeProgress = reader.ReadInt32();
+		}
+
+		public override void SaveData(TagCompound tag) {
+			base.SaveData(tag);
+			tag["tier"] = Tier;
+			tag["progress"] = CurrentUpgradeProgress;
+		}
+
+		public override void LoadData(TagCompound tag) {
+			base.LoadData(tag);
+			Tier = tag.GetInt("tier");
+			CurrentUpgradeProgress = tag.GetInt("progress");
+		}
 	}
 }

@@ -4,13 +4,14 @@ using ReLogic.Content;
 using System;
 using System.Linq;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
-using TerrariansConstructLib.Abilities;
 using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
+using TerrariansConstructLib.Modifiers;
 
 namespace TerrariansConstructLib.Projectiles {
 	/// <summary>
@@ -18,10 +19,13 @@ namespace TerrariansConstructLib.Projectiles {
 	/// </summary>
 	public class BaseTCProjectile : ModProjectile {
 		internal ItemPart[] parts = Array.Empty<ItemPart>();
-		internal AbilityCollection abilities = null!;
+		internal ModifierCollection modifiers = null!;
 		internal int itemSource_registeredItemID = -1;
 
 		protected ReadOnlySpan<ItemPart> GetParts() => parts;
+
+		public T? GetModifier<T>() where T : BaseTrait
+			=> modifiers.FirstOrDefault(t => t.GetType() == typeof(T)) as T;
 
 		public int CountParts(Material material)
 			=> parts.Count(p => p.material.Type == material.Type);
@@ -70,7 +74,7 @@ namespace TerrariansConstructLib.Projectiles {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnProjectileHitNPC?.Invoke(parts[i].partID, Projectile, target, damage, knockback, crit);
 
-			abilities.OnHitNPCWithProjectile(this, target, damage, knockback, crit);
+			modifiers.OnHitNPCWithProjectile(this, target, damage, knockback, crit);
 		}
 
 		/// <inheritdoc cref="OnHitNPC(NPC, int, float, bool)"/>
@@ -80,7 +84,7 @@ namespace TerrariansConstructLib.Projectiles {
 			for (int i = 0; i < parts.Length; i++)
 				parts[i].OnProjectileHitPlayer?.Invoke(parts[i].partID, Projectile, target, damage, crit);
 
-			abilities.OnHitPlayerWithProjectile(this, target, damage, crit);
+			modifiers.OnHitPlayerWithProjectile(this, target, damage, crit);
 		}
 
 		/// <inheritdoc cref="OnHitPlayer(Player, int, bool)"/>
@@ -100,7 +104,7 @@ namespace TerrariansConstructLib.Projectiles {
 			SafePreDraw(ref lightColor);
 
 			// TODO: cached projectile textures
-			Texture2D texture = CoreLibMod.ItemTextures.Get(itemSource_registeredItemID, parts);
+			Texture2D texture = CoreLibMod.ItemTextures.Get(itemSource_registeredItemID, parts, modifiers.ToArray());
 
 			//Mimick the normal projectile drawing code
 			int num136 = 0;

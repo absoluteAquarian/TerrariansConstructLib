@@ -133,7 +133,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 						for (int i = 0; i < tc.parts.Length; i++)
 							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, ctx, ref num2);
 						
-						tc.abilities.ModifyToolPower(self, tc, ctx, ref num2);
+						tc.modifiers.ModifyToolPower(self, tc, ctx, ref num2);
 					}
 				}
 
@@ -180,7 +180,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 						for (int i = 0; i < tc.parts.Length; i++)
 							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, ctx, ref num2);
 						
-						tc.abilities.ModifyToolPower(self, tc, ctx, ref num2);
+						tc.modifiers.ModifyToolPower(self, tc, ctx, ref num2);
 					}
 				}
 
@@ -245,7 +245,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 						for (int i = 0; i < tc.parts.Length; i++)
 							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, ctx, ref num);
 						
-						tc.abilities.ModifyToolPower(self, tc, ctx, ref num);
+						tc.modifiers.ModifyToolPower(self, tc, ctx, ref num);
 					}
 				}
 
@@ -330,7 +330,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 						for (int i = 0; i < tc.parts.Length; i++)
 							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, ctx, ref num2);
 						
-						tc.abilities.ModifyToolPower(self, tc, ctx, ref num2);
+						tc.modifiers.ModifyToolPower(self, tc, ctx, ref num2);
 						}
 					}
 				}

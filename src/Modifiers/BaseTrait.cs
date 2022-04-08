@@ -1,22 +1,29 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using TerrariansConstructLib.API;
 using TerrariansConstructLib.API.Sources;
 using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Projectiles;
 
-namespace TerrariansConstructLib.Abilities {
+namespace TerrariansConstructLib.Modifiers {
 	/// <summary>
-	/// The base class for any abilities (passive or not) that are activated via item parts
+	/// The base class for a trait on a Terrarians' Construct item
 	/// </summary>
-	public abstract class BaseAbility {
+	public abstract class BaseTrait : INetHooks {
 		public double Counter;
+
+		/// <summary>
+		/// Gets how many "instances" of this trait's material are present on the item it's assigned to<br/>
+		/// This property is affected by <see cref="IsEquivalentForTier(Type, out uint)"/>
+		/// </summary>
+		public int Tier { get; internal set; }
 
 		/// <summary>
 		/// Whether this ability is considered a singleton (only one instance exists on an item at any given moment)<br/>
@@ -24,18 +31,33 @@ namespace TerrariansConstructLib.Abilities {
 		/// </summary>
 		public virtual bool IsSingleton => false;
 
+		public Mod Mod { get; internal set; }
+
+		/// <summary>
+		/// The colour for the modifier's name when in a tooltip
+		/// </summary>
+		public virtual Color TooltipColor => Color.White;
+
+		/// <summary>
+		/// The lang key used when displaying the tooltip for the modifier
+		/// </summary>
+		public abstract string LangKey { get; }
+
 		/// <summary>
 		/// This hook is called when cloning instances of this ability
 		/// </summary>
-		public virtual BaseAbility Clone() => (BaseAbility)MemberwiseClone();
+		public virtual BaseTrait Clone() => (BaseTrait)MemberwiseClone();
 
-		public int GetTierFromItem(BaseTCItem item) {
-			Type type = GetType();
-			return item.abilities.Count(a => type.IsAssignableFrom(a.GetType()));
+		/// <summary>
+		/// Override this hook to determine when another <see cref="BaseTrait"/> type can be considered equivalent when calculating tiers
+		/// </summary>
+		/// <param name="type">The type of the <see cref="BaseTrait"/></param>
+		/// <param name="tierWorth">The worth of the tier.  Defaults to <c>1</c></param>
+		/// <returns><c>GetType().IsAssignableFrom(type)</c> by default</returns>
+		public virtual bool IsEquivalentForTier(Type type, out uint tierWorth) {
+			tierWorth = 1;
+			return GetType().IsAssignableFrom(type);
 		}
-
-		public static int GetTierFromItem<T>(BaseTCItem item) where T : BaseAbility
-			=> item.abilities.Count(a => a is T);
 
 		/// <summary>
 		/// Whether the <see cref="Counter"/> automatically increments (<see langword="true"/>) or decrements (<see langword="false"/>)<br/>
@@ -276,6 +298,16 @@ namespace TerrariansConstructLib.Abilities {
 			Point tl = (player.Center + new Vector2(-sizeX / 2f, -sizeY / 2f)).ToPoint();
 			Rectangle area = new(tl.X, tl.Y, sizeX, sizeY);
 			CombatText.NewText(area, color, message);
+		}
+
+		public virtual void NetSend(BinaryWriter writer) {
+			writer.Write(Counter);
+			writer.Write(Tier);
+		}
+
+		public virtual void NetReceive(BinaryReader reader) {
+			Counter = reader.ReadDouble();
+			Tier = reader.ReadInt32();
 		}
 	}
 }

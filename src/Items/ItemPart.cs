@@ -7,6 +7,7 @@ using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
 using TerrariansConstructLib.API.Sources;
+using TerrariansConstructLib.API.Stats;
 using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Registry;
@@ -152,31 +153,11 @@ namespace TerrariansConstructLib.Items {
 
 		internal static PartsDictionary<ItemPart> partData;
 
-		public void SetGlobalTooltip(string tooltip)
-			=> SetGlobalTooltip(material, partID, tooltip);
+		public IPartStats? GetStat(StatType type)
+			=> material.GetStat(type);
 
-		/// <summary>
-		/// Sets the global tooltip for item parts using the material, <paramref name="material"/>, and the part ID, <paramref name="partID"/>, to <paramref name="tooltip"/>
-		/// </summary>
-		/// <param name="material">The material</param>
-		/// <param name="partID">The part ID</param>
-		/// <param name="tooltip">The new global tooltip</param>
-		public static void SetGlobalTooltip(Material material, int partID, string tooltip) {
-			//Unloaded/Unknown material should not be tampered with
-			if (material is not UnloadedMaterial or UnknownMaterial)
-				partData.Get(material, partID).tooltip = tooltip;
-		}
-
-		public IReadOnlyList<ModifierText>? GetModifierText()
-			=> GetGlobalModifierText(material, partID);
-
-		/// <summary>
-		/// Gets the global modifier text for item parts using the material, <paramref name="material"/>, and the part ID, <paramref name="partID"/>
-		/// </summary>
-		/// <param name="material">The material</param>
-		/// <param name="partID">The part ID</param>
-		public static IReadOnlyList<ModifierText>? GetGlobalModifierText(Material material, int partID)
-			=> partData.Get(material, partID).modifierText?.AsReadOnly();
+		public T? GetStat<T>(StatType type) where T : class, IPartStats
+			=> material.GetStat<T>(type);
 
 		/// <summary>
 		/// The material used to create this item part
@@ -188,15 +169,9 @@ namespace TerrariansConstructLib.Items {
 		/// </summary>
 		public int partID;
 
-		internal string? tooltip;
-
-		internal List<ModifierText>? modifierText;
-
 		public virtual ItemPart Clone() => new(){
 			material = material.Clone(),
-			partID = partID,
-			tooltip = tooltip,
-			modifierText = modifierText
+			partID = partID
 		};
 
 		public PartItemFunc? OnInitialized => this is UnloadedItemPart ? null : PartActions.GetPartActions(material, partID).onInitialized;
@@ -300,9 +275,6 @@ namespace TerrariansConstructLib.Items {
 			material = Material.FromItem(reader.ReadInt32());
 			material.NetReceive(reader);
 			partID = reader.ReadInt32();
-
-			tooltip = partData.Get(material, partID).tooltip;
-			modifierText = partData.Get(material, partID).modifierText;
 		}
 
 		public override bool Equals(object? obj)

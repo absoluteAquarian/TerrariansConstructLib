@@ -43,6 +43,8 @@ namespace TerrariansConstructLib.Materials {
 		public virtual string GetItemName()
 			=> Lang.GetItemNameValue(Type);
 
+		public string GetIdentifier() => GetModName() + ":" + GetName();
+
 		public IPartStats? GetStat(StatType type)
 			=> statsByMaterialID[Type].FirstOrDefault(s => s.Type == type);
 

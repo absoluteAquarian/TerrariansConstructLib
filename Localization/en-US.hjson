@@ -62,5 +62,10 @@
 				BowArrowSpeedMult: "Arrow Speed Multiplier: {0:+#;-#;+0}x"
 			}
 		}
+
+		Traits: {
+			Unloaded: "Unloaded Trait"
+			Unknown: "Unknown Trait"
+		}
 	}
 }

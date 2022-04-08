@@ -1,4 +1,3 @@
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
@@ -12,7 +11,6 @@ using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Core;
-using TerrariansConstructLib.Abilities;
 using TerrariansConstructLib.API;
 using TerrariansConstructLib.API.Commands;
 using TerrariansConstructLib.API.Edits;
@@ -21,6 +19,7 @@ using TerrariansConstructLib.API.Stats;
 using TerrariansConstructLib.API.UI;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
+using TerrariansConstructLib.Modifiers;
 using TerrariansConstructLib.Registry;
 using TerrariansConstructLib.Stats;
 
@@ -83,7 +82,7 @@ namespace TerrariansConstructLib {
 			PartMold.registeredMolds = new();
 			Material.statsByMaterialID = new();
 			Material.worthByMaterialID = new();
-			AbilityCollection.registeredAbilities = new();
+			ModifierCollection.registeredModifiers = new();
 
 			ItemStatCollection.Load();
 
@@ -162,19 +161,26 @@ namespace TerrariansConstructLib {
 
 			AddMoldItems();
 
+			LoadAllOfTheThings("RegisterTCModifiers");
+			
+			foreach(var (id, data) in ModifierCollection.registeredModifiers) {
+				writer.WriteLine($"Modifier \"{id}\" added by {data.Mod.Name}");
+				writer.Flush();
+			}
+
 			//head part: damage, knockback, crit, useSpeed, pickaxe power, axe power, hammer power, durability, tool range
-			RegisterMaterialStats(RegisteredMaterials.Unloaded, 1, null,
+			RegisterMaterialStats(RegisteredMaterials.Unloaded, 1, new UnloadedTrait(),
 				new HeadPartStats(),
 				new HandlePartStats(),
 				new ExtraPartStats());
-			RegisterMaterialStats(RegisteredMaterials.Unknown, 1, null,
+			RegisterMaterialStats(RegisteredMaterials.Unknown, 1, new UnkownTrait(),
 				new HeadPartStats(),
 				new HandlePartStats(),
 				new ExtraPartStats());
 
 			//Unused, but they're needed for displaying the parts in the Forge UI
 			for (ColorMaterialType c = ColorMaterialType.Red; c < ColorMaterialType.Count; c++)
-				RegisterMaterialStats(new ColorMaterial(c), 1, null, new ExtraPartStats());
+				RegisterMaterialStats(new ColorMaterial(c), 1, new UnkownTrait(), new ExtraPartStats());
 
 			LoadAllOfTheThings("RegisterTCMaterials");
 
@@ -187,9 +193,9 @@ namespace TerrariansConstructLib {
 			}
 
 			for (int i = 0; i < PartRegistry.Count; i++)
-				AddPart(this, RegisteredMaterials.Unloaded, i, PartActions.NoActions, null, null);
+				AddPart(this, RegisteredMaterials.Unloaded, i, PartActions.NoActions);
 			for (int i = 0; i < PartRegistry.Count; i++)
-				AddPart(this, RegisteredMaterials.Unknown, i, PartActions.NoActions, null, null);
+				AddPart(this, RegisteredMaterials.Unknown, i, PartActions.NoActions);
 
 			EditsLoader.Load();
 
@@ -358,7 +364,7 @@ namespace TerrariansConstructLib {
 			PartMold.registeredMolds = null!;
 			Material.statsByMaterialID = null!;
 			Material.worthByMaterialID = null!;
-			AbilityCollection.registeredAbilities = null!;
+			ModifierCollection.registeredModifiers = null!;
 
 			ItemStatCollection.Unload();
 
@@ -463,21 +469,21 @@ namespace TerrariansConstructLib {
 		/// Registers item part stats for a certain material
 		/// </summary>
 		/// <param name="material">The material for the item part stats</param>
-		/// <param name="worth">How much material is needed to create one Shard part</param>
-		/// <param name="ability">The ability instance for the material</param>
+		/// <param name="worth">How much material is needed to create one Shard part, times two</param>
+		/// <param name="trait">The trait instance for the material</param>
 		/// <param name="stats">The stats for the material</param>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
-		public static Material RegisterMaterialStats(int material, int worth, BaseAbility? ability, params IPartStats[] stats) {
+		public static Material RegisterMaterialStats(int material, int worth, BaseTrait trait, params IPartStats[] stats) {
 			Material instance = Material.FromItem(material);
 			
-			RegisterMaterialStats(instance, worth, ability, stats);
+			RegisterMaterialStats(instance, worth, trait, stats);
 
 			return instance;
 		}
 
 		//Used to load the stats for the Unloaded and Unknown materials
-		private static void RegisterMaterialStats(Material material, int worth, BaseAbility? ability, params IPartStats[] stats) {
+		private static void RegisterMaterialStats(Material material, int worth, BaseTrait trait, params IPartStats[] stats) {
 			if (stats is null || stats.Length == 0)
 				throw new ArgumentException("Stats array was null or had a zero length");
 			
@@ -487,7 +493,14 @@ namespace TerrariansConstructLib {
 			Material.statsByMaterialID[material.Type] = (IPartStats[])stats.Clone();
 			Material.worthByMaterialID[material.Type] = worth;
 
-			AbilityCollection.registeredAbilities[material] = ability?.Clone();
+			ModifierCollection.registeredModifiers[material.GetIdentifier()] = trait;
+		}
+
+		public static void RegisterModifier(string identifier, BaseModifier modifier) {
+			if(ModifierCollection.registeredModifiers.ContainsKey(identifier))
+				throw new Exception($"The modifier \"{identifier}\" has already been registered");
+
+			ModifierCollection.registeredModifiers[identifier] = modifier;
 		}
 
 		/// <summary>
@@ -546,37 +559,12 @@ namespace TerrariansConstructLib {
 		/// Gets the global tooltip of an <seealso cref="ItemPart"/>
 		/// </summary>
 		/// <param name="material">The material</param>
-		/// <param name="partID">The part ID</param>
 		/// <returns>The global tooltip</returns>
-		public static string? GetPartTooltip(Material material, int partID)
-			=> ItemPart.partData.Get(material, partID).tooltip;
+		public static string? GetMaterialTooltip(Material material) {
+			var modifier = ModifierCollection.registeredModifiers[material.GetIdentifier()];
 
-		/// <summary>
-		/// Sets the global tooltip of an <seealso cref="ItemPart"/>
-		/// </summary>
-		/// <param name="material">The material</param>
-		/// <param name="partID">The part ID</param>
-		/// <param name="tooltip">The new tooltip</param>
-		public static void SetGlobalPartTooltip(Material material, int partID, string tooltip)
-			=> ItemPart.SetGlobalTooltip(material, partID, tooltip);
-
-		/// <summary>
-		/// Gets the global modifier text of an <seealso cref="ItemPart"/>
-		/// </summary>
-		/// <param name="material">The material</param>
-		/// <param name="partID">The part ID</param>
-		/// <returns>The global modifier text</returns>
-		public static IReadOnlyList<ModifierText>? GetPartModifierText(Material material, int partID)
-			=> ItemPart.partData.Get(material, partID).modifierText?.AsReadOnly();
-
-		/// <summary>
-		/// Sets the global modifier text of an <seealso cref="ItemPart"/>
-		/// </summary>
-		/// <param name="material">The material</param>
-		/// <param name="partID">The part ID</param>
-		/// <param name="tooltip">The new modifier text</param>
-		public static void SetGlobalPartModifierText(Material material, int partID, string tooltip)
-			=> ItemPart.SetGlobalTooltip(material, partID, tooltip);
+			return $"[c/{modifier.TooltipColor.Hex3()}:{Language.GetTextValue(modifier.LangKey)}]";
+		}
 
 		/// <summary>
 		/// Gets the material cost of an <seealso cref="PartMold"/>
@@ -740,16 +728,14 @@ namespace TerrariansConstructLib {
 		/// <param name="material">The material instance</param>
 		/// <param name="partID">The part ID</param>
 		/// <param name="actions">The actions</param>
-		/// <param name="tooltip">The tooltip for this part.  Can be modified via <seealso cref="ItemPart.SetGlobalTooltip(Material, int, string)"/></param>
-		/// <param name="modifierText">A collection of creation contexts for this part's modifier text.  If <see langword="null"/>, the part will have no modifier text.</param>
-		public static void AddPart(Mod mod, Material material, int partID, ItemPartActionsBuilder actions, string? tooltip, params ModifierText.CreationContext[]? modifierText) {
+		public static void AddPart(Mod mod, Material material, int partID, ItemPartActionsBuilder actions) {
 			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new ArgumentException("Part ID was invalid");
 
 			if (!Material.statsByMaterialID.ContainsKey(material.Type))
 				throw new ArgumentException($"Material was not registered: \"{material.GetItemName()}\" (ID: {material.Type})");
 
-			ItemPartItem item = ItemPartItem.Create(material, partID, actions, tooltip, modifierText?.Select(c => new ModifierText(material, partID, c)).ToList());
+			ItemPartItem item = ItemPartItem.Create(material, partID, actions);
 
 			ReflectionHelper<Mod>.InvokeSetterFunction("loading", mod, true);
 

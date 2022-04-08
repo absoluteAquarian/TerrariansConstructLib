@@ -59,9 +59,6 @@ namespace TerrariansConstructLib.API.Commands {
 			// TODO: modifier description line?
 			foreach (var modifierName in tc.GetModifierTooltipLines())
 				caller.Reply($"  {modifierName}", text);
-			caller.Reply("Modifier Stats:", text);
-			foreach (var modifier in tc.GetModifierLines())
-				caller.Reply($"  {modifier}", text);
 		}
 	}
 }

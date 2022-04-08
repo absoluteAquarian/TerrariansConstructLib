@@ -72,7 +72,7 @@ namespace TerrariansConstructLib.Items {
 			this.part = part;
 		}
 
-		public static ItemPartItem Create(Material material, int partID, ItemPartActionsBuilder builder, string? tooltip, List<ModifierText>? modifierText) {
+		public static ItemPartItem Create(Material material, int partID, ItemPartActionsBuilder builder) {
 			int materialType = material.Type;
 
 			if (!PartActions.builders.TryGetValue(materialType, out var buildersByPartID))
@@ -85,9 +85,7 @@ namespace TerrariansConstructLib.Items {
 
 			return new ItemPartItem(new ItemPart() {
 				material = material,
-				partID = partID,
-				tooltip = tooltip,
-				modifierText = modifierText
+				partID = partID
 			});
 		}
 
@@ -188,7 +186,7 @@ namespace TerrariansConstructLib.Items {
 		public override void ModifyTooltips(List<TooltipLine> tooltips) {
 			StatType type = PartRegistry.registeredIDs[part.partID].type;
 
-			string? tooltip = CoreLibMod.GetPartTooltip(part.material, part.partID);
+			string? tooltip = CoreLibMod.GetMaterialTooltip(part.material);
 
 			if (tooltip is not null) {
 				if (tooltip.Contains("{R}"))
