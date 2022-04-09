@@ -35,6 +35,7 @@ namespace TerrariansConstructLib.Modifiers {
 		private Dictionary<string, Member> members = new();
 
 		internal static Dictionary<string, BaseTrait> registeredModifiers;
+		internal static List<string> idToIdentifier;
 
 		private ModifierCollection() { }
 
@@ -78,6 +79,15 @@ namespace TerrariansConstructLib.Modifiers {
 		/// <summary>
 		/// Adds a modifier to the collection
 		/// </summary>
+		/// <param name="id">The ID for the modifier</param>
+		/// <returns>The modifier instance</returns>
+		/// <exception cref="Exception"/>
+		public BaseModifier AddModifier(int id)
+			=> AddModifier(CoreLibMod.GetModifierIdentifier(id));
+		
+		/// <summary>
+		/// Adds a modifier to the collection
+		/// </summary>
 		/// <param name="identifier">The identifier for the modifier</param>
 		/// <returns>The modifier instance</returns>
 		/// <exception cref="Exception"/>
@@ -90,12 +100,12 @@ namespace TerrariansConstructLib.Modifiers {
 			if(!members.TryGetValue(identifier, out var member))
 				member = members[identifier] = new();
 
-			BaseModifier? modifier = (member.singleton ??= instance) as BaseModifier;
+			BaseModifier modifier = ((member.singleton ??= instance) as BaseModifier)!;
 
 			//Increase the tier in the singleton
-			modifier!.Tier++;
+			modifier.Tier++;
 
-			return modifier!;
+			return modifier;
 		}
 
 		internal void Update(Player player) => PerformActions(a => a.Update(player));
@@ -205,11 +215,17 @@ namespace TerrariansConstructLib.Modifiers {
 		}
 
 		//Used to keep track of when SaveData changes to force no data to load
-		private const int SAVE_VERSION = 1;
+		private const int SAVE_VERSION = 2;
 
 		internal void SaveData(TagCompound tag) {
 			List<TagCompound> list = new();
 			foreach (var (identifier, member) in members) {
+				static TagCompound GetTag(BaseTrait trait) {
+					TagCompound tag = new();
+					trait.SaveData(tag);
+					return tag;
+				}
+
 				if (member.unloadedData is not null) {
 					list.AddRange(member.unloadedData);
 					continue;
@@ -219,20 +235,19 @@ namespace TerrariansConstructLib.Modifiers {
 					["id"] = identifier
 				};
 
-				List<BaseTrait>? values = new(member.GetModifiers());
-				if (values.Count == 0)
-					values = null;
+				if (member.singleton is not null) {
+					data["singleton"] = true;
 
-				if (values is not null)  {
-					data["singleton"] = values[0].IsSingleton;
-
-					data["values"] = values.Select(
-						a => {
-							TagCompound tag = new();
-							a.SaveData(tag);
-							return tag;
-						}).ToList();
-				}
+					data["instance"] = GetTag(member.singleton);
+				} else {
+					List<BaseTrait> values = new(member.GetModifiers());
+					
+					if (values.Count > 0)  {
+						data["singleton"] = false;
+						
+						data["values"] = values.Select(GetTag).ToList();
+					}
+				}					
 
 				list.Add(data);
 			}
@@ -261,13 +276,16 @@ namespace TerrariansConstructLib.Modifiers {
 						if (unloaded.unloadedData is null)
 							unloaded.unloadedData = new();
 
-						if (unloaded.singleton is null) {
-							var split = identifier.Split(':');
-							unloaded.singleton = new UnloadedTrait() {
-								mod = split[0],
-								name = split[1]
-							};
-						}
+						var split = identifier.Split(':');
+						var instance = new UnloadedTrait() {
+							mod = split[0],
+							name = split[1]
+						};
+						
+						if (unloaded.modifiers is null)
+							unloaded.modifiers = new() { instance };
+						else
+							unloaded.modifiers.Add(instance);
 
 						unloaded.unloadedData.Add(data);
 						continue;
@@ -275,28 +293,24 @@ namespace TerrariansConstructLib.Modifiers {
 
 					bool singleton = data.GetBool("singleton");
 
-					if (data.GetList<TagCompound>("values") is var values) {
-						if (singleton) {
-							if (values.Count > 1)
-								throw new IOException("Singleton entry expects only 1 value, multiple values detected");
+					if (singleton)
+						(members[identifier].singleton ??= CoreLibMod.GetModifier(identifier)).LoadData(data.GetCompound("instance"));
+					else if (data.GetList<TagCompound>("values") is var values) {
+						int index = 0;
 
-							members[identifier].singleton!.LoadData(values[0]);
-						} else {
-							int index = 0;
+						var memberList = members[identifier].modifiers;
 
-							var memberList = members[identifier].modifiers;
+						if (memberList is not null) {
+							if (values.Count != memberList.Count)
+								throw new IOException($"Modifier list count mistmatch (existing: {memberList.Count}, data: {values.Count})");
 
-							if (memberList is not null) {
-								if (values.Count != memberList.Count)
-									throw new IOException($"Modifier list count mistmatch (existing: {memberList.Count}, data: {values.Count})");
-
-								foreach (var value in values) {
-									memberList[index].LoadData(value);
-									index++;
-								}
+							foreach (var value in values) {
+								memberList[index].LoadData(value);
+								index++;
 							}
 						}
-					}
+					} else
+						throw new IOException("Could not read NBT structure");
 				}
 
 				if (unloaded.unloadedData is not null)

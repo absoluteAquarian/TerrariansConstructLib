@@ -83,6 +83,7 @@ namespace TerrariansConstructLib {
 			Material.statsByMaterialID = new();
 			Material.worthByMaterialID = new();
 			ModifierCollection.registeredModifiers = new();
+			BaseModifier.nextID = 0;
 
 			ItemStatCollection.Load();
 
@@ -365,6 +366,7 @@ namespace TerrariansConstructLib {
 			Material.statsByMaterialID = null!;
 			Material.worthByMaterialID = null!;
 			ModifierCollection.registeredModifiers = null!;
+			BaseModifier.nextID = 0;
 
 			ItemStatCollection.Unload();
 
@@ -501,6 +503,10 @@ namespace TerrariansConstructLib {
 				throw new Exception($"The modifier \"{identifier}\" has already been registered");
 
 			ModifierCollection.registeredModifiers[identifier] = modifier;
+			modifier.ID = BaseModifier.nextID;
+			BaseModifier.nextID++;
+
+			ModifierCollection.idToIdentifier.Add(identifier);
 		}
 
 		/// <summary>
@@ -720,6 +726,30 @@ namespace TerrariansConstructLib {
 		/// <exception cref="ArgumentException"/>
 		public static ItemPartItem GetItemPartItem(Material material, int partID)
 			=> (ModContent.GetModItem(GetItemPartItemType(material, partID)) as ItemPartItem)!;
+
+		public static BaseModifier GetModifier(int id) {
+			if (id < 0 || id >= ModifierCollection.idToIdentifier.Count)
+				throw new ArgumentOutOfRangeException(nameof(id), "Requested modifier ID exceeded the bounds of the collection");
+
+			if (ModifierCollection.registeredModifiers[ModifierCollection.idToIdentifier[id]].Clone() is not BaseModifier m)
+				throw new Exception($"Modifier with ID {id} is not a valid BaseModifier instance");
+
+			return m;
+		}
+
+		public static BaseModifier GetModifier(string identifier) {
+			if (ModifierCollection.registeredModifiers[identifier].Clone() is not BaseModifier m)
+				throw new Exception($"Modifier with identifier \"{identifier}\" is not a valid BaseModifier instance");
+
+			return m;
+		}
+
+		public static string GetModifierIdentifier(int id) {
+			if (id < 0 || id >= ModifierCollection.idToIdentifier.Count)
+				throw new ArgumentOutOfRangeException(nameof(id), "Requested modifier ID exceeded the bounds of the collection");
+
+			return ModifierCollection.idToIdentifier[id];
+		}
 
 		/// <summary>
 		/// Registers a part item for the material, <paramref name="material"/>
