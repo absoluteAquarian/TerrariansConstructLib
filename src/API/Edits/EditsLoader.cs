@@ -7,8 +7,8 @@ namespace TerrariansConstructLib.API.Edits {
 
 			CoreLibMod.SetLoadingSubProgressText(Language.GetTextValue("Mods.TerrariansConstructLib.Loading.EditsLoader.Detours"));
 
-			On.Terraria.Projectile.NewProjectile_IEntitySource_float_float_float_float_int_int_float_int_float_float += Detours.Vanilla.Hook_Projectile_NewProjectile;
-			On.Terraria.Player.HasAmmo += Detours.Vanilla.Hook_Player_HasAmmo;
+			On.Terraria.Player.HasAmmo_Item_bool += Detours.Vanilla.Hook_Player_HasAmmo;
+			On.Terraria.Player.IsAmmoFreeThisShot += Detours.Vanilla.Hook_Player_IsAmmoFreeThisShot;
 
 			ILHelper.InitMonoModDumps();
 
@@ -16,7 +16,7 @@ namespace TerrariansConstructLib.API.Edits {
 
 			IL.Terraria.UI.ItemSlot.Draw_SpriteBatch_ItemArray_int_int_Vector2_Color += MSIL.Vanilla.Patch_ItemSlot_Draw;
 			IL.Terraria.DataStructures.PlayerDrawLayers.DrawPlayer_27_HeldItem += MSIL.Vanilla.Patch_PlayerDrawLayers_DrawPlayer_27_HeldItem;
-			IL.Terraria.Player.PickAmmo += MSIL.Vanilla.Patch_Player_PickAmmo;
+			IL.Terraria.Player.ChooseAmmo += MSIL.Vanilla.Patch_Player_ChooseAmmo;
 			IL.Terraria.Player.ItemCheck_UseMiningTools_ActuallyUseMiningTool += MSIL.Vanilla.Patch_Player_ItemCheck_UseMiningTools_ActuallyUseMiningTool;
 			IL.Terraria.Player.ItemCheck_UseMiningTools_TryHittingWall += MSIL.Vanilla.Patch_Player_ItemCheck_UseMiningTools_TryHittingWall;
 			IL.Terraria.Player.PickTile += MSIL.Vanilla.Patch_Player_PickTile;

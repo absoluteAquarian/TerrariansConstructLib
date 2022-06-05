@@ -74,7 +74,6 @@ namespace TerrariansConstructLib {
 			PartRegistry.Load();
 			ItemRegistry.Load();
 
-			PartActions.builders = new();
 			ItemPart.partData = new();
 			ItemPartItem.registeredPartsByItemID = new();
 			ItemPartItem.itemPartToItemID = new();
@@ -83,6 +82,7 @@ namespace TerrariansConstructLib {
 			Material.statsByMaterialID = new();
 			Material.worthByMaterialID = new();
 			ModifierCollection.registeredModifiers = new();
+			ModifierCollection.idToIdentifier = new();
 			BaseModifier.nextID = 0;
 
 			ItemStatCollection.Load();
@@ -194,9 +194,9 @@ namespace TerrariansConstructLib {
 			}
 
 			for (int i = 0; i < PartRegistry.Count; i++)
-				AddPart(this, RegisteredMaterials.Unloaded, i, PartActions.NoActions);
+				AddPart(this, RegisteredMaterials.Unloaded, i);
 			for (int i = 0; i < PartRegistry.Count; i++)
-				AddPart(this, RegisteredMaterials.Unknown, i, PartActions.NoActions);
+				AddPart(this, RegisteredMaterials.Unknown, i);
 
 			EditsLoader.Load();
 
@@ -357,7 +357,6 @@ namespace TerrariansConstructLib {
 			PartRegistry.Unload();
 			ItemRegistry.Unload();
 
-			PartActions.builders = null!;
 			ItemPart.partData = null!;
 			ItemPartItem.registeredPartsByItemID = null!;
 			ItemPartItem.itemPartToItemID = null!;
@@ -366,6 +365,7 @@ namespace TerrariansConstructLib {
 			Material.statsByMaterialID = null!;
 			Material.worthByMaterialID = null!;
 			ModifierCollection.registeredModifiers = null!;
+			ModifierCollection.idToIdentifier = null!;
 			BaseModifier.nextID = 0;
 
 			ItemStatCollection.Unload();
@@ -759,15 +759,14 @@ namespace TerrariansConstructLib {
 		/// <param name="mod">The mod instance to add the part to</param>
 		/// <param name="material">The material instance</param>
 		/// <param name="partID">The part ID</param>
-		/// <param name="actions">The actions</param>
-		public static void AddPart(Mod mod, Material material, int partID, ItemPartActionsBuilder actions) {
+		public static void AddPart(Mod mod, Material material, int partID) {
 			if (partID < 0 || partID >= PartRegistry.Count)
 				throw new ArgumentException("Part ID was invalid");
 
 			if (!Material.statsByMaterialID.ContainsKey(material.Type))
 				throw new ArgumentException($"Material was not registered: \"{material.GetItemName()}\" (ID: {material.Type})");
 
-			ItemPartItem item = ItemPartItem.Create(material, partID, actions);
+			ItemPartItem item = ItemPartItem.Create(material, partID);
 
 			ReflectionHelper<Mod>.InvokeSetterFunction("loading", mod, true);
 

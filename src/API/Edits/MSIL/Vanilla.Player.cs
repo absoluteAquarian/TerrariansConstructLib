@@ -3,7 +3,6 @@ using MonoMod.Cil;
 using System;
 using System.Diagnostics;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using Terraria;
 using Terraria.GameContent.Achievements;
 using TerrariansConstructLib.API.Reflection;
@@ -12,7 +11,7 @@ using TerrariansConstructLib.Items;
 
 namespace TerrariansConstructLib.API.Edits.MSIL {
 	partial class Vanilla {
-		internal static void Patch_Player_PickAmmo(ILContext il) {
+		internal static void Patch_Player_ChooseAmmo(ILContext il) {
 			FieldInfo Player_inventory = typeof(Player).GetField("inventory", BindingFlags.Public | BindingFlags.Instance)!;
 			FieldInfo Item_ammo = typeof(Item).GetField("ammo", BindingFlags.Public | BindingFlags.Instance)!;
 			FieldInfo Item_useAmmo = typeof(Item).GetField("useAmmo", BindingFlags.Public | BindingFlags.Instance)!;
@@ -130,9 +129,6 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 					else {
 						var ctx = new TileDestructionContext(num2, tile.TileType, hammer: true);
 
-						for (int i = 0; i < tc.parts.Length; i++)
-							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, ctx, ref num2);
-						
 						tc.modifiers.ModifyToolPower(self, tc, ctx, ref num2);
 					}
 				}
@@ -177,9 +173,6 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 					else {
 						var ctx = new TileDestructionContext(num2, tile.TileType, axe: true);
 
-						for (int i = 0; i < tc.parts.Length; i++)
-							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, ctx, ref num2);
-						
 						tc.modifiers.ModifyToolPower(self, tc, ctx, ref num2);
 					}
 				}
@@ -242,9 +235,6 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 					else {
 						var ctx = new TileDestructionContext(num, tile.TileType, hammerWall: true);
 
-						for (int i = 0; i < tc.parts.Length; i++)
-							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, ctx, ref num);
-						
 						tc.modifiers.ModifyToolPower(self, tc, ctx, ref num);
 					}
 				}
@@ -327,10 +317,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 						else {
 							var ctx = new TileDestructionContext(num2, tile.TileType, pickaxe: true);
 
-						for (int i = 0; i < tc.parts.Length; i++)
-							tc.parts[i].ModifyToolPower?.Invoke(tc.parts[i].partID, self, sItem, ctx, ref num2);
-						
-						tc.modifiers.ModifyToolPower(self, tc, ctx, ref num2);
+							tc.modifiers.ModifyToolPower(self, tc, ctx, ref num2);
 						}
 					}
 				}

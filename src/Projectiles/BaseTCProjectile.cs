@@ -60,40 +60,46 @@ namespace TerrariansConstructLib.Projectiles {
 		/// <inheritdoc cref="SetStaticDefaults"/>
 		public virtual void SafeSetStaticDefaults() { }
 
-		public sealed override void SetDefaults() {
-			SafeSetDefaults();
+		public sealed override void ModifyHitNPC(NPC target, ref int damage, ref float knockback, ref bool crit, ref int hitDirection) {
+			modifiers.ModifyHitNPCWithProjectile(this, target, ref damage, ref knockback, ref crit, ref hitDirection);
 
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].SetProjectileDefaults?.Invoke(parts[i].partID, Projectile);
+			SafeModifyHitNPC(target, ref damage, ref knockback, ref crit, ref hitDirection);
 		}
 
-		/// <inheritdoc cref="SetDefaults"/>
-		public virtual void SafeSetDefaults() { }
+		/// <inheritdoc cref="ModifyHitNPC(NPC, ref int, ref float, ref bool, ref int)"/>
+		public virtual void SafeModifyHitNPC(NPC target, ref int damage, ref float knockback, ref bool crit, ref int hitDirection) { }
+
+		public sealed override void ModifyHitPlayer(Player target, ref int damage, ref bool crit) {
+			modifiers.ModifyHitPlayerWithProjectile(this, target, ref damage, ref crit);
+			
+			SafeModifyHitPlayer(target, ref damage, ref crit);
+		}
+
+		public sealed override void ModifyHitPvp(Player target, ref int damage, ref bool crit) => ModifyHitPlayer(target, ref damage, ref crit);
+
+		public virtual void SafeModifyHitPlayer(Player target, ref int damage, ref bool crit) { }
 
 		public sealed override void OnHitNPC(NPC target, int damage, float knockback, bool crit) {
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnProjectileHitNPC?.Invoke(parts[i].partID, Projectile, target, damage, knockback, crit);
-
 			modifiers.OnHitNPCWithProjectile(this, target, damage, knockback, crit);
+
+			SafeOnHitNPC(target, damage, knockback, crit);
 		}
 
 		/// <inheritdoc cref="OnHitNPC(NPC, int, float, bool)"/>
 		public virtual void SafeOnHitNPC(NPC target, int damage, float knockback, bool crit) { }
 
 		public sealed override void OnHitPlayer(Player target, int damage, bool crit) {
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnProjectileHitPlayer?.Invoke(parts[i].partID, Projectile, target, damage, crit);
-
 			modifiers.OnHitPlayerWithProjectile(this, target, damage, crit);
+
+			SafeOnHitPlayer(target, damage, crit);
 		}
+
+		public override void OnHitPvp(Player target, int damage, bool crit) => OnHitPlayer(target, damage, crit);
 
 		/// <inheritdoc cref="OnHitPlayer(Player, int, bool)"/>
 		public virtual void SafeOnHitPlayer(Player target, int damage, bool crit) { }
 
 		public sealed override void AI() {
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].ProjectileAI?.Invoke(parts[i].partID, Projectile);
-
 			SafeAI();
 		}
 

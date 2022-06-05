@@ -62,7 +62,7 @@ namespace TerrariansConstructLib.Modifiers {
 		}
 
 		/// <summary>
-		/// Removes the item of type, <paramref name="typeToRemove"/>, from <paramref name="stacks"/>
+		/// Removes the item of type, <paramref name="typeToRemove"/>, from <paramref name="items"/>
 		/// </summary>
 		/// <param name="items">The items</param>
 		/// <param name="typeToRemove">The type to remove from the stacks</param>

@@ -61,7 +61,7 @@ namespace TerrariansConstructLib.API.Commands {
 			tc.InitializeWithParts(parts);
 
 			//Drop the item in the world
-			caller.Player.QuickSpawnClonedItem(new EntitySource_DebugCommand(), tc.Item, tc.Item.stack);
+			caller.Player.QuickSpawnClonedItem(new EntitySource_DebugCommand("TerrariansConstructLib:SpawnItem"), tc.Item, tc.Item.stack);
 
 			caller.Reply("Successfully spawned the item.", Color.Green);
 		}

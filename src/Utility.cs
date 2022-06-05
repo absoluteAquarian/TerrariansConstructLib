@@ -124,12 +124,12 @@ namespace TerrariansConstructLib {
 			=> !collection.Any() ? defaultValueIfEmpty : Enumerable.Average(collection, func);
 
 		public static StatModifier Sum<T>(this IEnumerable<T> collection, Func<T, StatModifier> func, StatModifier? defaultValueIfEmpty = null) {
-			StatModifier def = defaultValueIfEmpty ?? StatModifier.One;
+			StatModifier def = defaultValueIfEmpty ?? StatModifier.Default;
 
 			if (!collection.Any())
 				return def;
 
-			StatModifier modifier = StatModifier.One;
+			StatModifier modifier = StatModifier.Default;
 
 			foreach (var stat in collection.Select(func))
 				modifier = modifier.CombineWith(stat);

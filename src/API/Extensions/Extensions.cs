@@ -38,5 +38,8 @@ namespace TerrariansConstructLib.API {
 			//Construct the child types
 			return $"{parent}<{string.Join(", ", type.GetGenericArguments().Select(GetSimplifiedGenericTypeName))}>";
 		}
+
+		public static double ApplyTo(this StatModifier stat, double baseValue)
+			=> (baseValue + stat.Base) * stat.Additive * stat.Multiplicative + stat.Flat;
 	}
 }

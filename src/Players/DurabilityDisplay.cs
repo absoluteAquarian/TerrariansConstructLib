@@ -22,7 +22,7 @@ namespace TerrariansConstructLib.Players {
 			if (drawInfo.drawPlayer.HeldItem?.ModItem is not BaseTCItem tc)
 				return;
 
-			bool itemIsInUse = !drawInfo.drawPlayer.ItemTimeIsZero || (drawInfo.drawPlayer.controlUseItem && drawInfo.drawPlayer.ShouldAutoReuseItem(drawInfo.drawPlayer.HeldItem));
+			bool itemIsInUse = !drawInfo.drawPlayer.ItemTimeIsZero || (drawInfo.drawPlayer.controlUseItem && drawInfo.drawPlayer.CanAutoReuseItem(drawInfo.drawPlayer.HeldItem));
 			if (!itemIsInUse)
 				return;
 

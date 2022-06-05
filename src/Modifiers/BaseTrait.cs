@@ -191,6 +191,36 @@ namespace TerrariansConstructLib.Modifiers {
 		public virtual void ModifyHitNPC(Player player, NPC target, BaseTCItem item, ref int damage, ref float knockBack, ref bool crit) { }
 
 		/// <summary>
+		/// This hook runs in <see cref="BaseTCItem.ModifyHitNPC(Player, NPC, ref int, ref float, ref bool)"/>
+		/// </summary>
+		/// <param name="projectile">The projectile doing the hitting</param>
+		/// <param name="target">The target</param>
+		/// <param name="damage">The damage</param>
+		/// <param name="knockBack">The knockback</param>
+		/// <param name="crit">If set to <see langword="true"/> [crit]</param>
+		/// <param name="hitDirection">The hit direction.  -1 is to the left, 1 is to the right and 0 is neither</param>
+		public virtual void ModifyHitNPCWithProjectile(BaseTCProjectile projectile, NPC target, ref int damage, ref float knockBack, ref bool crit, ref int hitDirection) { }
+
+		/// <summary>
+		/// This hook runs in <see cref="BaseTCItem.ModifyHitPvp(Player, Player, ref int, ref bool)"/>
+		/// </summary>
+		/// <param name="owner">The player</param>
+		/// <param name="target">The target</param>
+		/// <param name="item">The item that hit the target</param>
+		/// <param name="damage">The damage</param>
+		/// <param name="crit">If set to <see langword="true"/> [crit]</param>
+		public virtual void ModifyHitPlayer(Player owner, Player target, BaseTCItem item, ref int damage, ref bool crit) { }
+
+		/// <summary>
+		/// This hook runs in <see cref="BaseTCProjectile.ModifyHitPlayer(Player, ref int, ref bool)"/>
+		/// </summary>
+		/// <param name="projectile">The projectile</param>
+		/// <param name="target">The target</param>
+		/// <param name="damage">The damage</param>
+		/// <param name="crit">If set to <see langword="true"/> [crit]</param>
+		public virtual void ModifyHitPlayerWithProjectile(BaseTCProjectile projectile, Player target, ref int damage, ref bool crit) { }
+
+		/// <summary>
 		/// This hook runs in <see cref="BaseTCItem.OnHitNPC(Player, NPC, int, float, bool)"/>
 		/// </summary>
 		/// <param name="player">The player</param>
@@ -244,26 +274,16 @@ namespace TerrariansConstructLib.Modifiers {
 		/// </summary>
 		/// <param name="projectile">The spawned projectile</param>
 		/// <param name="source">The spawn source</param>
-		/// <param name="X">The X-position</param>
-		/// <param name="Y">The Y-position</param>
-		/// <param name="SpeedX">The X-velocity</param>
-		/// <param name="SpeedY">The Y-velocity</param>
-		/// <param name="Type">The ID of the projectile spawned</param>
-		/// <param name="Damage">The damage assigned to the projectile</param>
-		/// <param name="KnockBack">The knockback assigned to the projectile</param>
-		/// <param name="Owner">The projectile's owner</param>
-		/// <param name="ai0"></param>
-		/// <param name="ai1"></param>
-		public virtual void OnProjectileSpawn(BaseTCProjectile projectile, IEntitySource source, float X, float Y, float SpeedX, float SpeedY, int Type, int Damage, float KnockBack, int Owner, float ai0, float ai1) { }
+		public virtual void OnProjectileSpawn(BaseTCProjectile projectile, IEntitySource source) { }
 
-		/// <inheritdoc cref="BaseTCItem.ModifyWeaponDamage(Player, ref StatModifier, ref float)"/>
-		public virtual void ModifyWeaponDamage(Player player, BaseTCItem item, ref StatModifier damage, ref float flat) { }
+		/// <inheritdoc cref="BaseTCItem.ModifyWeaponDamage(Player, ref StatModifier)"/>
+		public virtual void ModifyWeaponDamage(Player player, BaseTCItem item, ref StatModifier damage) { }
 
-		/// <inheritdoc cref="BaseTCItem.ModifyWeaponKnockback(Player, ref StatModifier, ref float)"/>
-		public virtual void ModifyWeaponKnockback(Player player, BaseTCItem item, ref StatModifier knockback, ref float flat) { }
+		/// <inheritdoc cref="BaseTCItem.ModifyWeaponKnockback(Player, ref StatModifier)"/>
+		public virtual void ModifyWeaponKnockback(Player player, BaseTCItem item, ref StatModifier knockback) { }
 
-		/// <inheritdoc cref="BaseTCItem.ModifyWeaponCrit(Player, ref int)"/>
-		public virtual void ModifyWeaponCrit(Player player, BaseTCItem item, ref int crit) { }
+		/// <inheritdoc cref="BaseTCItem.ModifyWeaponCrit(Player, ref float)"/>
+		public virtual void ModifyWeaponCrit(Player player, BaseTCItem item, ref float crit) { }
 
 		/// <summary>
 		/// This hook runs in <see cref="BaseTCItem.UseItem(Player)"/>
@@ -271,6 +291,8 @@ namespace TerrariansConstructLib.Modifiers {
 		/// <param name="player">The player</param>
 		/// <param name="item">The item</param>
 		public virtual void UseItem(Player player, BaseTCItem item) { }
+
+		public virtual bool CanConsumeAmmo(BaseTCItem weapon, BaseTCItem ammo, Player player) => true;
 
 		/// <summary>
 		/// Allows you to save custom data for this ability.<br/>

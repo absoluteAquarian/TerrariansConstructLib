@@ -32,10 +32,10 @@ namespace TerrariansConstructLib.API.Stats {
 
 		public HandlePartStats(float? miningSpeed = null, StatModifier? attackSpeed = null, StatModifier? attackDamage = null, StatModifier? attackKnockback = null, StatModifier? durability = null) {
 			this.miningSpeed = miningSpeed ?? 1f;
-			this.attackSpeed = attackSpeed ?? StatModifier.One;
-			this.attackDamage = attackDamage ?? new StatModifier(0);
-			this.attackKnockback = attackKnockback ?? new StatModifier(0);
-			this.durability = durability ?? new StatModifier(0);
+			this.attackSpeed = attackSpeed ?? StatModifier.Default;
+			this.attackDamage = attackDamage ?? new StatModifier(0, 1);
+			this.attackKnockback = attackKnockback ?? new StatModifier(0, 1);
+			this.durability = durability ?? new StatModifier(0, 1);
 		}
 
 		public string GetTooltipLines(int partID) {
@@ -69,7 +69,7 @@ namespace TerrariansConstructLib.API.Stats {
 			}
 
 			AppendFormatSingle(CoreLibMod.KnownStatModifiers.HandleMiningSpeed, miningSpeed);
-			AppendFormatSingle(CoreLibMod.KnownStatModifiers.HandleAttackSpeed, attackSpeed);
+			AppendFormatSingle(CoreLibMod.KnownStatModifiers.HandleAttackSpeed, attackSpeed.ApplyTo(1f));
 			AppendFormat(CoreLibMod.KnownStatModifiers.HandleAttackDamage, attackDamage);
 			AppendFormat(CoreLibMod.KnownStatModifiers.HandleAttackKnockback, attackKnockback);
 			AppendFormat(CoreLibMod.KnownStatModifiers.HandleDurability, durability);

@@ -25,6 +25,8 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			MethodInfo Color_get_White = typeof(Color).GetProperty("White", BindingFlags.Public | BindingFlags.Static)!.GetGetMethod()!;
 			MethodInfo Color_op_Multiply = typeof(Color).GetMethod("op_Multiply", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Color), typeof(float) })!;
 			MethodInfo Utils_Size_Rectangle = typeof(Utils).GetMethod("Size", BindingFlags.Public | BindingFlags.Static, new Type[]{ typeof(Rectangle) })!;
+			FieldInfo Item_useAmmo = typeof(Item).GetField("useAmmo", BindingFlags.Public | BindingFlags.Instance)!;
+			FieldInfo Item_stack = typeof(Item).GetField("stack", BindingFlags.Public | BindingFlags.Instance)!;
 
 			ILHelper.EnsureAreNotNull(
 				(Utils_Size_Texture2D, typeof(Utils).FullName + "::Size(Texture2D)"),
@@ -33,7 +35,9 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 				(Vector2_op_Addition, typeof(Vector2).FullName + "::op_Addition(Vector2, Vector2)"),
 				(Color_get_White, typeof(Color).FullName + "::get_White()"),
 				(Color_op_Multiply, typeof(Color).FullName + "::op_Multiply(Color, float)"),
-				(Utils_Size_Rectangle, typeof(Utils).FullName + "::Size(Rectangle)"));
+				(Utils_Size_Rectangle, typeof(Utils).FullName + "::Size(Rectangle)"),
+				(Item_useAmmo, typeof(Item).FullName + "::useAmmo"),
+				(Item_stack, typeof(Item).FullName + "::stack"));
 
 			ILCursor c = new(il);
 			int patchNum = 1;
@@ -199,6 +203,52 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			foreach (var label in labels)
 				if (!object.ReferenceEquals(label, postContextCheck))  //Update the labels that weren't created by this IL edit
 					label.Target = newTarget;
+
+			/*   // _ = item.useAmmo;
+			 *   IL_0bb9: ldloc.1
+			 *   IL_0bba: ldfld int32 Terraria.Item::useAmmo
+			 *   IL_0bbf: pop
+			 *   // num11 = 0;
+			 *   IL_0bc0: ldc.i4.0
+			 *   IL_0bc1: stloc.s 35
+			 *   ...
+			 *   IL_0bdf: brfalse.s IL_0bef
+			 *   // num11 += inv[j].stack;
+			 *   IL_0be1: ldloc.s 35
+			 *   IL_0be3: ldarg.1
+			 *   IL_0be4: ldloc.s 38
+			 *   IL_0be6: ldelem.ref
+			 *   IL_0be7: ldfld int32 Terraria.Item::stack
+			 *      <== NEED TO END UP HERE
+			 *   IL_0bec: add
+			 *   IL_0bed: stloc.s 35
+			 */
+			int num11 = -1, j = -1;
+			if (!c.TryGotoNext(MoveType.After, i => i.MatchLdloc(1),
+				i => i.MatchLdfld(Item_useAmmo),
+				i => i.MatchPop(),
+				i => i.MatchLdcI4(0),
+				i => i.MatchStloc(out num11)))
+				goto bad_il;
+			if (!c.TryGotoNext(MoveType.After, i => i.MatchBrfalse(out _),
+				i => i.MatchLdloc(num11),
+				i => i.MatchLdarg(1),
+				i => i.MatchLdloc(out j),
+				i => i.MatchLdelemRef(),
+				i => i.MatchLdfld(Item_stack)))
+				goto bad_il;
+
+			patchNum++;
+
+			c.Emit(OpCodes.Ldarg_1);
+			c.Emit(OpCodes.Ldloc, j);
+			c.Emit(OpCodes.Ldelem_Ref);
+			c.EmitDelegate<Func<int, Item, int>>((stack, item) => {
+				if (item.ModItem is BaseTCItem tc)
+					stack = tc.ammoReserve;
+
+				return stack;
+			});
 
 			ILHelper.UpdateInstructionOffsets(c);
 

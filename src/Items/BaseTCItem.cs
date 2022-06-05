@@ -184,12 +184,9 @@ namespace TerrariansConstructLib.Items {
 
 			CurrentDurability = GetMaxDurability();
 
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnInitialized?.Invoke(parts[i].partID, Item);
+			modifiers = new(this);
 
 			OnInitializedWithParts();
-
-			modifiers = new(this);
 		}
 
 		/// <summary>
@@ -286,44 +283,46 @@ namespace TerrariansConstructLib.Items {
 		/// <inheritdoc cref="Clone(Item)"/>
 		public virtual void Clone(Item item, BaseTCItem clone) { }
 
-		public sealed override bool CanBeConsumedAsAmmo(Player player) => false;
+		public sealed override bool CanBeConsumedAsAmmo(Item weapon, Player player) => false;
 
-		public sealed override void PickAmmo(Item weapon, Player player, ref int type, ref float speed, ref int damage, ref float knockback) { }
+		public sealed override void PickAmmo(Item weapon, Player player, ref int type, ref float speed, ref StatModifier damage, ref float knockback) { }
 
-		public sealed override void ModifyWeaponDamage(Player player, ref StatModifier damage, ref float flat) {
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].ModifyWeaponDamage?.Invoke(parts[i].partID, player, ref damage, ref flat);
+		public sealed override bool CanConsumeAmmo(Item ammo, Player player) {
+			bool consume = ammo.ModItem is not BaseTCItem tc || modifiers.CanConsumeAmmo(this, tc, player);
 
-			modifiers.ModifyWeaponDamage(player, this, ref damage, ref flat);
+			consume &= SafeCanConsumeAmmo(ammo, player);
 
-			SafeModifyWeaponDamage(player, ref damage, ref flat);
+			return consume;
+		}
+
+		/// <inheritdoc cref="CanConsumeAmmo(Item, Player)"/>
+		public virtual bool SafeCanConsumeAmmo(Item ammo, Player player) => true;
+
+		public sealed override void ModifyWeaponDamage(Player player, ref StatModifier damage) {
+			modifiers.ModifyWeaponDamage(player, this, ref damage);
+
+			SafeModifyWeaponDamage(player, ref damage);
 
 			if (TCConfig.Instance.UseDurability && CurrentDurability <= 0)
 				damage -= 0.7f;
 		}
 
-		/// <inheritdoc cref="ModifyWeaponDamage(Player, ref StatModifier, ref float)"/>
-		public virtual void SafeModifyWeaponDamage(Player player, ref StatModifier damage, ref float flat) { }
+		/// <inheritdoc cref="ModifyWeaponDamage(Player, ref StatModifier)"/>
+		public virtual void SafeModifyWeaponDamage(Player player, ref StatModifier damage) { }
 
-		public override void ModifyWeaponKnockback(Player player, ref StatModifier knockback, ref float flat) {
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].ModifyWeaponKnockback?.Invoke(parts[i].partID, player, ref knockback, ref flat);
+		public override void ModifyWeaponKnockback(Player player, ref StatModifier knockback) {
+			modifiers.ModifyWeaponKnockback(player, this, ref knockback);
 
-			modifiers.ModifyWeaponKnockback(player, this, ref knockback, ref flat);
-
-			SafeModifyWeaponKnockback(player, ref knockback, ref flat);
+			SafeModifyWeaponKnockback(player, ref knockback);
 
 			if (TCConfig.Instance.UseDurability && CurrentDurability <= 0)
 				knockback *= 0f;
 		}
 
-		/// <inheritdoc cref="ModifyWeaponKnockback(Player, ref StatModifier, ref float)"/>
-		public virtual void SafeModifyWeaponKnockback(Player player, ref StatModifier knockback, ref float flat) { }
+		/// <inheritdoc cref="ModifyWeaponKnockback(Player, ref StatModifier)"/>
+		public virtual void SafeModifyWeaponKnockback(Player player, ref StatModifier knockback) { }
 
-		public sealed override void ModifyWeaponCrit(Player player, ref int crit) {
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].ModifyWeaponCrit?.Invoke(parts[i].partID, player, ref crit);
-
+		public sealed override void ModifyWeaponCrit(Player player, ref float crit) {
 			modifiers.ModifyWeaponCrit(player, this, ref crit);
 
 			SafeModifyWeaponCrit(player, ref crit);
@@ -332,14 +331,11 @@ namespace TerrariansConstructLib.Items {
 				crit = 0;
 		}
 
-		/// <inheritdoc cref="ModifyWeaponCrit(Player, ref int)"/>
-		public virtual void SafeModifyWeaponCrit(Player player, ref int crit) { }
+		/// <inheritdoc cref="ModifyWeaponCrit(Player, ref float)"/>
+		public virtual void SafeModifyWeaponCrit(Player player, ref float crit) { }
 
 		public sealed override float UseSpeedMultiplier(Player player) {
 			float speed = 1f;
-
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].UseSpeedMultiplier?.Invoke(parts[i].partID, Item, player, ref speed);
 
 			modifiers.UseSpeedMultiplier(player, this, ref speed);
 
@@ -362,9 +358,6 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public sealed override void HoldItem(Player player) {
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnHold?.Invoke(parts[i].partID, player, Item);
-
 			modifiers.HoldItem(player, this);
 
 			SafeHoldItem(player);
@@ -374,9 +367,6 @@ namespace TerrariansConstructLib.Items {
 		public virtual void SafeHoldItem(Player player) { }
 
 		public sealed override void UpdateInventory(Player player) {
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnUpdateInventory?.Invoke(parts[i].partID, player, Item);
-
 			modifiers.UpdateInventory(player, this);
 
 			SafeUpdateInventory(player);
@@ -386,9 +376,6 @@ namespace TerrariansConstructLib.Items {
 		public virtual void SafeUpdateInventory(Player player) { }
 
 		public sealed override bool? UseItem(Player player) {
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnUse?.Invoke(parts[i].partID, player, Item);
-
 			modifiers.UseItem(player, this);
 
 			SafeUseItem(player);
@@ -402,9 +389,6 @@ namespace TerrariansConstructLib.Items {
 		public sealed override void OnHitNPC(Player player, NPC target, int damage, float knockBack, bool crit) {
 			TryReduceDurability(player, 1, new DurabilityModificationSource_HitEntity(target, HasAnyToolPower()));
 
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnItemHitNPC?.Invoke(parts[i].partID, Item, player, target, damage, knockBack, crit);
-
 			modifiers.OnHitNPC(player, target, this, damage, knockBack, crit);
 
 			SafeOnHitNPC(player, target, damage, knockBack, crit);
@@ -416,9 +400,6 @@ namespace TerrariansConstructLib.Items {
 		public sealed override void OnHitPvp(Player player, Player target, int damage, bool crit) {
 			TryReduceDurability(player, 1, new DurabilityModificationSource_HitEntity(target, HasAnyToolPower()));
 
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnItemHitPlayer?.Invoke(parts[i].partID, Item, player, target, damage, crit);
-
 			modifiers.OnHitPlayer(player, target, this, damage, crit);
 
 			SafeOnHitPvp(player, target, damage, crit);
@@ -428,9 +409,6 @@ namespace TerrariansConstructLib.Items {
 		public virtual void SafeOnHitPvp(Player player, Player target, int damage, bool crit) { }
 
 		public sealed override void ModifyHitNPC(Player player, NPC target, ref int damage, ref float knockBack, ref bool crit) {
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].ModifyHitNPC?.Invoke(parts[i].partID, player, target, ref damage, ref knockBack, ref crit);
-
 			modifiers.ModifyHitNPC(player, target, this, ref damage, ref knockBack, ref crit);
 
 			SafeModifyHitNPC(player, target, ref damage, ref knockBack, ref crit);
@@ -439,11 +417,17 @@ namespace TerrariansConstructLib.Items {
 		/// <inheritdoc cref="ModifyHitNPC(Player, NPC, ref int, ref float, ref bool)"/>
 		public virtual void SafeModifyHitNPC(Player player, NPC target, ref int damage, ref float knockBack, ref bool crit) { }
 
+		public sealed override void ModifyHitPvp(Player player, Player target, ref int damage, ref bool crit) {
+			modifiers.ModifyHitPlayer(player, target, this, ref damage, ref crit);
+
+			SafeModifyHitPlayer(player, target, ref damage, ref crit);
+		}
+
+		/// <inheritdoc cref="ModifyHitPvp(Player, Player, ref int, ref bool)"/>
+		public virtual void SafeModifyHitPlayer(Player player, Player target, ref int damage, ref bool crit) { }
+
 		internal void OnTileDestroyed(Player player, int x, int y, TileDestructionContext context) {
 			TryReduceDurability(player, 1, new DurabilityModificationSource_Mining(context, x, y));
-
-			for (int i = 0; i < parts.Length; i++)
-				parts[i].OnTileDestroyed?.Invoke(parts[i].partID, player, Item, x, y, context);
 
 			modifiers.OnTileDestroyed(player, this, x, y, context);
 
@@ -502,7 +486,7 @@ namespace TerrariansConstructLib.Items {
 			double averageHead = AverageWeightedHeadStats(p => p.useSpeed);
 			StatModifier handle = GetHandleParts().Sum(p => p.attackSpeed);
 
-			return (int)Math.Max(1, averageHead * handle);
+			return (int)Math.Max(1, handle.ApplyTo(averageHead));
 		}
 
 		/// <summary>
@@ -558,12 +542,6 @@ namespace TerrariansConstructLib.Items {
 
 			int max = GetMaxDurability();
 			if (CurrentDurability < max && TCConfig.Instance.UseDurability) {
-				for (int i = 0; i < parts.Length; i++)
-					parts[i].PreModifyDurability?.Invoke(parts[i].partID, player, Item, source, ref amount);
-
-				if (amount <= 0)
-					return;
-
 				modifiers.PreModifyDurability(player, this, source, ref amount);
 
 				if (amount <= 0)
@@ -585,20 +563,11 @@ namespace TerrariansConstructLib.Items {
 			if (!lose)
 				return;
 
-			for (int i = 0; i < parts.Length; i++)
-				lose &= parts[i].CanLoseDurability?.Invoke(parts[i].partID, player, Item, source) ?? true;
-
-			lose &= modifiers.CanLoseDurability(player, this, source);
+			lose = modifiers.CanLoseDurability(player, this, source);
 
 			if (lose && CurrentDurability > 0) {
 				//Indicate to the API that the modification is a removal
 				amount = -amount;
-
-				for (int i = 0; i < parts.Length; i++)
-					parts[i].PreModifyDurability?.Invoke(parts[i].partID, player, Item, source, ref amount);
-
-				if (amount >= 0)
-					return;
 
 				modifiers.PreModifyDurability(player, this, source, ref amount);
 
@@ -616,7 +585,7 @@ namespace TerrariansConstructLib.Items {
 					CurrentDurability = 0;
 
 				if (CurrentDurability == 0) {
-					SoundEngine.PlaySound(SoundID.Tink, player.Center, style: 0);
+					SoundEngine.PlaySound(SoundID.Tink, player.Center);
 					SoundEngine.PlaySound(SoundID.Item50, player.Center);
 
 					const int sizeX = 6 * 16;

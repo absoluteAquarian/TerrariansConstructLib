@@ -72,17 +72,7 @@ namespace TerrariansConstructLib.Items {
 			this.part = part;
 		}
 
-		public static ItemPartItem Create(Material material, int partID, ItemPartActionsBuilder builder) {
-			int materialType = material.Type;
-
-			if (!PartActions.builders.TryGetValue(materialType, out var buildersByPartID))
-				buildersByPartID = PartActions.builders[materialType] = new();
-
-			if (buildersByPartID.ContainsKey(partID))
-				throw new ArgumentException($"The part type \"{PartRegistry.registeredIDs[partID].name}\" has already been assigned to the material type \"{material.GetItemName()}\" (ID: {materialType})");
-
-			buildersByPartID[partID] = builder;
-
+		public static ItemPartItem Create(Material material, int partID) {
 			return new ItemPartItem(new ItemPart() {
 				material = material,
 				partID = partID
@@ -123,7 +113,7 @@ namespace TerrariansConstructLib.Items {
 
 			Item? materialItem = part.material.AsItem();
 
-			Item.DamageType = DamageClass.NoScaling;
+			Item.DamageType = DamageClass.Default;
 			Item.rare = materialItem?.rare ?? ItemRarityID.White;  //Unknown and Unloaded materials return null for the item
 		}
 

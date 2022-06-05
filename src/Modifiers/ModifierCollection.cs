@@ -131,7 +131,7 @@ namespace TerrariansConstructLib.Modifiers {
 
 			power = pwr;
 		}
-
+		
 		internal void OnTileDestroyed(Player player, BaseTCItem item, int x, int y, TileDestructionContext context) => PerformActions(a => a.OnTileDestroyed(player, item, x, y, context));
 
 		internal bool CanLoseDurability(Player player, BaseTCItem item, IDurabilityModificationSource source) {
@@ -154,6 +154,40 @@ namespace TerrariansConstructLib.Modifiers {
 			crit = c;
 		}
 
+		internal void ModifyHitNPCWithProjectile(BaseTCProjectile projectile, NPC target, ref int damage, ref float knockBack, ref bool crit, ref int hitDirection) {
+			int d = damage;
+			float k = knockBack;
+			bool c = crit;
+			int h = hitDirection;
+
+			PerformActions(a => a.ModifyHitNPCWithProjectile(projectile, target, ref d, ref k, ref c, ref h));
+
+			damage = d;
+			knockBack = k;
+			crit = c;
+			hitDirection = h;
+		}
+
+		internal void ModifyHitPlayer(Player player, Player target, BaseTCItem item, ref int damage, ref bool crit) {
+			int d = damage;
+			bool c = crit;
+
+			PerformActions(a => a.ModifyHitPlayer(player, target, item, ref d, ref c));
+
+			damage = d;
+			crit = c;
+		}
+
+		internal void ModifyHitPlayerWithProjectile(BaseTCProjectile projectile, Player target, ref int damage, ref bool crit) {
+			int d = damage;
+			bool c = crit;
+
+			PerformActions(a => a.ModifyHitPlayerWithProjectile(projectile, target, ref d, ref c));
+
+			damage = d;
+			crit = c;
+		}
+
 		internal void OnHitNPC(Player player, NPC target, BaseTCItem item, int damage, float knockBack, bool crit) => PerformActions(a => a.OnHitNPC(player, target, item, damage, knockBack, crit));
 
 		internal void OnHitPlayer(Player owner, Player target, BaseTCItem item, int damage, bool crit) => PerformActions(a => a.OnHitPlayer(owner, target, item, damage, crit));
@@ -162,31 +196,27 @@ namespace TerrariansConstructLib.Modifiers {
 
 		internal void OnHitNPCWithProjectile(BaseTCProjectile projectile, NPC target, int damage, float knockBack, bool crit) => PerformActions(a => a.OnHitNPCWithProjectile(projectile, target, damage, knockBack, crit));
 
-		internal void OnProjectileSpawn(BaseTCProjectile projectile, IEntitySource source, float X, float Y, float SpeedX, float SpeedY, int Type, int Damage, float KnockBack, int Owner, float ai0, float ai1)
-			=> PerformActions(a => a.OnProjectileSpawn(projectile, source, X, Y, SpeedX, SpeedY, Type, Damage, KnockBack, Owner, ai0, ai1));
+		internal void OnProjectileSpawn(BaseTCProjectile projectile, IEntitySource source)
+			=> PerformActions(a => a.OnProjectileSpawn(projectile, source));
 
-		internal void ModifyWeaponDamage(Player player, BaseTCItem item, ref StatModifier damage, ref float flat) {
+		internal void ModifyWeaponDamage(Player player, BaseTCItem item, ref StatModifier damage) {
 			StatModifier d = damage;
-			float f = flat;
 
-			PerformActions(a => a.ModifyWeaponDamage(player, item, ref d, ref f));
+			PerformActions(a => a.ModifyWeaponDamage(player, item, ref d));
 
 			damage = d;
-			flat = f;
 		}
 
-		internal void ModifyWeaponKnockback(Player player, BaseTCItem item, ref StatModifier knockback, ref float flat) {
+		internal void ModifyWeaponKnockback(Player player, BaseTCItem item, ref StatModifier knockback) {
 			StatModifier k = knockback;
-			float f = flat;
 
-			PerformActions(a => a.ModifyWeaponKnockback(player, item, ref k, ref f));
+			PerformActions(a => a.ModifyWeaponKnockback(player, item, ref k));
 
 			knockback = k;
-			flat = f;
 		}
 		
-		internal void ModifyWeaponCrit(Player player, BaseTCItem item, ref int crit) {
-			int c = crit;
+		internal void ModifyWeaponCrit(Player player, BaseTCItem item, ref float crit) {
+			float c = crit;
 
 			PerformActions(a => a.ModifyWeaponCrit(player, item, ref c));
 
@@ -202,6 +232,14 @@ namespace TerrariansConstructLib.Modifiers {
 		}
 
 		internal void UseItem(Player player, BaseTCItem item) => PerformActions(a => a.UseItem(player, item));
+
+		internal bool CanConsumeAmmo(BaseTCItem weapon, BaseTCItem ammo, Player player) {
+			bool consume = true;
+
+			PerformActions(a => consume &= a.CanConsumeAmmo(weapon, ammo, player));
+
+			return consume;
+		}
 
 		private void PerformActions(Action<BaseTrait> func) {
 			foreach (var member in members.Values) {

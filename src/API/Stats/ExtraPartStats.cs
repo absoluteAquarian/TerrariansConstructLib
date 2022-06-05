@@ -62,9 +62,9 @@ namespace TerrariansConstructLib.API.Stats {
 		/// </summary>
 		/// <param name="identifier">The name of the stat</param>
 		/// <param name="defaultValueIfMissing">The default value that should be returned if the stat isn't present</param>
-		/// <returns>The value of the stat if it's defined or <paramref name="defaultValueIfMissing"/> if it's not <see langword="null"/>, <see cref="StatModifier.One"/> otherwise</returns>
+		/// <returns>The value of the stat if it's defined or <paramref name="defaultValueIfMissing"/> if it's not <see langword="null"/>, <see cref="StatModifier.Default"/> otherwise</returns>
 		public StatModifier Get(string identifier, StatModifier? defaultValueIfMissing = null)
-			=> modifiers.TryGetValue(identifier, out var stat) ? stat : defaultValueIfMissing ?? StatModifier.One;
+			=> modifiers.TryGetValue(identifier, out var stat) ? stat : defaultValueIfMissing ?? StatModifier.Default;
 
 		public string GetTooltipLines(int partID) {
 			StringBuilder sb = new();
