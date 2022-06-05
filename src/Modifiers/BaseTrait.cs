@@ -292,7 +292,17 @@ namespace TerrariansConstructLib.Modifiers {
 		/// <param name="item">The item</param>
 		public virtual void UseItem(Player player, BaseTCItem item) { }
 
+		/// <summary>
+		/// This hook runs in <see cref="BaseTCItem.CanConsumeAmmo(Item, Player)"/>
+		/// </summary>
+		/// <param name="weapon">The weapon</param>
+		/// <param name="ammo">The ammo potentially being consumed</param>
+		/// <param name="player">The player</param>
+		/// <returns>Whether the ammo can be consumed</returns>
 		public virtual bool CanConsumeAmmo(BaseTCItem weapon, BaseTCItem ammo, Player player) => true;
+
+		/// <inheritdoc cref="GlobalItem.OnPickup(Item, Player)"/>
+		public virtual bool OnPickup(Item item, Player player) => true;
 
 		/// <summary>
 		/// Allows you to save custom data for this ability.<br/>

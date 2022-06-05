@@ -241,6 +241,14 @@ namespace TerrariansConstructLib.Modifiers {
 			return consume;
 		}
 
+		internal bool OnPickup(Item item, Player player) {
+			bool putInPlayerInventory = true;
+
+			PerformActions(a => putInPlayerInventory &= a.OnPickup(item, player));
+
+			return putInPlayerInventory;
+		}
+
 		private void PerformActions(Action<BaseTrait> func) {
 			foreach (var member in members.Values) {
 				//No need to check for IsSingleton here, since that's handled in the ctor
