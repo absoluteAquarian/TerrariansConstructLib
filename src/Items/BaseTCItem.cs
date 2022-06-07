@@ -260,6 +260,8 @@ namespace TerrariansConstructLib.Items {
 		/// <inheritdoc cref="ModifyTooltips(List{TooltipLine})"/>
 		public virtual void SafeModifyTooltips(List<TooltipLine> tooltips) { }
 
+		protected override bool CloneNewInstances => true;
+
 		public sealed override ModItem Clone(Item item) {
 			BaseTCItem clone = (base.Clone(item) as BaseTCItem)!;
 

@@ -86,6 +86,8 @@ namespace TerrariansConstructLib.Items {
 		public override bool CanStackInWorld(Item item2)
 			=> CanStack(item2);
 
+		protected override bool CloneNewInstances => true;
+
 		public override ModItem Clone(Item item) {
 			ModItem clone = base.Clone(item);
 			(clone as ItemPartItem)!.part = part.Clone();
