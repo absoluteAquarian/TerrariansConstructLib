@@ -475,12 +475,13 @@ namespace TerrariansConstructLib {
 			ModifierCollection.registeredModifiers[material.GetIdentifier()] = trait;
 		}
 
-		public static int RegisterModifier(string identifier, BaseModifier modifier) {
+		public static int RegisterModifier(Mod mod, string identifier, BaseModifier modifier) {
 			if(ModifierCollection.registeredModifiers.ContainsKey(identifier))
 				throw new Exception($"The modifier \"{identifier}\" has already been registered");
 
 			ModifierCollection.registeredModifiers[identifier] = modifier;
 			modifier.ID = BaseModifier.nextID;
+			modifier.Mod = mod;
 			BaseModifier.nextID++;
 
 			ModifierCollection.idToIdentifier.Add(identifier);
