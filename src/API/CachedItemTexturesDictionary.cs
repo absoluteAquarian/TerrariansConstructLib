@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Terraria;
 using Terraria.ModLoader;
@@ -37,8 +38,8 @@ namespace TerrariansConstructLib.API {
 		public Texture2D Get(int registeredItemID, ItemPart[] parts, BaseTrait[] modifiers) {
 			var dict = TraverseTree(registeredItemID, parts, modifiers, out string identifier);
 
-			object texture;
-			dict[identifier] = texture = BuildTextureThreadContext(registeredItemID, parts, modifiers);
+			if (!dict.TryGetValue(identifier, out object? texture))
+				dict[identifier] = texture = BuildTextureThreadContext(registeredItemID, parts, modifiers);
 
 			return (texture as Texture2D)!;
 		}
@@ -69,7 +70,7 @@ namespace TerrariansConstructLib.API {
 			Dictionary<string, object> textureDict = (dict as Dictionary<string, object>)!;
 
 			//This identifier represents an item with no modifiers attached to it
-			identifier = "<>_Texture";
+			StringBuilder sb = new("<>_Texture");
 
 			//If "modifiers" has no BaseModifier entries, then the final step has been reached; no need to do any more iteration
 			if (Array.Exists(modifiers, t => t is BaseModifier m && m.VisualTexture is not null)) {
@@ -83,10 +84,12 @@ namespace TerrariansConstructLib.API {
 						subDict = textureDict[id] = new Dictionary<string, object>();
 
 					textureDict = (subDict as Dictionary<string, object>)!;
-				}
 
-				identifier = casted[^1].GetType().FullName!;
+					sb.Append("+" + modifier.GetType().FullName!);
+				}
 			}
+
+			identifier = sb.ToString();
 
 			return textureDict;
 		}
