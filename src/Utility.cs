@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text.RegularExpressions;
 using Terraria;
@@ -298,5 +299,13 @@ namespace TerrariansConstructLib {
 
 		public static BaseTCProjectile? AsTCProjectile(this Projectile projectile)
 			=> projectile.ModProjectile as BaseTCProjectile;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static double InverseLerp(double min, double max, double value)
+			=> (value - min) / (max - min);
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static double InverseLerp(float min, float max, float value)
+			=> (value - min) / (max - min);
 	}
 }

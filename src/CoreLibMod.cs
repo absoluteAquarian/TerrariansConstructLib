@@ -156,7 +156,7 @@ namespace TerrariansConstructLib {
 
 			foreach (var (id, data) in ItemRegistry.registeredIDs) {
 				writer.WriteLine($"Item Definition \"{data.name}\" (ID: {id}) added by {data.mod.Name}\n" +
-					$"  -- parts: {string.Join(", ", data.validPartIDs.Select(PartRegistry.IDToIdentifier))}");
+					$"  -- parts: {string.Join(", ", data.context.validPartIDs.Select(PartRegistry.IDToIdentifier))}");
 				writer.Flush();
 			}
 
@@ -432,39 +432,16 @@ namespace TerrariansConstructLib {
 		/// <param name="internalName">The internal name of the weapon</param>
 		/// <param name="name">The default item type name used by <seealso cref="BaseTCItem.RegisteredItemTypeName"/></param>
 		/// <param name="itemInternalName">The item type that this registered item ID will be applied to.  Use the string you'd use to access the item via <seealso cref="Mod.Find{T}(string)"/></param>
-		/// <param name="partVisualsFolder">The folder where the item's part visuals is located, relative to the mod they're from</param>
-		/// <param name="useSpeedMultiplier">A modifier applied to the base use speed generated from the item's parts</param>
-		/// <param name="configuration">The array of parts that comprise the weapon and their slot contexts in the Forge UI</param>
+		/// <param name="context">The registration context</param>
 		/// <returns>The ID of the registered item</returns>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
 		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterItem(Mod mod, string internalName, string name, string itemInternalName, string partVisualsFolder, float useSpeedMultiplier, params ForgeUISlotConfiguration[] configuration) {
+		public static int RegisterItem(Mod mod, string internalName, string name, string itemInternalName, ItemRegistry.RegistrationContext context) {
 			if (!isLoadingParts)
 				throw new Exception(GetLateLoadReason("RegisterTCItems"));
 
-			return ItemRegistry.Register(mod, internalName, name, itemInternalName, partVisualsFolder, useSpeedMultiplier, configuration);
-		}
-
-		/// <summary>
-		/// Registers a name and valid <seealso cref="ItemPart"/> IDs for an item
-		/// </summary>
-		/// <param name="mod">The mod that the weapon belongs to</param>
-		/// <param name="internalName">The internal name of the weapon</param>
-		/// <param name="name">The default item type name used by <seealso cref="BaseTCItem.RegisteredItemTypeName"/></param>
-		/// <param name="itemInternalName">The item type that this registered item ID will be applied to.  Use the string you'd use to access the item via <seealso cref="Mod.Find{T}(string)"/></param>
-		/// <param name="partVisualsFolder">The folder where the item's part visuals is located, relative to the mod they're from</param>
-		/// <param name="useSpeedMultiplier">A modifier applied to the base use speed generated from the item's parts</param>
-		/// <param name="configuration">The array of parts that comprise the weapon and their slot contexts in the Forge UI</param>
-		/// <returns>The ID of the registered item</returns>
-		/// <exception cref="Exception"/>
-		/// <exception cref="ArgumentException"/>
-		/// <exception cref="ArgumentNullException"/>
-		public static int RegisterItem(Mod mod, string internalName, string name, string itemInternalName, string partVisualsFolder, float useSpeedMultiplier, params (int slot, int position, int partID)[] configuration) {
-			if (!isLoadingParts)
-				throw new Exception(GetLateLoadReason("RegisterTCItems"));
-
-			return ItemRegistry.Register(mod, internalName, name, itemInternalName, partVisualsFolder, useSpeedMultiplier, configuration.Select(t => (ForgeUISlotConfiguration)t).ToArray());
+			return ItemRegistry.Register(mod, internalName, name, itemInternalName, context);
 		}
 
 		/// <summary>
@@ -654,7 +631,7 @@ namespace TerrariansConstructLib {
 		/// <exception cref="Exception"/>
 		public static int[] GetItemValidPartIDs(int registeredItemID)
 			=> registeredItemID >= 0 && registeredItemID < ItemRegistry.Count
-				? (int[])ItemRegistry.registeredIDs[registeredItemID].validPartIDs.Clone()
+				? (int[])ItemRegistry.registeredIDs[registeredItemID].context.validPartIDs.Clone()
 				: throw new Exception($"A registered item with ID {registeredItemID} does not exist");
 
 		/// <summary>
@@ -679,7 +656,7 @@ namespace TerrariansConstructLib {
 		/// <returns>A value &gt;= <c>0</c> and &lt; <seealso cref="ItemRegistry.Count"/> if successful, <c>-1</c> otherwise</returns>
 		public static int FindItem(int[] partIDs) {
 			foreach (var (id, data) in ItemRegistry.registeredIDs)
-				if (data.validPartIDs.SequenceEqual(partIDs))
+				if (data.context.validPartIDs.SequenceEqual(partIDs))
 					return id;
 
 			return -1;

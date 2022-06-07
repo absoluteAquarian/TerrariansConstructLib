@@ -52,7 +52,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 				c.Emit(OpCodes.Ldloc, localNum);
 				c.Emit(OpCodes.Ldelem_Ref);
 
-				c.EmitDelegate<Func<Item, bool>>(item => item.ModItem is not BaseTCItem tc || tc.ammoReserve > 0);
+				c.EmitDelegate<Func<Item, bool>>(item => item.ModItem is not BaseTCItem tc || tc.CurrentDurability > 0);
 
 				c.Emit(OpCodes.Brfalse, labelIteratorTarget);
 			}

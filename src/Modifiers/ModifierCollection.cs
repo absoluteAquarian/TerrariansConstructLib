@@ -116,8 +116,8 @@ namespace TerrariansConstructLib.Modifiers {
 
 		internal void OnHotkeyPressed(Player player) => PerformActions(a => a.OnAbilityHotkeyPressed(player));
 
-		internal void UseSpeedMultiplier(Player player, BaseTCItem item, ref float multiplier) {
-			float mult = multiplier;
+		internal void UseSpeedMultiplier(Player player, BaseTCItem item, ref StatModifier multiplier) {
+			StatModifier mult = multiplier;
 
 			PerformActions(a => a.UseSpeedMultiplier(player, item, ref mult));
 

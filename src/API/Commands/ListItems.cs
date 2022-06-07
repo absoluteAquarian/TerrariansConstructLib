@@ -16,6 +16,6 @@ namespace TerrariansConstructLib.API.Commands {
 
 		public override string GetReplyString(int id, ItemRegistry.Data data)
 			=> $"Item #{id}, Name: {data.name}, Item: {(data.mod.TryFind<ModItem>(data.itemInternalName, out var item) ? item.GetType().FullName + " (" + item.Type + ")" : "<invalid>")}\n" +
-				$"   Parts: {string.Join(", ", data.validPartIDs.Select(PartRegistry.IDToIdentifier))}";
+				$"   Parts: {string.Join(", ", data.context.validPartIDs.Select(PartRegistry.IDToIdentifier))}";
 	}
 }

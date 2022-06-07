@@ -28,7 +28,7 @@ namespace TerrariansConstructLib.API {
 			//Get the parts
 			ItemPart[] parts = partsCollection.ToArray();
 
-			return Get(registeredItemID, parts, modifiers.ToArray());
+			return Get(registeredItemID, parts, SelectModifiers(modifiers.ToArray()).ToArray());
 		}
 
 		public Texture2D Get(BaseTCItem tc)
@@ -146,7 +146,7 @@ namespace TerrariansConstructLib.API {
 				.Distinct();
 
 		private static Texture2D BuildTexture(int registeredItemID, ItemPart[] parts, BaseTrait[] modifiers) {
-			string visualsFolder = ItemRegistry.registeredIDs[registeredItemID].partVisualsFolder;
+			string visualsFolder = ItemRegistry.registeredIDs[registeredItemID].context.partVisualsFolder;
 
 			var hashmap = GenerateHashmap(parts);
 
@@ -162,7 +162,8 @@ namespace TerrariansConstructLib.API {
 				}
 			}
 
-			ApplyModifierTextures(above: false);
+			if (modifiers.Length > 0)
+				ApplyModifierTextures(above: false);
 
 			ApplyPixels(registeredItemID, texture, partTexture);
 
@@ -173,7 +174,8 @@ namespace TerrariansConstructLib.API {
 				ApplyPixels(registeredItemID, texture, partTexture);
 			}
 
-			ApplyModifierTextures(above: true);
+			if (modifiers.Length > 0)
+				ApplyModifierTextures(above: true);
 
 			if (SaveGeneratedTexturesToFiles) {
 				string textureImage = ItemRegistry.registeredIDs[registeredItemID].internalName + "_"

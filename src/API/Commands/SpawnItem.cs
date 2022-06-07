@@ -30,7 +30,7 @@ namespace TerrariansConstructLib.API.Commands {
 
 			ItemPart[] parts = new ItemPart[numParts];
 
-			int[] partIDs = ItemRegistry.registeredIDs[registeredItemID].validPartIDs;
+			int[] partIDs = ItemRegistry.registeredIDs[registeredItemID].context.validPartIDs;
 
 			if (partIDs.Length != numParts) {
 				caller.Reply($"Registered Item {registeredItemID} expects {partIDs.Length} parts", Color.Red);

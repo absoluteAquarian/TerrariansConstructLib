@@ -37,8 +37,6 @@ namespace TerrariansConstructLib.Items {
 		public int CountParts(Material material)
 			=> parts.Count(p => p.material.Type == material.Type);
 
-		public int ammoReserve, ammoReserveMax;
-
 		public readonly int registeredItemID = -1;
 
 		/// <summary>
@@ -133,7 +131,6 @@ namespace TerrariansConstructLib.Items {
 				"Materials:\n<PART_TYPES>\n" +
 				"<PART_TOOLTIPS>\n" +
 				"<MODIFIERS>\n" +
-				"<AMMO_COUNT>\n" +
 				"<DURABILITY>");
 		}
 
@@ -219,16 +216,7 @@ namespace TerrariansConstructLib.Items {
 			Utility.FindAndInsertLines(Mod, tooltips, "<PART_TOOLTIPS>", i => "PartTooltip_" + i,
 				string.Join('\n', GetModifierTooltipLines()));
 
-			if (ammoReserveMax > 0) {
-				float pct = (float)ammoReserve / ammoReserveMax;
-
-				Color color = pct > 0.5f ? Color.Green : pct > 3f / 16f ? Color.Yellow : Color.Red;
-
-				Utility.FindAndModify(tooltips, "<AMMO_COUNT>", $"[c/{color.Hex3()}:{ammoReserve}/{ammoReserveMax}]");
-			} else
-				Utility.FindAndRemoveLine(tooltips, "<AMMO_COUNT>");
-
-			if (TCConfig.Instance.UseDurability && ammoReserveMax <= 0) {
+			if (TCConfig.Instance.UseDurability) {
 				int max = GetMaxDurability();
 
 				float pct = (float)CurrentDurability / max;
@@ -335,11 +323,11 @@ namespace TerrariansConstructLib.Items {
 		public virtual void SafeModifyWeaponCrit(Player player, ref float crit) { }
 
 		public sealed override float UseSpeedMultiplier(Player player) {
-			float speed = 1f;
+			StatModifier speed = StatModifier.Default;
 
 			modifiers.UseSpeedMultiplier(player, this, ref speed);
 
-			return (TCConfig.Instance.UseDurability && CurrentDurability <= 0 ? 1f / 1.5f : speed) * SafeUseSpeedMultiplier(player);
+			return (TCConfig.Instance.UseDurability && CurrentDurability <= 0 ? 1f / 1.5f : speed.ApplyTo(1f)) * SafeUseSpeedMultiplier(player);
 		}
 
 		/// <inheritdoc cref="UseSpeedMultiplier(Player)"/>
@@ -470,7 +458,7 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		protected void InitializeUseTimeAndUseSpeed() {
-			float mult = ItemRegistry.registeredIDs[registeredItemID].useSpeedMultiplier;
+			float mult = ItemRegistry.registeredIDs[registeredItemID].context.useSpeedMultiplier;
 
 			if (!HasAnyToolPower())
 				Item.useTime = Item.useAnimation = (int)Math.Max(1, GetBaseUseSpeed() * mult);
@@ -600,8 +588,6 @@ namespace TerrariansConstructLib.Items {
 		public override void SaveData(TagCompound tag) {
 			tag["parts"] = parts.ToList();
 			tag["durability"] = CurrentDurability;
-			tag["ammo"] = ammoReserve;
-			tag["ammoMax"] = ammoReserveMax;
 			
 			modifiers.SaveData(tag);
 		}
@@ -610,8 +596,6 @@ namespace TerrariansConstructLib.Items {
 			InitializeWithParts(tag.GetList<ItemPart>("parts").ToArray());
 
 			CurrentDurability = tag.GetInt("durability");
-			ammoReserve = tag.GetInt("ammo");
-			ammoReserveMax = tag.GetInt("ammoMax");
 
 			modifiers = new(this);
 			
@@ -623,16 +607,12 @@ namespace TerrariansConstructLib.Items {
 
 		public override void NetSend(BinaryWriter writer) {
 			writer.Write(CurrentDurability);
-			writer.Write(ammoReserve);
-			writer.Write(ammoReserveMax);
 
 			modifiers.NetSend(writer);
 		}
 		
 		public override void NetReceive(BinaryReader reader) {
 			CurrentDurability = reader.ReadInt32();
-			ammoReserve = reader.ReadInt32();
-			ammoReserveMax = reader.ReadInt32();
 
 			modifiers.NetReceive(reader);
 		}
@@ -642,7 +622,7 @@ namespace TerrariansConstructLib.Items {
 
 			Recipe recipe = CreateRecipe();
 
-			foreach (int part in data.validPartIDs)
+			foreach (int part in data.context.validPartIDs)
 				recipe.AddRecipeGroup(CoreLibMod.GetRecipeGroupName(part));
 
 			// TODO: forge tile?

@@ -245,7 +245,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			c.Emit(OpCodes.Ldelem_Ref);
 			c.EmitDelegate<Func<int, Item, int>>((stack, item) => {
 				if (item.ModItem is BaseTCItem tc)
-					stack = tc.ammoReserve;
+					stack = tc.CurrentDurability;
 
 				return stack;
 			});

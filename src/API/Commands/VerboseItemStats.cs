@@ -37,9 +37,9 @@ namespace TerrariansConstructLib.API.Commands {
 			caller.Reply($"Registered ID: {tc.registeredItemID}", text);
 			caller.Reply($"Registered Identifier: \"{itemData.mod.Name}:{itemData.internalName}\"", text);
 			caller.Reply($"ModItem Type: {itemData.mod.Find<ModItem>(itemData.itemInternalName).GetType().FullName}", text);
-			caller.Reply($"Local Textures Folder: \"{itemData.partVisualsFolder}\"", text);
+			caller.Reply($"Local Textures Folder: \"{itemData.context.partVisualsFolder}\"", text);
 			caller.Reply("Valid Item Parts:", text);
-			foreach(var (id, idString) in itemData.validPartIDs.Select(i => (i, PartRegistry.IDToIdentifier(i))))
+			foreach(var (id, idString) in itemData.context.validPartIDs.Select(i => (i, PartRegistry.IDToIdentifier(i))))
 				caller.Reply($"  (ID: {id}) | {idString}", text);
 			caller.Reply($"Durability: {tc.CurrentDurability} / {tc.GetMaxDurability()}", text);
 			caller.Reply($"Base Damage: {tc.GetBaseDamage()}", text);
@@ -49,7 +49,6 @@ namespace TerrariansConstructLib.API.Commands {
 			caller.Reply($"Pickaxe Power: {tc.GetPickaxePower()}%", text);
 			caller.Reply($"Axe Power: {tc.GetAxePower() * 5}%", text);
 			caller.Reply($"Hammer Power: {tc.GetHammerPower()}%", text);
-			caller.Reply($"Ammo Reserves: {tc.ammoReserve} / {tc.ammoReserveMax}", text);
 
 			caller.Reply($"=== PART STATS ===", section);
 			caller.Reply("Parts:", text);

@@ -1,4 +1,5 @@
 ﻿using Terraria;
+using TerrariansConstructLib.API.Sources;
 using TerrariansConstructLib.Items;
 
 namespace TerrariansConstructLib.API.Edits.Detours {
@@ -10,7 +11,7 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 			canUse = false;
 			for (int i = 0; i < 58; i++) {
 				//If the ammo item is a TC ammo item, make sure it has enough ammo in its reserve
-				if (self.inventory[i].ammo == sItem.useAmmo && self.inventory[i].stack > 0 && (sItem.ModItem is not BaseTCItem tc || tc.ammoReserve > 0)) {
+				if (self.inventory[i].ammo == sItem.useAmmo && self.inventory[i].stack > 0 && (sItem.ModItem is not BaseTCItem tc || tc.CurrentDurability > 0)) {
 					canUse = true;
 
 					break;
@@ -24,9 +25,11 @@ namespace TerrariansConstructLib.API.Edits.Detours {
 			bool free = orig(self, weapon, ammo, projToShoot);
 
 			if (!free && ammo.ModItem is BaseTCItem tc) {
-				if (tc.ammoReserve > 0) {
+				if (tc.CurrentDurability > 0) {
 					//Consume an ammo from the reserve
-					tc.ammoReserve--;
+					
+					
+					tc.TryReduceDurability(self, 1, new DurabilityModificationSource_AmmoConsumption(weapon, tc, self));
 				}
 
 				//Prevent the ammo item from being consumed

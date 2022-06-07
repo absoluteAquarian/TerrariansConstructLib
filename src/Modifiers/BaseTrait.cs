@@ -153,7 +153,7 @@ namespace TerrariansConstructLib.Modifiers {
 		/// <param name="player">The player</param>
 		/// <param name="item">The item instance</param>
 		/// <param name="multiplier">The multiplier</param>
-		public virtual void UseSpeedMultiplier(Player player, BaseTCItem item, ref float multiplier) { }
+		public virtual void UseSpeedMultiplier(Player player, BaseTCItem item, ref StatModifier multiplier) { }
 
 		/// <summary>
 		/// This hook runs before the mining tool, <paramref name="item"/>, hits a tile
