@@ -286,6 +286,29 @@ namespace TerrariansConstructLib.Items {
 		/// <inheritdoc cref="CanConsumeAmmo(Item, Player)"/>
 		public virtual bool SafeCanConsumeAmmo(Item ammo, Player player) => true;
 
+		public sealed override bool? CanChooseAmmo(Item ammo, Player player) {
+			bool valid = ammo.ammo == Item.useAmmo && (ammo.ModItem is not BaseTCItem tc || tc.CurrentDurability > 0);
+
+			valid &= SafeCanChooseAmmo(ammo, player);
+
+			return valid;
+		}
+
+		/// <inheritdoc cref="CanChooseAmmo(Item, Player)"/>
+		public virtual bool SafeCanChooseAmmo(Item ammo, Player player) => true;
+
+		public sealed override bool? CanBeChosenAsAmmo(Item weapon, Player player) {
+			bool valid = Item.ammo == weapon.useAmmo && CurrentDurability > 0;
+
+			valid &= SafeCanBeChosenAsAmmo(weapon, player);
+
+			return valid;
+		}
+
+		/// <inheritdoc cref="CanBeChosenAsAmmo(Item, Player)"/>
+		/// <remarks>NOTE: Terrarians' Construct disables <see langword="null"/> returns since Item.ammo and Item.useAmmo are already checked</remarks>
+		public virtual bool SafeCanBeChosenAsAmmo(Item weapon, Player player) => true;
+
 		public sealed override void ModifyWeaponDamage(Player player, ref StatModifier damage) {
 			modifiers.ModifyWeaponDamage(player, this, ref damage);
 
