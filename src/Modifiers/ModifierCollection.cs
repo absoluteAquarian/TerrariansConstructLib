@@ -40,7 +40,7 @@ namespace TerrariansConstructLib.Modifiers {
 		private ModifierCollection() { }
 
 		public ModifierCollection(BaseTCItem tc) {
-			var materials = tc.parts.DistinctBy(p => p.material.Type).Select(p => p.material);
+			var materials = tc.parts.Select(p => p.material);
 
 			foreach (var material in materials) {
 				string identifier = material.GetIdentifier();
@@ -261,7 +261,7 @@ namespace TerrariansConstructLib.Modifiers {
 		}
 
 		//Used to keep track of when SaveData changes to force no data to load
-		private const int SAVE_VERSION = 2;
+		private const int SAVE_VERSION = 3;
 
 		internal void SaveData(TagCompound tag) {
 			List<TagCompound> list = new();
@@ -325,7 +325,8 @@ namespace TerrariansConstructLib.Modifiers {
 						var split = identifier.Split(':');
 						var instance = new UnloadedTrait() {
 							mod = split[0],
-							name = split[1]
+							name = split[1],
+							Tier = 0
 						};
 						
 						if (unloaded.modifiers is null)

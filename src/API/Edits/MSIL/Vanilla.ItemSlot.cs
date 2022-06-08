@@ -127,7 +127,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			// position
 			c.Emit(OpCodes.Ldarg, 4);
 			c.Emit(OpCodes.Ldloc_2);
-			c.EmitDelegate<Func<Vector2, float, Vector2>>((position, inventoryScale) => position + TextureAssets.Extra[54].Value.Size() / 2f * inventoryScale);
+			c.EmitDelegate<Func<Vector2, float, Vector2>>((position, inventoryScale) => position + TextureAssets.Extra[54].Value.Frame(3, 6).Size() / 2f * inventoryScale);
 			// source
 			c.EmitDelegate(() => TextureAssets.Extra[54].Value);
 			c.Emit(OpCodes.Ldloc, 11);

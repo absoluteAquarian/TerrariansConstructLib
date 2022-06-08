@@ -130,7 +130,6 @@ namespace TerrariansConstructLib.Items {
 			Tooltip.SetDefault((TooltipText is not null ? TooltipText + "\n" : "") +
 				"Materials:\n<PART_TYPES>\n" +
 				"<PART_TOOLTIPS>\n" +
-				"<MODIFIERS>\n" +
 				"<DURABILITY>");
 		}
 
@@ -541,7 +540,9 @@ namespace TerrariansConstructLib.Items {
 		public int GetHammerPower() => MaximumToolStat(SelectToolHammerStats(), p => p.hammerPower);
 
 		private static int MaximumToolStat(IEnumerable<HeadPartStats> stats, Func<HeadPartStats, double> func) {
-			double average = stats.Max(func);
+			var eval = stats.ToList();
+			
+			double average = eval.Count > 0 ? stats.Max(func) : 0;
 
 			return average > 0 ? (int)Math.Ceiling(average) : 0;
 		}
