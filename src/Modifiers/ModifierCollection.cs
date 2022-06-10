@@ -63,18 +63,12 @@ namespace TerrariansConstructLib.Modifiers {
 			}
 
 			static bool IsValidForTier(BaseTrait source, BaseTrait check, out uint worth) {
-				worth = 1;
-				return source is not BaseModifier && source.IsEquivalentForTier(check.GetType(), out worth);
+				return source.IsEquivalentForTier(check.GetType(), out worth);
 			}
 
 			foreach (var member in members.Values) {
-				foreach (var trait in member.GetModifiers()) {
-					//Tier assignment should only happen if the instance is a BaseTrait and not a BaseModifier, since BaseModifier overwrites it
-					if (trait is not BaseModifier)
-						trait.Tier = members.Values.SelectMany(m => m.GetModifiers()).Sum(t => IsValidForTier(trait, t, out uint worth) ? (int)worth : 0);
-					else
-						trait.Tier = 1;
-				}
+				foreach (var trait in member.GetModifiers())
+					trait.Tier = members.Values.SelectMany(m => m.GetModifiers()).Sum(t => IsValidForTier(trait, t, out uint worth) ? (int)worth : 0);
 			}
 		}
 
