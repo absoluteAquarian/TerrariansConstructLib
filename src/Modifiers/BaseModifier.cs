@@ -31,6 +31,9 @@ namespace TerrariansConstructLib.Modifiers {
 		/// </summary>
 		public virtual bool VisualIsDisplayedAboveItem => true;
 
+		/// <summary>
+		/// Return the next upgrade target for the current tier here, or -1 if the tier is at the maximum
+		/// </summary>
 		public abstract int GetUpgradeTarget();
 
 		/// <summary>
