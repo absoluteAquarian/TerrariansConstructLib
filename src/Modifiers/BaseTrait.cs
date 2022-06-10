@@ -282,10 +282,11 @@ namespace TerrariansConstructLib.Modifiers {
 		/// This hook runs in <see cref="ItemModifierPlayer.OnHitByProjectile(Projectile, int, bool)"/>
 		/// </summary>
 		/// <param name="projectile">The projectile doing the hitting</param>
+		/// <param name="npc">The npc</param>
 		/// <param name="target">The target</param>
 		/// <param name="damage">The damage</param>
 		/// <param name="crit">If set to <see langword="true"/> [crit]</param>
-		public virtual void OnHitByNPCProjectile(Projectile projectile, Player target, int damage, bool crit) { }
+		public virtual void OnHitByNPCProjectile(Projectile projectile, NPC npc, Player target, int damage, bool crit) { }
 
 		/// <summary>
 		/// This hook runs before durability is added to or subtracted from the <paramref name="item"/>

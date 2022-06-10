@@ -26,7 +26,7 @@ namespace TerrariansConstructLib.Players {
 				return;
 
 			if (Player.HeldItem.ModItem is BaseTCItem tc)
-				tc.modifiers.OnHitByNPCProjectile(proj, Player, damage, crit);
+				tc.modifiers.OnHitByNPCProjectile(proj, Main.npc[tracking.SourceWhoAmI], Player, damage, crit);
 		}
 	}
 }

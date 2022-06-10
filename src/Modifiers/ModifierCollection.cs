@@ -187,7 +187,7 @@ namespace TerrariansConstructLib.Modifiers {
 
 		internal void OnHitByNPC(NPC npc, Player target, int damage, bool crit) => PerformActions(a => a.OnHitByNPC(npc, target, damage, crit));
 
-		internal void OnHitByNPCProjectile(Projectile projectile, Player target, int damage, bool crit) => PerformActions(a => a.OnHitByNPCProjectile(projectile, target, damage, crit));
+		internal void OnHitByNPCProjectile(Projectile projectile, NPC npc, Player target, int damage, bool crit) => PerformActions(a => a.OnHitByNPCProjectile(projectile, npc, target, damage, crit));
 
 		internal void OnProjectileSpawn(BaseTCProjectile projectile, IEntitySource source)
 			=> PerformActions(a => a.OnProjectileSpawn(projectile, source));
