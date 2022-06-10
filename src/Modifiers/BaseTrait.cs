@@ -260,7 +260,7 @@ namespace TerrariansConstructLib.Modifiers {
 		public virtual void OnHitPlayerWithProjectile(BaseTCProjectile projectile, Player target, int damage, bool crit) { }
 
 		/// <summary>
-		/// This hook rusn in <see cref="BaseTCProjectile.OnHitNPC(NPC, int, float, bool)"/>
+		/// This hook runs in <see cref="BaseTCProjectile.OnHitNPC(NPC, int, float, bool)"/>
 		/// </summary>
 		/// <param name="projectile">The projectile</param>
 		/// <param name="target">The target</param>
