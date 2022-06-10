@@ -5,7 +5,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
-using TerrariansConstructLib.Registry;
+using TerrariansConstructLib.API;
 
 namespace TerrariansConstructLib.Items {
 	/// <summary>
@@ -21,25 +21,8 @@ namespace TerrariansConstructLib.Items {
 		internal static Dictionary<int, PartMold> registeredMolds;
 		internal static Dictionary<int, Data> moldsByPartID;
 
-		public void SetMaterialCost(int materialCost)
-			=> SetMaterialCost(partID, materialCost);
-
-		public static void SetMaterialCost(int partID, int materialCost) {
-			if (partID < 0 || partID >= PartRegistry.Count)
-				throw new ArgumentException("Part ID was invalid");
-
-			PartRegistry.registeredIDs[partID].materialCost = materialCost;
-		}
-
-		public static int GetMaterialCost(int partID) {
-			if (partID < 0 || partID >= PartRegistry.Count)
-				throw new ArgumentException("Part ID was invalid");
-
-			return PartRegistry.registeredIDs[partID].materialCost;
-		}
-
 		public static PartMold Create(int partID, bool isSimpleMold, bool isPlatinumMold) {
-			if (partID < 0 || partID >= PartRegistry.Count)
+			if (partID < 0 || partID >= PartDefinitionLoader.Count)
 				throw new ArgumentException("Part ID was invalid");
 
 			if (!moldsByPartID.TryGetValue(partID, out var data))
@@ -64,7 +47,7 @@ namespace TerrariansConstructLib.Items {
 		public static bool TryGetMold(int partID, bool getSimpleMold, bool getPlatinumVariantForComplexMold, out PartMold? mold) {
 			mold = null;
 
-			if (partID < 0 || partID >= PartRegistry.Count)
+			if (partID < 0 || partID >= PartDefinitionLoader.Count)
 				throw new ArgumentException("Part ID was invalid");
 			
 			var data = moldsByPartID[partID];
@@ -85,31 +68,31 @@ namespace TerrariansConstructLib.Items {
 
 		public override string Texture {
 			get {
-				if (partID < 0 || partID >= PartRegistry.Count)
+				if (partID < 0 || partID >= PartDefinitionLoader.Count)
 					throw new ArgumentException("Part ID was invalid");
 
 				var mold = registeredMolds[Type];
-				var partData = PartRegistry.registeredIDs[mold.partID];
+				var partData = PartDefinitionLoader.Get(mold.partID)!;
 
-				return $"{mold.Mod.Name}/{partData.assetFolder}/Molds/{(mold.isSimpleMold ? "Simple" : !mold.isPlatinumMold ? "Complex" : "ComplexPlatinum")}";
+				return $"{mold.Mod.Name}/{partData.RelativeAssetFolder}/Molds/{(mold.isSimpleMold ? "Simple" : !mold.isPlatinumMold ? "Complex" : "ComplexPlatinum")}";
 			}
 		}
 
 		public override string Name  {
 			get {
-				if (partID < 0 || partID >= PartRegistry.Count)
+				if (partID < 0 || partID >= PartDefinitionLoader.Count)
 					throw new ArgumentException("Part ID was invalid");
 
-				var partData = PartRegistry.registeredIDs[partID];
+				var partData = PartDefinitionLoader.Get(partID)!;
 
-				return $"PartMold_{partData.mod.Name}_{partData.internalName}_{(isSimpleMold ? "Simple" : !isPlatinumMold ? "Complex" : "ComplexPlatinum")}";
+				return $"PartMold_{partData.Mod.Name}_{partData.Name}_{(isSimpleMold ? "Simple" : !isPlatinumMold ? "Complex" : "ComplexPlatinum")}";
 			}
 		}
 
 		public override void SetStaticDefaults() {
 			PartMold mold = registeredMolds[Type];
 
-			DisplayName.SetDefault(PartRegistry.registeredIDs[mold.partID].name + " Mold");
+			DisplayName.SetDefault(PartDefinitionLoader.Get(mold.partID)!.DisplayName + " Mold");
 			Tooltip.SetDefault("Material cost: <MATERIAL_COST>");
 		}
 
@@ -125,9 +108,9 @@ namespace TerrariansConstructLib.Items {
 		public override void ModifyTooltips(List<TooltipLine> tooltips) {
 			var mold = registeredMolds[Type];
 
-			var part = PartRegistry.registeredIDs[mold.partID];
+			var part = PartDefinitionLoader.Get(mold.partID)!;
 
-			Utility.FindAndModify(tooltips, "<MATERIAL_COST>", $"{part.materialCost / 2f}");
+			Utility.FindAndModify(tooltips, "<MATERIAL_COST>", $"{part.MaterialCost / 2f}");
 		}
 
 		public override void AddRecipes() {

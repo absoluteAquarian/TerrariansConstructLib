@@ -12,8 +12,8 @@ using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 using TerrariansConstructLib.API.UI;
+using TerrariansConstructLib.Default;
 using TerrariansConstructLib.Items;
-using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.API.Edits.MSIL {
 	internal static partial class Vanilla {
@@ -163,7 +163,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 
 				bool hasAsset;
 				Asset<Texture2D> asset;
-				if (partID >= 0 && partID < PartRegistry.Count)
+				if (partID >= 0 && partID < PartDefinitionLoader.Count)
 					hasAsset = ModContent.RequestIfExists(ItemPartItem.GetUnkownTexturePath(partID), out asset, AssetRequestMode.ImmediateLoad);
 				else {
 					//Attempt to load a material item slot
@@ -175,7 +175,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 						asset = TextureAssets.Item[ItemID.Wood];
 					} else if (moldID == -1) {
 						//Shard icon
-						hasAsset = ModContent.RequestIfExists(ItemPartItem.GetUnkownTexturePath(CoreLibMod.RegisteredParts.Shard), out asset, AssetRequestMode.ImmediateLoad);
+						hasAsset = ModContent.RequestIfExists(ItemPartItem.GetUnkownTexturePath(ModContent.GetInstance<ShardPartDefinition>().Type), out asset, AssetRequestMode.ImmediateLoad);
 					} else if (moldID >= 0 && moldID < PartMold.moldsByPartID.Count) {
 						//Mold icon
 						var mold = PartMold.moldsByPartID[moldID].complexPlatinum;

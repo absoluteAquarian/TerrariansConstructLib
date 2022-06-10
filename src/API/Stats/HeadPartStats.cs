@@ -1,6 +1,4 @@
 ﻿using System.Text;
-using Terraria;
-using TerrariansConstructLib.Registry;
 using TerrariansConstructLib.Stats;
 
 namespace TerrariansConstructLib.API.Stats {
@@ -13,7 +11,7 @@ namespace TerrariansConstructLib.API.Stats {
 		/// <summary>
 		/// The damage stat for the part
 		/// </summary>
-		public readonly int damage;
+		public readonly int damage = 1;
 		/// <summary>
 		/// The knockback stat for the part
 		/// </summary>
@@ -25,7 +23,7 @@ namespace TerrariansConstructLib.API.Stats {
 		/// <summary>
 		/// The use speed stat for the part, measured in ticks per use
 		/// </summary>
-		public readonly int useSpeed;
+		public readonly int useSpeed = 20;
 		/// <summary>
 		/// The pickaxe power for the part
 		/// </summary>
@@ -41,7 +39,7 @@ namespace TerrariansConstructLib.API.Stats {
 		/// <summary>
 		/// The durability for the part
 		/// </summary>
-		public readonly int durability;
+		public readonly int durability = 1;
 		/// <summary>
 		/// The tool range modifier
 		/// </summary>
@@ -62,7 +60,11 @@ namespace TerrariansConstructLib.API.Stats {
 		public string GetTooltipLines(int partID) {
 			StringBuilder sb = new();
 			
-			bool axeHeadPart = PartRegistry.isAxePart[partID], pickHeadPart = PartRegistry.isPickPart[partID], hammerHeadPart = PartRegistry.isHammerPart[partID];
+			var definition = PartDefinitionLoader.Get(partID)!;
+
+			bool axeHeadPart = (definition.ToolType & ToolType.Axe) != 0,
+				pickHeadPart = (definition.ToolType & ToolType.Pickaxe) != 0,
+				hammerHeadPart = (definition.ToolType & ToolType.Hammer) != 0;
 
 			sb.Append(ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadDamage, damage));
 

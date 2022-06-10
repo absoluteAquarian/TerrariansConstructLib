@@ -7,8 +7,6 @@ namespace TerrariansConstructLib.API {
 
 		public readonly int slot;
 
-		public Func<int, bool> isPartIDValid;
-
 		internal ItemPartSlot(int slot) {
 			this.slot = slot;
 		}

@@ -12,10 +12,11 @@ namespace TerrariansConstructLib.API.Commands {
 
 		public override string Description => "Lists all registered materials with stats";
 
-		public override Dictionary<int, Material> GetRegistry() => Material.statsByMaterialID
-			.Select(kvp => new KeyValuePair<int, Material>(kvp.Key, Material.FromItem(kvp.Key)))
+		public override Dictionary<int, Material> GetRegistry() => MaterialDefinitionLoader.materials
+			.Where(d => d.Material is not null)
+			.ToDictionary(d => d.Type, d => d)
 			.OrderBy(kvp => kvp.Key)
-			.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+			.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Material!);
 
 		public override string GetReplyString(int id, Material data)
 			=> $"Item ID: \"{data.GetModName()}:{data.GetItemName()}\" ({data.Type})";

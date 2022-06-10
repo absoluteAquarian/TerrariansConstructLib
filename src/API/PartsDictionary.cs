@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using TerrariansConstructLib.Materials;
-using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.API {
 	public class PartsDictionary<T> : Dictionary<int, Dictionary<int, T>> {
 		public T Get(Material material, int partID) {
 			int materialType = material.Type;
-			if (!Material.statsByMaterialID.ContainsKey(materialType))
+			if (CoreLibMod.MaterialType(material) == -1)
 				throw new ArgumentException($"Material was not registered: \"{material.GetItemName()}\" (ID: {material.Type})");
 
 			if (!TryGetValue(materialType, out var dictByPartID))
 				throw new ArgumentException($"Unknown material type: \"{material.GetItemName()}\" (ID: {material.Type})");
 
-			if (partID < 0 || partID >= PartRegistry.Count)
+			if (partID < 0 || partID >= PartDefinitionLoader.Count)
 				throw new Exception($"Part ID {partID} was invalid");
 
 			if (!dictByPartID.TryGetValue(partID, out T? value))
@@ -29,7 +28,7 @@ namespace TerrariansConstructLib.API {
 				return false;
 			}
 
-			if (partID >= PartRegistry.Count) {
+			if (partID >= PartDefinitionLoader.Count) {
 				value = default;
 				return false;
 			}
@@ -39,7 +38,7 @@ namespace TerrariansConstructLib.API {
 
 		public void Set(Material material, int partID, T value) {
 			//Ensure that the part exists
-			if (partID < 0 || partID >= PartRegistry.Count)
+			if (partID < 0 || partID >= PartDefinitionLoader.Count)
 				throw new Exception($"Part ID {partID} was invalid");
 
 			int materialType = material.Type;
@@ -51,7 +50,7 @@ namespace TerrariansConstructLib.API {
 
 		public bool Has(Material material, int partID) {
 			//Ensure that the part exists
-			if (partID < 0 || partID >= PartRegistry.Count)
+			if (partID < 0 || partID >= PartDefinitionLoader.Count)
 				throw new Exception($"Part ID {partID} was invalid");
 
 			return TryGetValue(material.Type, out var dictByPartID) && dictByPartID.ContainsKey(partID);

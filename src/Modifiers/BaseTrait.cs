@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.IO;
-using System.Linq;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
@@ -16,8 +15,19 @@ namespace TerrariansConstructLib.Modifiers {
 	/// <summary>
 	/// The base class for a trait on a Terrarians' Construct item
 	/// </summary>
-	public abstract class BaseTrait : INetHooks {
+	public abstract class BaseTrait : ModType, INetHooks {
 		public double Counter;
+
+		public int Type { get; private set; }
+
+		protected sealed override void Register() {
+			ModTypeLookup<BaseTrait>.Register(this);
+			Type = ModifierLoader.Add(this);
+		}
+
+		public string GetIdentifier() => Mod.Name + ":" + Name;
+
+		public sealed override void SetupContent() => SetStaticDefaults();
 
 		/// <summary>
 		/// Gets how many "instances" of this trait's material are present on the item it's assigned to<br/>
@@ -30,8 +40,6 @@ namespace TerrariansConstructLib.Modifiers {
 		/// Defaults to <see langword="false"/>, which indicates that an instance is stored per item part
 		/// </summary>
 		public virtual bool IsSingleton => false;
-
-		public Mod Mod { get; internal set; }
 
 		/// <summary>
 		/// The colour for the modifier's name when in a tooltip
@@ -313,6 +321,7 @@ namespace TerrariansConstructLib.Modifiers {
 		/// <param name="tag">The TagCompound to save data into. Note that this is always empty by default, and is provided as an argument only for the sake of convenience and optimization.</param>
 		public virtual void SaveData(TagCompound tag) {
 			tag["counter"] = Counter;
+			tag["tier"] = Tier;
 		}
 
 		/// <summary>
@@ -322,6 +331,7 @@ namespace TerrariansConstructLib.Modifiers {
 		/// <param name="tag">The TagCompound to load data from.</param>
 		public virtual void LoadData(TagCompound tag) {
 			Counter = tag.GetDouble("counter");
+			Tier = tag.GetInt("tier");
 		}
 
 		public static void DisplayMessageAbovePlayer(Player player, Color color, string message) {

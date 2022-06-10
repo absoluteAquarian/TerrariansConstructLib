@@ -12,23 +12,23 @@ namespace TerrariansConstructLib.API.Stats {
 		/// <summary>
 		/// The modifier for the mining use speed
 		/// </summary>
-		public readonly float miningSpeed;
+		public readonly float miningSpeed = 1;
 		/// <summary>
 		/// The modifier for the attack use speed
 		/// </summary>
-		public readonly StatModifier attackSpeed;
+		public readonly StatModifier attackSpeed = StatModifier.Default;
 		/// <summary>
 		/// The modifier for the attack damage.  The <seealso cref="StatModifier.Additive"/> property is considered a flat increase, whereas the <seealso cref="StatModifier.Multiplicative"/> is treated as normal.
 		/// </summary>
-		public readonly StatModifier attackDamage;
+		public readonly StatModifier attackDamage = new(0, 1);
 		/// <summary>
 		/// The modifier for the attack knocckback.  The <seealso cref="StatModifier.Additive"/> property is considered a flat increase, whereas the <seealso cref="StatModifier.Multiplicative"/> is treated as normal.
 		/// </summary>
-		public readonly StatModifier attackKnockback;
+		public readonly StatModifier attackKnockback = new(0, 1);
 		/// <summary>
 		/// The modifier for the item's durability.  The <seealso cref="StatModifier.Additive"/> property is considered a flat increase, whereas the <seealso cref="StatModifier.Multiplicative"/> is treated as normal.
 		/// </summary>
-		public readonly StatModifier durability;
+		public readonly StatModifier durability = new(0, 1);
 
 		public HandlePartStats(float? miningSpeed = null, StatModifier? attackSpeed = null, StatModifier? attackDamage = null, StatModifier? attackKnockback = null, StatModifier? durability = null) {
 			this.miningSpeed = miningSpeed ?? 1f;

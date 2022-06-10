@@ -1,5 +1,5 @@
 ﻿namespace TerrariansConstructLib.Modifiers {
-	internal sealed class UnkownTrait : BaseTrait {
+	internal sealed class UnknownTrait : BaseTrait {
 		public override string LangKey => "Mods.TerrariansConstructLib.Traits.Unknown";
 	}
 }

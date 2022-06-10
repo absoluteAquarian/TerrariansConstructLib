@@ -16,9 +16,6 @@ namespace TerrariansConstructLib.Materials {
 		/// </summary>
 		public int Type { get; protected set; } = -1;
 
-		internal static Dictionary<int, IPartStats[]> statsByMaterialID;
-		internal static Dictionary<int, int> worthByMaterialID;
-
 		public virtual Material Clone() => new() { Type = Type };
 
 		public virtual string GetModName() {
@@ -46,10 +43,10 @@ namespace TerrariansConstructLib.Materials {
 		public string GetIdentifier() => GetModName() + ":" + GetName();
 
 		public IPartStats? GetStat(StatType type)
-			=> statsByMaterialID[Type].FirstOrDefault(s => s.Type == type);
+			=> MaterialDefinitionLoader.Get(CoreLibMod.MaterialType(this))?.GetMaterialStats().FirstOrDefault(s => s.Type == type);
 
 		public S? GetStat<S>(StatType type) where S : class, IPartStats
-			=> statsByMaterialID[Type].FirstOrDefault(s => s.Type == type && s is S) is S s ? s : null;
+			=> MaterialDefinitionLoader.Get(CoreLibMod.MaterialType(this))?.GetMaterialStats().FirstOrDefault(s => s.Type == type && s is S) is S s ? s : null;
 
 		/// <summary>
 		/// Gets an instance of the item this material references
@@ -119,10 +116,10 @@ namespace TerrariansConstructLib.Materials {
 		public override int GetHashCode()
 			=> Type.GetHashCode();
 
-		public static bool operator ==(Material left, Material right)
-			=> left.Type == right.Type;
+		public static bool operator ==(Material? left, Material? right)
+			=> left?.Type == right?.Type;
 
-		public static bool operator !=(Material left, Material right)
+		public static bool operator !=(Material? left, Material? right)
 			=> !(left == right);
 	}
 }

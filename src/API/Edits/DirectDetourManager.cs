@@ -16,10 +16,17 @@ namespace TerrariansConstructLib.API.Edits {
 
 		public static void ModCtorLoad() {
 			try {
+				ILHelper.LogILEdits = true;
+				
 				MonoModHooks.RequestNativeAccess();
 
 				// Usage: freeing the custom writer so that the log file can be viewed
 				DetourHook(typeof(ModContent).GetCachedMethod("Load"), typeof(Detours.TML).GetCachedMethod(nameof(Detours.TML.Hook_ModContent_Load)));
+
+				// Usage: autoloading mold and item definition items after mod loading, but before array resizing
+				IntermediateLanguageHook(typeof(ModContent).GetCachedMethod("Load"), typeof(MSIL.TML).GetCachedMethod(nameof(MSIL.TML.Patch_ModContent_Load)));
+
+				ILHelper.LogILEdits = false;
 			} catch (Exception ex) {
 				throw new Exception("An error occurred while doing patching in TerrariansConstructLib." +
 				                    "\nReport this error to the mod devs and disable the mod in the meantime." +
@@ -30,6 +37,8 @@ namespace TerrariansConstructLib.API.Edits {
 
 		public static void Load() {
 			try {
+				ILHelper.LogILEdits = true;
+				
 				CoreLibMod.SetLoadingSubProgressText(Language.GetTextValue("Mods.TerrariansConstructLib.Loading.DirectDetourManager.Detours"));
 
 				// Usage: displaying in the loading UI when an item's defaults are being processed
@@ -41,6 +50,8 @@ namespace TerrariansConstructLib.API.Edits {
 				// Usage: proper drawing of constructed items in tModLoader's config UI
 				IntermediateLanguageHook(typeof(Mod).Assembly.GetType("Terraria.ModLoader.Config.UI.ItemDefinitionOptionElement")!.GetCachedMethod("DrawSelf"),
 					typeof(MSIL.TML).GetCachedMethod(nameof(MSIL.TML.Patch_ItemDefinitionOptionElement_DrawSelf)));
+
+				ILHelper.LogILEdits = false;
 			} catch (Exception ex) {
 				throw new Exception("An error occurred while doing patching in TerrariansConstructLib." +
 				                    "\nReport this error to the mod devs and disable the mod in the meantime." +

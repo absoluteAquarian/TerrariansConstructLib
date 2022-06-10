@@ -7,10 +7,11 @@ using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
+using TerrariansConstructLib.API.Definitions;
 using TerrariansConstructLib.API.Numbers;
 using TerrariansConstructLib.API.Stats;
+using TerrariansConstructLib.Default;
 using TerrariansConstructLib.Materials;
-using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.Items {
 	/// <summary>
@@ -20,18 +21,18 @@ namespace TerrariansConstructLib.Items {
 	public sealed class ItemPartItem : ModItem {
 		public override string Texture {
 			get {
-				if (part.partID < 0 || part.partID >= PartRegistry.Count)
+				if (part.partID < 0 || part.partID >= PartDefinitionLoader.Count)
 					throw new ArgumentException("Part ID was invalid");
 
-				var partData = PartRegistry.registeredIDs[part.partID];
+				var partData = PartDefinitionLoader.Get(part.partID)!;
 
-				string asset = $"{partData.mod.Name}/{partData.assetFolder}/{part.material.GetName()}";
+				string? asset = $"{partData.RelativeAssetFolder}/{part.material.GetName()}";
 
-				if (!ModContent.HasAsset(asset)) {
+				if (!CachedItemTexturesDictionary.TextureExists(asset, out asset)) {
 					// Default to the "unknown" asset
 					string path = GetUnkownTexturePath(part.partID);
 
-					Mod.Logger.Warn($"Part texture (Material: \"{part.material.GetItemName()}\", Name: \"{PartRegistry.registeredIDs[part.partID].name}\") could not be found." +
+					Mod.Logger.Warn($"Part texture (Material: \"{part.material.GetItemName()}\", Name: \"{PartDefinitionLoader.Get(part.partID)!.Name}\") could not be found." +
 						"  Defaulting to Unknown texture path:\n   " +
 						path);
 
@@ -43,12 +44,12 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public static string GetUnkownTexturePath(int partID) {
-			if (partID < 0 || partID >= PartRegistry.Count)
+			if (partID < 0 || partID >= PartDefinitionLoader.Count)
 				throw new ArgumentException("Part ID was invalid");
 
-			var data = PartRegistry.registeredIDs[partID];
+			var data = PartDefinitionLoader.Get(partID)!;
 
-			return $"{data.mod.Name}/{data.assetFolder}/Unknown";
+			return $"{data.Mod.Name}/{data.RelativeAssetFolder}/Unknown";
 		}
 
 		/// <summary>
@@ -64,7 +65,7 @@ namespace TerrariansConstructLib.Items {
 			get {
 				part ??= registeredPartsByItemID[Type];
 
-				return $"ItemPart_{part.material.GetModName()}_{part.material.GetName()}_{PartRegistry.registeredIDs[part.partID].internalName}";
+				return $"ItemPart_{part.material.GetModName()}_{part.material.GetName()}_{PartDefinitionLoader.Get(part.partID)!.Name}";
 			}
 		}
 
@@ -104,7 +105,7 @@ namespace TerrariansConstructLib.Items {
 			else if (name.EndsWith(" Block"))
 				name = name.AsSpan()[..^6].ToString();
 
-			DisplayName.SetDefault(name + " " + PartRegistry.registeredIDs[part.partID].name);
+			DisplayName.SetDefault(name + " " + PartDefinitionLoader.Get(part.partID)!.DisplayName);
 
 			Tooltip.SetDefault("<TOOLTIP>\n"
 				+ "<STATS>");
@@ -125,7 +126,7 @@ namespace TerrariansConstructLib.Items {
 			if (part.material is UnloadedMaterial or UnknownMaterial)
 				return;  //No recipe
 
-			var partData = PartRegistry.registeredIDs[part.partID];
+			var partData = PartDefinitionLoader.Get(part.partID)!;
 
 			// TODO: forge tile?
 
@@ -137,13 +138,13 @@ namespace TerrariansConstructLib.Items {
 				AddRecipeFromMold(part, partData, complexPlatinumMold);
 		}
 
-		private void AddRecipeFromMold(ItemPart part, PartRegistry.Data partData, PartMold? mold) {
+		private void AddRecipeFromMold(ItemPart part, PartDefinition partData, PartMold? mold) {
 			NetworkText text = NetworkText.FromLiteral("Crafted in the Forge UI");
 
-			int materialWorth = Material.worthByMaterialID[part.material.Type];
-			int totalCostTimesTwo = materialWorth * partData.materialCost;
+			int materialWorth = MaterialDefinitionLoader.Get(CoreLibMod.MaterialType(part.material))?.MaterialWorth ?? 0;
+			int totalCostTimesTwo = materialWorth * partData.MaterialCost;
 			
-			if (part.partID == CoreLibMod.RegisteredParts.Shard) {
+			if (part.partID == ModContent.GetInstance<ShardPartDefinition>().Type) {
 				//Only add a recipe if the material has a Shard part registered
 				if (itemPartToItemID.TryGet(part.material, part.partID, out _)) {
 					(materialWorth % 2 != 0 ? CreateRecipe(2) : CreateRecipe(1))
@@ -159,7 +160,7 @@ namespace TerrariansConstructLib.Items {
 			var recipe = CreateRecipe()
 				.AddIngredient(part.material.Type, totalCostTimesTwo / 2);
 			if (totalCostTimesTwo % 2 != 0)
-				recipe.AddIngredient(CoreLibMod.GetItemPartItemType(part.material, CoreLibMod.RegisteredParts.Shard), 1);
+				recipe.AddIngredient(CoreLibMod.GetItemPartItemType(part.material, CoreLibMod.PartType<ShardPartDefinition>()), 1);
 
 			recipe.AddIngredient(mold)
 				.AddCondition(text, r => false)
@@ -176,7 +177,10 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public override void ModifyTooltips(List<TooltipLine> tooltips) {
-			StatType type = PartRegistry.registeredIDs[part.partID].type;
+			var data = PartDefinitionLoader.Get(part.partID)!;
+			var materialData = MaterialDefinitionLoader.Get(part.material.Type)!;
+
+			StatType type = data.StatType;
 
 			string? tooltip = CoreLibMod.GetMaterialTooltip(part.material);
 

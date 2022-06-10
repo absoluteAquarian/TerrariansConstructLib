@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
-using TerrariansConstructLib.Registry;
+using System.Linq;
+using TerrariansConstructLib.API.Definitions;
 
 namespace TerrariansConstructLib.API.Commands {
-	internal class ListParts : RegistryCommand<PartRegistry.Data> {
+	internal class ListParts : RegistryCommand<PartDefinition> {
 		public override string ChatString => "Parts:";
 
 		public override string UsageString => "/lp";
@@ -11,9 +12,9 @@ namespace TerrariansConstructLib.API.Commands {
 
 		public override string Description => "Lists all item parts loaded by Terrarians' Construct";
 
-		public override Dictionary<int, PartRegistry.Data> GetRegistry() => PartRegistry.registeredIDs;
+		public override Dictionary<int, PartDefinition> GetRegistry() => PartDefinitionLoader.parts.ToDictionary(d => d.Type, d => d);
 
-		public override string GetReplyString(int id, PartRegistry.Data data)
-			=> $"Part #{id}, Name: {data.name}, ID: \"{data.mod.Name}:{data.internalName}\"";
+		public override string GetReplyString(int id, PartDefinition data)
+			=> $"Part #{id}, Name: {data.Name}, ID: \"{data.GetIdentifier()}\"";
 	}
 }

@@ -75,7 +75,7 @@ namespace TerrariansConstructLib.API.Numbers {
 
 		public static string Convert(int number, RomanFormat format = RomanFormat.SubtractiveConventional) {
 			if (number <= 0 || number > 3999)
-				throw new ArgumentOutOfRangeException(nameof(number));
+				throw new ArgumentOutOfRangeException(nameof(number), "Number was " + number);
 
 			if (format < RomanFormat.SubtractiveConventional || format > RomanFormat.Additive)
 				throw new ArgumentOutOfRangeException(nameof(format));

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 using System.Linq;
 using Terraria.ModLoader;
 using TerrariansConstructLib.Items;
-using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.API.Commands {
 	internal class VerboseItemStats : ModCommand {
@@ -30,22 +30,22 @@ namespace TerrariansConstructLib.API.Commands {
 			Color text = new() { PackedValue = 0xffcccccc };
 
 			caller.Reply("=== ITEM STATS ===", section);
-			var itemData = ItemRegistry.registeredIDs[tc.registeredItemID];
+			var itemData = ItemDefinitionLoader.Get(tc.registeredItemID)!;
 
 			// caller.Reply($"", text);
-			caller.Reply($"Item Name: {itemData.name}", text);
+			caller.Reply($"Item Name: {itemData.Name}", text);
 			caller.Reply($"Registered ID: {tc.registeredItemID}", text);
-			caller.Reply($"Registered Identifier: \"{itemData.mod.Name}:{itemData.internalName}\"", text);
-			caller.Reply($"ModItem Type: {itemData.mod.Find<ModItem>(itemData.itemInternalName).GetType().FullName}", text);
-			caller.Reply($"Local Textures Folder: \"{itemData.context.partVisualsFolder}\"", text);
+			caller.Reply($"Registered Identifier: \"{itemData.Mod.Name}:{itemData.Name}\"", text);
+			caller.Reply($"ModItem Type: {(ModContent.GetModItem(itemData.ItemType)?.GetType().FullName ?? "<unknown>")}", text);
+			caller.Reply($"Local Textures Folder: \"{itemData.RelativeVisualsFolder}\"", text);
 			caller.Reply("Valid Item Parts:", text);
-			foreach(var (id, idString) in itemData.context.validPartIDs.Select(i => (i, PartRegistry.IDToIdentifier(i))))
+			foreach(var (id, idString) in itemData.GetValidPartIDs().Select(i => (i, PartDefinitionLoader.GetIdentifier(i))))
 				caller.Reply($"  (ID: {id}) | {idString}", text);
 			caller.Reply($"Durability: {tc.CurrentDurability} / {tc.GetMaxDurability()}", text);
 			caller.Reply($"Base Damage: {tc.GetBaseDamage()}", text);
 			caller.Reply($"Base Knockback: {tc.GetBaseKnockback()}", text);
 			caller.Reply($"Base Crit: {tc.GetBaseCrit()}%", text);
-			caller.Reply($"Base Use Speed: {tc.GetBaseUseSpeed()} ticks", text);
+			caller.Reply($"Base Use Speed: {(int)Math.Max(1, (tc.HasAnyToolPower() ? tc.GetBaseMiningSpeed() : tc.GetBaseUseSpeed()) * itemData.UseSpeedMultiplier)} ticks", text);
 			caller.Reply($"Pickaxe Power: {tc.GetPickaxePower()}%", text);
 			caller.Reply($"Axe Power: {tc.GetAxePower() * 5}%", text);
 			caller.Reply($"Hammer Power: {tc.GetHammerPower()}%", text);
@@ -56,8 +56,12 @@ namespace TerrariansConstructLib.API.Commands {
 				caller.Reply($"  {name}", text);
 			caller.Reply("Modifiers:");
 			// TODO: modifier description line?
-			foreach (var modifierName in tc.GetModifierTooltipLines())
-				caller.Reply($"  {modifierName}", text);
+			var lines = tc.GetModifierTooltipLines().ToList();
+			if (lines.Count > 0) {
+				foreach (var modifierName in lines)
+					caller.Reply($"  {modifierName}", text);
+			} else
+				caller.Reply("  None", text);
 		}
 	}
 }

@@ -6,7 +6,6 @@ using Terraria.GameContent;
 using Terraria.GameInput;
 using Terraria.UI;
 using TerrariansConstructLib.Items;
-using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.API.UI {
 	public class TCUIItemSlot : UIElement {
@@ -16,7 +15,7 @@ namespace TerrariansConstructLib.API.UI {
 			public const int ForgeMaterialSlot = -20413;
 
 			public static bool IsValidContext(int context)
-				=> (context >= ForgeUIItemPartSlot && context < ForgeUIItemPartSlot + PartRegistry.Count)
+				=> (context >= ForgeUIItemPartSlot && context < ForgeUIItemPartSlot + PartDefinitionLoader.Count)
 				|| (context >= ForgeMaterialSlot - 2 && context < ForgeMaterialSlot + PartMold.moldsByPartID.Count);
 		}
 

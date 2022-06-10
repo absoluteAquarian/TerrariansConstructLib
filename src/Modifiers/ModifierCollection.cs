@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Terraria;
@@ -34,78 +35,72 @@ namespace TerrariansConstructLib.Modifiers {
 
 		private Dictionary<string, Member> members = new();
 
-		internal static Dictionary<string, BaseTrait> registeredModifiers;
-		internal static List<string> idToIdentifier;
-
 		private ModifierCollection() { }
 
-		public ModifierCollection(BaseTCItem tc) {
-			var materials = tc.parts.Select(p => p.material);
+		public ModifierCollection(BaseTCItem tc) : this(tc.parts) { }
+
+		public ModifierCollection(IEnumerable<ItemPart> parts) {
+			var materials = parts.Select(p => p.material);
 
 			foreach (var material in materials) {
-				string identifier = material.GetIdentifier();
-
-				BaseTrait? copy = registeredModifiers[identifier]?.Clone();
-
-				if (!members.TryGetValue(identifier, out var member))
-					member = members[identifier] = new();
+				BaseTrait? copy = MaterialDefinitionLoader.Find(material)?.TraitOrUnloaded?.Clone();
 
 				if (copy is null)
 					continue;
 
-				//Tier assignment should only happen if the instance is a BaseTrait and not a BaseModifier, since BaseModifier overwrites it
+				string identifier = copy.GetIdentifier();
+
+				if (!members.TryGetValue(identifier, out var member))
+					member = members[identifier] = new();
+
 				if (copy.IsSingleton) {
 					if (member.singleton is null)
 						member.singleton = copy;
-
-					if (member.singleton is not BaseModifier && member.singleton.IsEquivalentForTier(copy.GetType(), out uint worth))
-						member.singleton.Tier += (int)worth;
 				} else if (member.modifiers is null)
 					member.modifiers = new() { copy };
 				else
 					member.modifiers.Add(copy);
+			}
 
-				if (!copy.IsSingleton) {
-					foreach (var modifier in member.modifiers!)
-						if (modifier is not BaseModifier && modifier.IsEquivalentForTier(copy.GetType(), out uint worth))
-							modifier.Tier += (int)worth;
+			static bool IsValidForTier(BaseTrait source, BaseTrait check, out uint worth) {
+				worth = 1;
+				return source is not BaseModifier && source.IsEquivalentForTier(check.GetType(), out worth);
+			}
+
+			foreach (var member in members.Values) {
+				foreach (var trait in member.GetModifiers()) {
+					//Tier assignment should only happen if the instance is a BaseTrait and not a BaseModifier, since BaseModifier overwrites it
+					if (trait is not BaseModifier)
+						trait.Tier = members.Values.SelectMany(m => m.GetModifiers()).Sum(t => IsValidForTier(trait, t, out uint worth) ? (int)worth : 0);
+					else
+						trait.Tier = 1;
 				}
 			}
 		}
 
 		public ModifierCollection Clone()
 			=> new() { members = members.Select(k => k).ToDictionary(k => k.Key, k => k.Value.Clone()) };
-
-		/// <summary>
-		/// Adds a modifier to the collection
-		/// </summary>
-		/// <param name="id">The ID for the modifier</param>
-		/// <returns>The modifier instance</returns>
-		/// <exception cref="Exception"/>
-		public BaseModifier AddModifier(int id)
-			=> AddModifier(CoreLibMod.GetModifierIdentifier(id));
 		
 		/// <summary>
 		/// Adds a modifier to the collection
 		/// </summary>
-		/// <param name="identifier">The identifier for the modifier</param>
+		/// <param name="modifier">The modifier</param>
 		/// <returns>The modifier instance</returns>
 		/// <exception cref="Exception"/>
-		public BaseModifier AddModifier(string identifier) {
-			var instance = registeredModifiers[identifier].Clone();
+		public BaseModifier AddModifier(BaseModifier modifier) {
+			var instance = modifier.Clone();
 
-			if (instance is not BaseModifier)
-				throw new Exception("Cannot add traits to a modifier collection once it's been initialized");
-
+			string identifier = modifier.GetIdentifier();
+			
 			if(!members.TryGetValue(identifier, out var member))
 				member = members[identifier] = new();
 
-			BaseModifier modifier = ((member.singleton ??= instance) as BaseModifier)!;
+			BaseModifier obj = ((member.singleton ??= instance) as BaseModifier)!;
 
 			//Increase the tier in the singleton
-			modifier.Tier++;
-
-			return modifier;
+			obj.Tier++;
+			
+			return obj;
 		}
 
 		internal void Update(Player player) => PerformActions(a => a.Update(player));
@@ -261,7 +256,7 @@ namespace TerrariansConstructLib.Modifiers {
 		}
 
 		//Used to keep track of when SaveData changes to force no data to load
-		private const int SAVE_VERSION = 3;
+		private const int SAVE_VERSION = 4;
 
 		internal void SaveData(TagCompound tag) {
 			List<TagCompound> list = new();
@@ -302,6 +297,15 @@ namespace TerrariansConstructLib.Modifiers {
 			tag[nameof(SAVE_VERSION)] = SAVE_VERSION;
 		}
 
+		private static bool FindTrait(string identifier, [NotNullWhen(true)] out BaseTrait trait) {
+			var split = identifier.Split(':');
+			string mod = split[0], name = split[1];
+
+			trait = null!;
+
+			return ModLoader.TryGetMod(mod, out Mod source) && source.TryFind(name, out trait);
+		}
+
 		internal void LoadData(TagCompound tag) {
 			//Load SAVE_VERSION first, so we can skip the rest if it's not the same
 			if (!tag.ContainsKey(nameof(SAVE_VERSION)) || tag.GetInt(nameof(SAVE_VERSION)) != SAVE_VERSION) {
@@ -315,17 +319,19 @@ namespace TerrariansConstructLib.Modifiers {
 				foreach (var data in list) {
 					string? identifier = data.GetString("id");
 
-					if (identifier is null)
+					if (identifier is null || !identifier.Contains(':'))
 						throw new IOException("Identifier expected in tag, none found");
 
-					if (!registeredModifiers.ContainsKey(identifier)) {
+					var split = identifier.Split(':');
+					string mod = split[0], name = split[1];
+
+					if (!FindTrait(identifier, out BaseTrait trait)) {
 						if (unloaded.unloadedData is null)
 							unloaded.unloadedData = new();
 
-						var split = identifier.Split(':');
 						var instance = new UnloadedTrait() {
-							mod = split[0],
-							name = split[1],
+							mod = mod,
+							name = name,
 							Tier = 0
 						};
 						
@@ -338,10 +344,13 @@ namespace TerrariansConstructLib.Modifiers {
 						continue;
 					}
 
+					if (!members.TryGetValue(identifier, out var member))
+						member = members[identifier] = new();
+
 					bool singleton = data.GetBool("singleton");
 
 					if (singleton)
-						(members[identifier].singleton ??= CoreLibMod.GetModifier(identifier)).LoadData(data.GetCompound("instance"));
+						(members[identifier].singleton ??= trait).LoadData(data.GetCompound("instance"));
 					else if (data.GetList<TagCompound>("values") is var values) {
 						int index = 0;
 
@@ -395,7 +404,8 @@ namespace TerrariansConstructLib.Modifiers {
 				members.Add(identifier, member);
 
 				for(int j = 0; j < abilityCount; j++) {
-					var modifier = registeredModifiers[identifier].Clone();
+					if (!FindTrait(identifier, out var modifier))
+						continue;
 
 					if (modifier.IsSingleton && abilityCount > 1)
 						throw new IOException("Singleton entry expects only 1 value, multiple values detected");

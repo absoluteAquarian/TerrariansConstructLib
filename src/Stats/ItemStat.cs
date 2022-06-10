@@ -1,5 +1,4 @@
 ﻿using Terraria.Localization;
-using Terraria.ModLoader;
 
 namespace TerrariansConstructLib.Stats {
 	/// <summary>

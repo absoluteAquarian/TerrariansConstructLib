@@ -10,12 +10,6 @@ namespace TerrariansConstructLib.Modifiers {
 	public abstract class BaseModifier : BaseTrait {
 		public sealed override bool IsSingleton => true;
 
-		/// <summary>
-		/// The integer ID assigned to the instance of this modifier during registration
-		/// </summary>
-		public int ID { get; internal set; }
-		internal static int nextID;
-
 		public int CurrentUpgradeProgress { get; internal set; }
 		public int UpgradeTarget { get; internal set; }
 
@@ -125,13 +119,11 @@ namespace TerrariansConstructLib.Modifiers {
 
 		public override void SaveData(TagCompound tag) {
 			base.SaveData(tag);
-			tag["tier"] = Tier;
 			tag["progress"] = CurrentUpgradeProgress;
 		}
 
 		public override void LoadData(TagCompound tag) {
 			base.LoadData(tag);
-			Tier = tag.GetInt("tier");
 			CurrentUpgradeProgress = tag.GetInt("progress");
 		}
 	}

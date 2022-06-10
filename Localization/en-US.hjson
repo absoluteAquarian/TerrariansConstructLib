@@ -1,7 +1,6 @@
 ﻿Mods: {
 	TerrariansConstructLib: {
 		Loading: {
-			InvokingMethod: "Invoking: {0}"
 			FindingDependents: "Finding Mod Dependents"
 
 			EditsLoader: {
@@ -15,6 +14,7 @@
 			}
 
 			TCItemDefaults: "Setting defaults for item \"{0}\""
+			Autoloading: "Autoloading: {0}"
 		}
 
 		ToolTypes: {

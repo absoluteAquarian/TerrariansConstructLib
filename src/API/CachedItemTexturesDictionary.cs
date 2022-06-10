@@ -4,6 +4,7 @@ using ReLogic.Content;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,6 @@ using Terraria.ModLoader.Exceptions;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Modifiers;
-using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.API {
 	/// <summary>
@@ -149,7 +149,7 @@ namespace TerrariansConstructLib.API {
 				.Distinct();
 
 		private static Texture2D BuildTexture(int registeredItemID, ItemPart[] parts, BaseTrait[] modifiers) {
-			string visualsFolder = ItemRegistry.registeredIDs[registeredItemID].context.partVisualsFolder;
+			string visualsFolder = ItemDefinitionLoader.Get(registeredItemID)!.RelativeVisualsFolder;
 
 			var hashmap = GenerateHashmap(parts);
 
@@ -181,7 +181,7 @@ namespace TerrariansConstructLib.API {
 				ApplyModifierTextures(above: true);
 
 			if (SaveGeneratedTexturesToFiles) {
-				string textureImage = ItemRegistry.registeredIDs[registeredItemID].internalName + "_"
+				string textureImage = ItemDefinitionLoader.Get(registeredItemID)!.Name + "_"
 					+ string.Join("_", parts.Select(p => "M" + (p.material is UnloadedMaterial
 						? "U"
 						: p.material is UnknownMaterial
@@ -192,7 +192,7 @@ namespace TerrariansConstructLib.API {
 						+ "+P" + p.partID));
 
 				string path = Program.SavePath;
-				path = Path.Combine(path, "aA Mods", ItemRegistry.registeredIDs[registeredItemID].mod.Name, "Generated Textures");
+				path = Path.Combine(path, "aA Mods", ItemDefinitionLoader.Get(registeredItemID)!.Mod.Name, "Generated Textures");
 
 				Directory.CreateDirectory(path);
 
@@ -208,7 +208,7 @@ namespace TerrariansConstructLib.API {
 			hashmap[part.partID]--;
 			int numCount = hashmap[part.partID];
 
-			string path = visualsFolder + "/" + PartRegistry.registeredIDs[part.partID].internalName + "/" + (numCount > 0 ? numCount + "_" : "") + part.material.GetName();
+			string path = visualsFolder + "/" + PartDefinitionLoader.Get(part.partID)!.Name + "/" + (numCount > 0 ? numCount + "_" : "") + part.material.GetName();
 
 			return GetVisualTexture(path);
 		}
@@ -231,11 +231,29 @@ namespace TerrariansConstructLib.API {
 			throw new MissingResourceException($"Could not find asset \"{path}\" in any mods which have Terrarians' Construct Library as a dependency.");
 		}
 
+		internal static bool TextureExists(string relativePath, [NotNullWhen(true)] out string? fullPath) {
+			if (CoreLibMod.Instance.RequestAssetIfExists<Texture2D>(relativePath, out _)) {
+				fullPath = CoreLibMod.Instance.Name + "/" + relativePath;
+				return true;
+			}
+
+			//Try to find a mod which has the texture
+			foreach (Mod mod in CoreLibMod.Dependents) {
+				if (mod.RequestAssetIfExists<Texture2D>(relativePath, out _)) {
+					fullPath = mod.Name + "/" + relativePath;
+					return true;
+				}
+			}
+
+			fullPath = null;
+			return false;
+		}
+
 		private static void ApplyPixels(int registeredItemID, Texture2D builtTexture, Texture2D incoming) {
 			//Unfortunately, GetData/SetData have to be used... I cannot control when a texture is requested and Terraria doesn't use RenderTargetUsage.PreserveContents
 			// -- absoluteAquarian
 			if (builtTexture.Width != incoming.Width || builtTexture.Height != incoming.Height)
-				throw new Exception($"The part textures for registered item \"{ItemRegistry.registeredIDs[registeredItemID].mod.Name}:{CoreLibMod.GetItemInternalName(registeredItemID)}\" did not have the same dimensions");
+				throw new Exception($"The part textures for registered item \"{ItemDefinitionLoader.Get(registeredItemID)!.FullName}\" did not have the same dimensions");
 
 			Color[] incomingColor = new Color[incoming.Width * incoming.Height];
 			Color[] builtColor = new Color[builtTexture.Width * builtTexture.Height];

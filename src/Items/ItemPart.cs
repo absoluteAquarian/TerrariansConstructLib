@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using Terraria;
-using Terraria.DataStructures;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
-using TerrariansConstructLib.API.Sources;
+using TerrariansConstructLib.API.Definitions;
 using TerrariansConstructLib.API.Stats;
-using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Materials;
-using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.Items {
 	public class ItemPart : TagSerializable, INetHooks {
@@ -51,11 +46,11 @@ namespace TerrariansConstructLib.Items {
 				return tag;
 			}
 
-			var data = PartRegistry.registeredIDs[partID];
+			var data = PartDefinitionLoader.Get(partID)!;
 
 			tag["part"] = new TagCompound() {
-				["mod"] = data.mod.Name,
-				["name"] = data.internalName
+				["mod"] = data.Mod.Name,
+				["name"] = data.Name
 			};
 
 			return tag;
@@ -63,7 +58,7 @@ namespace TerrariansConstructLib.Items {
 
 		public static Func<TagCompound, ItemPart> DESERIALIZER = tag => {
 			Material material = tag.Get<Material>("material");
-
+			
 			if (material is null)
 				material = tag.Get<UnloadedMaterial>("material");
 
@@ -72,7 +67,7 @@ namespace TerrariansConstructLib.Items {
 			string modName = part.GetString("mod");
 			string internalName = part.GetString("name");
 
-			if (!ModLoader.TryGetMod(modName, out var mod) || !PartRegistry.TryFindData(mod, internalName, out int id)) {
+			if (!ModLoader.TryGetMod(modName, out var mod) || !ModContent.TryFind<PartDefinition>(internalName, out var data)) {
 				// Unloaded part.  Save the mod and name, but nothing else
 				return new UnloadedItemPart() {
 					mod = modName,
@@ -82,7 +77,7 @@ namespace TerrariansConstructLib.Items {
 				};
 			}
 
-			return (ItemPart)partData!.Get(material, id).MemberwiseClone();
+			return partData!.Get(material, data.Type).Clone();
 		};
 
 		public void NetSend(BinaryWriter writer) {

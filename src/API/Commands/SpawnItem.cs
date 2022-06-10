@@ -1,11 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
+using System.Linq;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
-using TerrariansConstructLib.Registry;
 
 namespace TerrariansConstructLib.API.Commands {
 	internal class SpawnItem : ModCommand {
@@ -30,7 +29,9 @@ namespace TerrariansConstructLib.API.Commands {
 
 			ItemPart[] parts = new ItemPart[numParts];
 
-			int[] partIDs = ItemRegistry.registeredIDs[registeredItemID].context.validPartIDs;
+			var data = ItemDefinitionLoader.Get(registeredItemID)!;
+
+			int[] partIDs = data.GetValidPartIDs().ToArray();
 
 			if (partIDs.Length != numParts) {
 				caller.Reply($"Registered Item {registeredItemID} expects {partIDs.Length} parts", Color.Red);
@@ -46,15 +47,13 @@ namespace TerrariansConstructLib.API.Commands {
 					partID = partIDs[i]
 				};
 			}
-
-			var data = ItemRegistry.registeredIDs[registeredItemID];
 			
-			if (!data.mod.TryFind<ModItem>(data.itemInternalName, out var mItem)) {
-				caller.Reply($"Registered item ID #{registeredItemID} ({data.mod.Name}:{data.internalName}) had an invalid item internal name: \"{data.itemInternalName}\".", Color.Red);
+			if (ModContent.GetModItem(data.ItemType) is null) {
+				caller.Reply($"Registered item ID #{registeredItemID} ({data.Mod.Name}:{data.Name}) had an invalid item ID: {data.ItemType}.", Color.Red);
 				return;
 			}
 
-			Item item = new(mItem.Type);
+			Item item = new(data.ItemType);
 			BaseTCItem tc = (item.ModItem as BaseTCItem)!;
 
 			//Assign the parts
@@ -72,7 +71,7 @@ namespace TerrariansConstructLib.API.Commands {
 				return false;
 			}
 
-			if (num < 0 || num >= ItemRegistry.Count) {
+			if (num < 0 || num >= ItemDefinitionLoader.Count) {
 				caller.Reply("Registered item # exceeded the bounds of valid IDs.  Use \"/li\" to list the registered item IDs.", Color.Red);
 				return false;
 			}

@@ -46,7 +46,15 @@ namespace TerrariansConstructLib.API.Edits {
 
 			//And the storage path
 			string path = Program.SavePath;
-			path = Path.Combine(path, "aA Mods", mod.Name);
+
+			//Use the mod type's namespace start
+			//Can't use "Mod.Name" since that uses "Mod.File" which might be null
+			string modName = mod.GetType().Namespace!;
+
+			if (modName.Contains('.'))
+				modName = modName[..modName.IndexOf('.')];
+
+			path = Path.Combine(path, "aA Mods", modName);
 			Directory.CreateDirectory(path);
 
 			//Get the class name

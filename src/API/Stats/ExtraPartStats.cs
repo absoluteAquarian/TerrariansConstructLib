@@ -69,9 +69,10 @@ namespace TerrariansConstructLib.API.Stats {
 		public string GetTooltipLines(int partID) {
 			StringBuilder sb = new();
 
-			foreach (var (name, stat) in modifiers)
+			foreach (var (name, stat) in modifiers) {
 				if (!validPartIDsForTooltipKey.TryGetValue(name, out var ids) || ids is null || Array.IndexOf(ids, partID) >= 0)
 					sb.Append((sb.Length > 0 ? "\n" : "") + ItemStatCollection.Format(name, stat));
+			}
 
 			return sb.ToString();
 		}
