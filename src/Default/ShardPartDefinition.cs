@@ -9,6 +9,6 @@ namespace TerrariansConstructLib.Default {
 
 		public override string DisplayName => "Shard";
 
-		public override int MaterialCost => 1 * 2;
+		public override int MaterialCost => 1;
 	}
 }
