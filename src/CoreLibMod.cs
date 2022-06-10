@@ -341,6 +341,9 @@ namespace TerrariansConstructLib {
 			directDetourInstance = null!;
 		}
 
+		public override void HandlePacket(BinaryReader reader, int whoAmI)
+			=> NetHelper.HandlePacket(reader, whoAmI);
+
 		/// <summary>
 		/// Gets an enumeration of <seealso cref="Material"/> instances that were used to create item parts
 		/// </summary>
