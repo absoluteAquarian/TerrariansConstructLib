@@ -67,7 +67,7 @@ namespace TerrariansConstructLib.Items {
 			string modName = part.GetString("mod");
 			string internalName = part.GetString("name");
 
-			if (!ModLoader.TryGetMod(modName, out var mod) || !ModContent.TryFind<PartDefinition>(internalName, out var data)) {
+			if (!ModLoader.TryGetMod(modName, out var mod) || !mod.TryFind<PartDefinition>(internalName, out var data)) {
 				// Unloaded part.  Save the mod and name, but nothing else
 				return new UnloadedItemPart() {
 					mod = modName,

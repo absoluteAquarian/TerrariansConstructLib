@@ -14,6 +14,7 @@ using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using TerrariansConstructLib.API;
+using TerrariansConstructLib.API.Definitions;
 using TerrariansConstructLib.API.Numbers;
 using TerrariansConstructLib.API.Reflection;
 using TerrariansConstructLib.API.Sources;
@@ -167,8 +168,16 @@ namespace TerrariansConstructLib.Items {
 			for (int i = 0; i < parts.Length; i++) {
 				ItemPart part = this.parts[i] = parts[i];
 
-				if (part is UnloadedItemPart)
-					part.partID = validIDs[i];
+				if (part is UnloadedItemPart unloaded) {
+					if (CoreLibMod.MaterialType(part.material) > -1 && ModLoader.TryGetMod(unloaded.mod, out Mod source) && source.TryFind(unloaded.internalName, out PartDefinition definition)) {
+						//Reassign the part since it's no longer unloaded
+						part = new ItemPart() {
+							material = part.material,
+							partID = definition.Type
+						};
+					} else
+						part.partID = validIDs[i];
+				}
 			}
 
 			Item.damage = GetBaseDamage();
