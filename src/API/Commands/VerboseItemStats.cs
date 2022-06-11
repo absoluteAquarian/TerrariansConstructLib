@@ -30,11 +30,11 @@ namespace TerrariansConstructLib.API.Commands {
 			Color text = new() { PackedValue = 0xffcccccc };
 
 			caller.Reply("=== ITEM STATS ===", section);
-			var itemData = ItemDefinitionLoader.Get(tc.registeredItemID)!;
+			var itemData = ItemDefinitionLoader.Get(tc.ItemDefinition)!;
 
 			// caller.Reply($"", text);
 			caller.Reply($"Item Name: {itemData.Name}", text);
-			caller.Reply($"Registered ID: {tc.registeredItemID}", text);
+			caller.Reply($"Registered ID: {tc.ItemDefinition}", text);
 			caller.Reply($"Registered Identifier: \"{itemData.Mod.Name}:{itemData.Name}\"", text);
 			caller.Reply($"ModItem Type: {(ModContent.GetModItem(itemData.ItemType)?.GetType().FullName ?? "<unknown>")}", text);
 			caller.Reply($"Local Textures Folder: \"{itemData.RelativeVisualsFolder}\"", text);

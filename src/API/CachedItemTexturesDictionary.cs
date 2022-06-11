@@ -33,7 +33,7 @@ namespace TerrariansConstructLib.API {
 		}
 
 		public Texture2D Get(BaseTCItem tc)
-			=> Get(tc.registeredItemID, tc.parts, tc.modifiers);
+			=> Get(tc.ItemDefinition, tc.parts, tc.modifiers);
 
 		public Texture2D Get(int registeredItemID, ItemPart[] parts, BaseTrait[] modifiers) {
 			var dict = TraverseTree(registeredItemID, parts, modifiers, out string identifier);

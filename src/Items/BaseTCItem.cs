@@ -27,7 +27,7 @@ namespace TerrariansConstructLib.Items {
 	/// <summary>
 	/// The base item class for any items that can be created by the Terrarians' Construct Forge UI
 	/// </summary>
-	public class BaseTCItem : ModItem {
+	public abstract class BaseTCItem : ModItem {
 		internal ItemPartSlotCollection parts;
 		internal ModifierCollection modifiers;
 
@@ -37,14 +37,18 @@ namespace TerrariansConstructLib.Items {
 		public int CountParts(Material material)
 			=> parts.Count(p => p.material.Type == material.Type);
 
-		public readonly int registeredItemID = -1;
+		/// <summary>
+		/// The ID of the <see cref="TCItemDefinition"/> that this item retrieves its data from
+		/// </summary>
+		public abstract int ItemDefinition { get; }
 
 		/// <summary>
 		/// The current durability for the item
 		/// </summary>
 		public int CurrentDurability { get; internal set; }
 
-		public virtual int PartsCount => 0;
+		private int? cachedPartsCount;
+		public int PartsCount => cachedPartsCount ??= ItemDefinitionLoader.Get(ItemDefinition)?.GetForgeSlotConfiguration().Count() ?? 0;
 
 		public ReadOnlySpan<ItemPart> GetParts() => parts.ToArray();
 
@@ -81,31 +85,19 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		/// <summary>
-		/// Creates an instance of a <see cref="BaseTCItem"/> using the data from a registered item ID
+		/// Creates an instance of a <see cref="BaseTCItem"/>
 		/// </summary>
-		/// <param name="registeredItemID">The registered item ID</param>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
-		public BaseTCItem(int registeredItemID) {
-			this.registeredItemID = registeredItemID;
+		internal BaseTCItem() {
 			parts = new(PartsCount);
 		}
-
-		//Can't use [Autoload(false)] lest deriving types not get added
-		public sealed override bool IsLoadingEnabled(Mod mod) => SafeIsLoadingEnabled(mod) ?? false;
-
-		/// <summary>
-		/// Allows you to safely request whether this item should be autoloaded
-		/// </summary>
-		/// <param name="mod">The mod adding this item</param>
-		/// <returns><see langword="null"/> for the default behaviour (don't autoload item), <see langword="true"/> to let the item autoload or <see langword="false"/> to prevent the item from autoloading</returns>
-		public virtual bool? SafeIsLoadingEnabled(Mod mod) => null;
 
 		/// <summary>
 		/// The name for the item, used in <see cref="SetStaticDefaults"/><br/>
 		/// Defaults to:  <c>ItemDefinitionLoader.Get(registeredItemID)!.Name</c>
 		/// </summary>
-		public virtual string RegisteredItemTypeName => ItemDefinitionLoader.Get(registeredItemID)!.Name;
+		public virtual string RegisteredItemTypeName => ItemDefinitionLoader.Get(ItemDefinition)!.Name;
 
 		/// <summary>
 		/// The tooltip for the item
@@ -129,15 +121,15 @@ namespace TerrariansConstructLib.Items {
 		public virtual void SafeSetStaticDefaults() { }
 
 		public sealed override void SetDefaults() {
-			var data = ItemDefinitionLoader.Get(registeredItemID)!;
+			var data = ItemDefinitionLoader.Get(ItemDefinition)!;
 
 			int[] validPartIDs = data.GetValidPartIDs().ToArray();
 
 			if (data.Mod != Mod || ModContent.GetModItem(data.ItemType).Name != Name)
-				throw new Exception($"Registered item ID {registeredItemID} was assigned to an item of type \"{data.Mod.Name}:{ModContent.GetModItem(data.ItemType).Name}\" and cannot be assigned to an item of type \"{Mod.Name}:{Name}\"");
+				throw new Exception($"Registered item ID {ItemDefinition} was assigned to an item of type \"{data.Mod.Name}:{ModContent.GetModItem(data.ItemType).Name}\" and cannot be assigned to an item of type \"{Mod.Name}:{Name}\"");
 
 			if (validPartIDs.Length != PartsCount)
-				throw new ArgumentException($"Part IDs length ({validPartIDs.Length}) for registered item ID \"{data.Name}\" ({registeredItemID}) was not equal to the expected length of {PartsCount}");
+				throw new ArgumentException($"Part IDs length ({validPartIDs.Length}) for registered item ID \"{data.Name}\" ({ItemDefinition}) was not equal to the expected length of {PartsCount}");
 
 			static ItemPartSlot CreateSlot(int partID, int slot) {
 				ItemPart part = new(){
@@ -159,7 +151,7 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public void InitializeWithParts(params ItemPart[] parts) {
-			var data = CoreLibMod.GetItemDefinition(registeredItemID)!;
+			var data = CoreLibMod.GetItemDefinition(ItemDefinition)!;
 			
 			int[] validIDs = data.GetValidPartIDs().ToArray();
 
@@ -213,8 +205,8 @@ namespace TerrariansConstructLib.Items {
 			Asset<Texture2D> asset = TextureAssets.Item[Item.type] = ReflectionHelper<Asset<Texture2D>>.InvokeCloneMethod(CoreLibMod.Instance.Assets.Request<Texture2D>("Assets/DummyItem", AssetRequestMode.ImmediateLoad));
 
 			ReflectionHelper<Asset<Texture2D>>.InvokeSetterFunction("ownValue", asset, CoreLibMod.ItemTextures.Get(
-				registeredItemID,
-				ItemDefinitionLoader.Get(registeredItemID)!.GetValidPartIDs().Select(p => new ItemPart(){ material = CoreLibMod.RegisteredMaterials.Unknown, partID = p }).ToArray(),
+				ItemDefinition,
+				ItemDefinitionLoader.Get(ItemDefinition)!.GetValidPartIDs().Select(p => new ItemPart(){ material = CoreLibMod.RegisteredMaterials.Unknown, partID = p }).ToArray(),
 				Array.Empty<BaseTrait>()));
 
 			if (DisplayName.IsDefault())
@@ -523,7 +515,7 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		protected void InitializeUseTimeAndUseSpeed() {
-			var data = ItemDefinitionLoader.Get(registeredItemID)!;
+			var data = ItemDefinitionLoader.Get(ItemDefinition)!;
 			float mult = data.UseSpeedMultiplier;
 
 			if (!HasAnyToolPower())
@@ -696,7 +688,7 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public sealed override void AddRecipes() {
-			var data = ItemDefinitionLoader.Get(registeredItemID)!;
+			var data = ItemDefinitionLoader.Get(ItemDefinition)!;
 
 			Recipe recipe = CreateRecipe();
 
@@ -714,7 +706,7 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public sealed override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale) {
-			Texture2D texture = CoreLibMod.ItemTextures.Get(registeredItemID, parts, modifiers);
+			Texture2D texture = CoreLibMod.ItemTextures.Get(ItemDefinition, parts, modifiers);
 
 			spriteBatch.Draw(texture, position, frame, drawColor, 0f, origin, scale, SpriteEffects.None, 0);
 
@@ -732,7 +724,7 @@ namespace TerrariansConstructLib.Items {
 		}
 
 		public sealed override bool PreDrawInWorld(SpriteBatch spriteBatch, Color lightColor, Color alphaColor, ref float rotation, ref float scale, int whoAmI) {
-			Texture2D texture = CoreLibMod.ItemTextures.Get(registeredItemID, parts, modifiers);
+			Texture2D texture = CoreLibMod.ItemTextures.Get(ItemDefinition, parts, modifiers);
 
 			Rectangle frame = texture.Frame();
 
