@@ -171,13 +171,16 @@ namespace TerrariansConstructLib.Items {
 				if (part is UnloadedItemPart unloaded) {
 					if (CoreLibMod.MaterialType(part.material) > -1 && ModLoader.TryGetMod(unloaded.mod, out Mod source) && source.TryFind(unloaded.internalName, out PartDefinition definition)) {
 						//Reassign the part since it's no longer unloaded
-						part = new ItemPart() {
+						this.parts[i] = part = new ItemPart() {
 							material = part.material,
 							partID = definition.Type
 						};
-					} else
-						part.partID = validIDs[i];
+					}
 				}
+
+				//Failsafe
+				if (part.partID == -1)
+					part.partID = validIDs[i];
 			}
 
 			Item.damage = GetBaseDamage();
@@ -279,8 +282,7 @@ namespace TerrariansConstructLib.Items {
 			if (modifiers is null)
 				return Array.Empty<string>();
 			
-			return modifiers.Where(m => m.Counter != 0)
-				.Select(m => (m, $"  [c/{m.TooltipColor.Hex3()}:{Language.GetTextValue(m.LangKey)}]"))
+			return modifiers.Select(m => (m, $"  [c/{m.TooltipColor.Hex3()}:{Language.GetTextValue(m.LangKey)}]"))
 				.Select(tuple => {
 					string tooltip = tuple.Item2;
 					
