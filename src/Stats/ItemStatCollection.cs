@@ -67,7 +67,7 @@ namespace TerrariansConstructLib.Stats {
 				newline = true;
 			}
 			if (stat.Multiplicative != 1 && stats.TryGetValue(name + ".mult", out var mult)) {
-				string fmt = mult.Format(stat.Multiplicative - 1);
+				string fmt = mult.Format(stat.Multiplicative);
 
 				if (newline)
 					sb.Append('\n');

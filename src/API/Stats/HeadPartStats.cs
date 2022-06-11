@@ -71,7 +71,7 @@ namespace TerrariansConstructLib.API.Stats {
 			if (knockback > 0)
 				sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadKnockback, knockback));
 
-			if (crit > 0)
+			if (crit != 0)
 				sb.Append("\n" + ItemStatCollection.Format(CoreLibMod.KnownStatModifiers.HeadCrit, crit));
 
 			if (useSpeed > 0)

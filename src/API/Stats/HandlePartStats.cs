@@ -68,8 +68,13 @@ namespace TerrariansConstructLib.API.Stats {
 				}
 			}
 
-			AppendFormatSingle(CoreLibMod.KnownStatModifiers.HandleMiningSpeed, miningSpeed);
-			AppendFormatSingle(CoreLibMod.KnownStatModifiers.HandleAttackSpeed, attackSpeed.ApplyTo(1f));
+			if (miningSpeed != 1)
+				AppendFormatSingle(CoreLibMod.KnownStatModifiers.HandleMiningSpeed, miningSpeed);
+			
+			float attack = attackSpeed.ApplyTo(1f);
+			if (attack != 1)
+				AppendFormatSingle(CoreLibMod.KnownStatModifiers.HandleAttackSpeed, attack);
+			
 			AppendFormat(CoreLibMod.KnownStatModifiers.HandleAttackDamage, attackDamage);
 			AppendFormat(CoreLibMod.KnownStatModifiers.HandleAttackKnockback, attackKnockback);
 			AppendFormat(CoreLibMod.KnownStatModifiers.HandleDurability, durability);

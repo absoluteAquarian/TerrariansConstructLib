@@ -19,6 +19,8 @@ namespace TerrariansConstructLib.Modifiers {
 		private class Member {
 			public BaseTrait? singleton;
 
+			public int singletonCopies;
+
 			public List<BaseTrait>? modifiers;
 
 			public List<TagCompound> unloadedData;
@@ -56,19 +58,21 @@ namespace TerrariansConstructLib.Modifiers {
 				if (copy.IsSingleton) {
 					if (member.singleton is null)
 						member.singleton = copy;
+
+					member.singletonCopies++;
 				} else if (member.modifiers is null)
 					member.modifiers = new() { copy };
 				else
 					member.modifiers.Add(copy);
 			}
 
-			static bool IsValidForTier(BaseTrait source, BaseTrait check, out uint worth) {
-				return source.IsEquivalentForTier(check.GetType(), out worth);
-			}
-
 			foreach (var member in members.Values) {
-				foreach (var trait in member.GetModifiers())
-					trait.Tier = members.Values.SelectMany(m => m.GetModifiers()).Sum(t => IsValidForTier(trait, t, out uint worth) ? (int)worth : 0);
+				foreach (var trait in member.GetModifiers()) {
+					trait.Tier = members.Values.SelectMany(m => m.GetModifiers()).Sum(t => trait.IsEquivalentForTier(t.GetType(), out uint worth) ? (int)worth : 0);
+
+					if (member.singleton is not null && trait.Tier < member.singletonCopies)
+						trait.Tier = member.singletonCopies;
+				}
 			}
 		}
 
@@ -301,7 +305,12 @@ namespace TerrariansConstructLib.Modifiers {
 
 			trait = null!;
 
-			return ModLoader.TryGetMod(mod, out Mod source) && source.TryFind(name, out trait);
+			bool found = ModLoader.TryGetMod(mod, out Mod source) && source.TryFind(name, out trait);
+
+			if (found)
+				trait = trait.Clone();
+
+			return found;
 		}
 
 		internal void LoadData(TagCompound tag) {
@@ -312,6 +321,8 @@ namespace TerrariansConstructLib.Modifiers {
 			}
 
 			if (tag.GetList<TagCompound>("data") is var list) {
+				members.Clear();
+
 				Member unloaded = new();
 
 				foreach (var data in list) {

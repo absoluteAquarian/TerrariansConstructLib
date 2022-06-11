@@ -10,7 +10,7 @@ namespace TerrariansConstructLib.API.Commands {
 	internal class SpawnItem : ModCommand {
 		public override CommandType Type => CommandType.Chat;
 
-		public override string Usage => "[c/ff6a00:Usage: /si <registered item #> M<material 0 #> M<material 1 #> ...]";
+		public override string Usage => "[c/ff6a00:Usage: /si <registered item #> <material 0 #> <material 1 #> ...]";
 
 		public override string Command => "si";
 
@@ -80,14 +80,6 @@ namespace TerrariansConstructLib.API.Commands {
 		}
 
 		private static bool GetMaterialNum(CommandCaller caller, string[] args, int argNum, out int num) {
-			num = -1;
-			if (args[argNum][0] != 'M') {
-				caller.Reply($"Argument #{argNum + 1} was an invalid material argument", Color.Red);
-				return false;
-			}
-
-			args[argNum] = args[argNum][1..];
-
 			if (args[argNum] == "K") {
 				num = UnknownMaterial.StaticType;
 				return true;

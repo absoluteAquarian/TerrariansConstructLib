@@ -26,8 +26,8 @@
 		StatFormats: {
 			Head: {
 				Damage: "Damage: {0}"
-				Knockback: "Knockback: {0}"
-				Crit: "Crit Chance: {0:+#;-#;+0}"
+				Knockback: "Knockback: {0:0.###}"
+				Crit: "Crit Chance: {0:+0.###;-0.###;+0}%"
 				UseSpeed: "Use Speed: {0} ticks"
 				PickPower: "Pickaxe Power: {0}%"
 				AxePower: "Axe Power: {0}%"
@@ -37,29 +37,29 @@
 			}
 
 			Handle: {
-				MiningSpeed: "Mining Speed Modifier: {0:+#;-#;+0}x"
+				MiningSpeed: "Mining Speed Modifier: {0:0.###}x"
 
-				AttackSpeed: "Attack Speed Modifier: {0:+#;-#;+0}x"
+				AttackSpeed: "Attack Speed Modifier: {0:0.###}x"
 
-				AttackDamageAdd: "Base Attack Damage: {0}"
-				AttackDamageMult: "Attack Damage Modifier: {0:+#;-#;+0}x"
+				AttackDamageAdd: "Attack Damage: {0:+0.###;-0.###;+0}"
+				AttackDamageMult: "Attack Damage Modifier: {0:0.###}x"
 
-				AttackKnockbackAdd: "Base Attack Knockback: {0}"
-				AttackKnockbackMult: "Attack Knockback Modifier: {0:+#;-#;+0}x"
+				AttackKnockbackAdd: "Attack Knockback: {0:+0.###;-0.###;+0}"
+				AttackKnockbackMult: "Attack Knockback Modifier: {0:0.###}x"
 
 				DurabilityAdd: "{$Mods.TerrariansConstructLib.StatFormats.Head.Durability}"
 				DurabilityMult: "{$Mods.TerrariansConstructLib.StatFormats.Extra.DurabilityMult}"
 			}
 
 			Extra: {
-				DurabilityAdd: "Base Durability: {0}"
-				DurabilityMult: "Durability Modifier: {0:+#;-#;+0}x"
+				DurabilityAdd: "Base Durability: {0:0.###}"
+				DurabilityMult: "Durability Modifier: {0:0.###}x"
 
-				BowDrawSpeedAdd: "Base Bow Draw Speed: {0}"
-				BowDrawSpeedMult: "Bow Draw Speed Multiplier: {0:+#;-#;+0}x"
+				BowDrawSpeedAdd: "Base Bow Draw Speed: {0:0.###}"
+				BowDrawSpeedMult: "Bow Draw Speed Multiplier: {0:0.###}x"
 
-				BowArrowSpeedAdd: "Base Arrow Speed: {0}"
-				BowArrowSpeedMult: "Arrow Speed Multiplier: {0:+#;-#;+0}x"
+				BowArrowSpeedAdd: "Base Arrow Speed: {0:0.###}"
+				BowArrowSpeedMult: "Arrow Speed Multiplier: {0:0.###}x"
 			}
 		}
 

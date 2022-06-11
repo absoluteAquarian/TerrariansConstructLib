@@ -28,7 +28,7 @@ namespace TerrariansConstructLib.Items {
 	/// The base item class for any items that can be created by the Terrarians' Construct Forge UI
 	/// </summary>
 	public class BaseTCItem : ModItem {
-		internal ItemPartSlotCollection parts = new(2);
+		internal ItemPartSlotCollection parts;
 		internal ModifierCollection modifiers;
 
 		public T? GetModifier<T>() where T : BaseTrait
@@ -88,6 +88,7 @@ namespace TerrariansConstructLib.Items {
 		/// <exception cref="ArgumentException"/>
 		public BaseTCItem(int registeredItemID) {
 			this.registeredItemID = registeredItemID;
+			parts = new(PartsCount);
 		}
 
 		//Can't use [Autoload(false)] lest deriving types not get added
