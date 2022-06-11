@@ -580,9 +580,9 @@ namespace TerrariansConstructLib.Items {
 		private static int MaximumToolStat(IEnumerable<HeadPartStats> stats, Func<HeadPartStats, double> func) {
 			var eval = stats.ToList();
 			
-			double average = eval.Count > 0 ? stats.Max(func) : 0;
+			double max = eval.Count > 0 ? stats.Max(func) : 0;
 
-			return average > 0 ? (int)Math.Ceiling(average) : 0;
+			return max > 0 ? (int)Math.Ceiling(max) : 0;
 		}
 
 		public bool HasAnyToolPower()
