@@ -89,7 +89,7 @@ namespace TerrariansConstructLib.Items {
 		/// </summary>
 		/// <exception cref="Exception"/>
 		/// <exception cref="ArgumentException"/>
-		internal BaseTCItem() {
+		protected BaseTCItem() {
 			parts = new(PartsCount);
 		}
 
