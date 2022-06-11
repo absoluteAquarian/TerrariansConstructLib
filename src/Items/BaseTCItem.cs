@@ -595,32 +595,36 @@ namespace TerrariansConstructLib.Items {
 		public bool HasAnyToolPower()
 			=> SelectToolAxeStats().Any(p => p.axePower / 5 > 0) || SelectToolPickaxeStats().Any(p => p.pickPower > 0) || SelectToolHammerStats().Any(p => p.hammerPower > 0);
 
-		public void TryIncreaseDurability(Player player, int amount, IDurabilityModificationSource source) {
+		public bool TryIncreaseDurability(Player player, int amount, IDurabilityModificationSource source) {
 			if (amount <= 0)
-				return;
+				return false;
 
 			int max = GetMaxDurability();
-			if (CurrentDurability < max && TCConfig.Instance.UseDurability) {
+
+			bool canChange = TCConfig.Instance.UseDurability;
+			if (CurrentDurability < max && canChange) {
 				modifiers.PreModifyDurability(player, this, source, ref amount);
 
 				if (amount <= 0)
-					return;
+					return false;
 
 				CurrentDurability += amount;
 
 				if (CurrentDurability > max)
 					CurrentDurability = max;
 			}
+
+			return canChange;
 		}
 
-		public void TryReduceDurability(Player player, int amount, IDurabilityModificationSource source) {
+		public bool TryReduceDurability(Player player, int amount, IDurabilityModificationSource source) {
 			if (amount <= 0)
-				return;
+				return false;
 
 			bool lose = TCConfig.Instance.UseDurability;
-
+			
 			if (!lose)
-				return;
+				return false;
 
 			lose = modifiers.CanLoseDurability(player, this, source);
 
@@ -631,7 +635,7 @@ namespace TerrariansConstructLib.Items {
 				modifiers.PreModifyDurability(player, this, source, ref amount);
 
 				if (amount >= 0)
-					return;
+					return false;
 
 				amount = -amount;
 
@@ -654,6 +658,8 @@ namespace TerrariansConstructLib.Items {
 					CombatText.NewText(area, CombatText.DamagedFriendlyCrit, Language.GetTextValue("Prefix.Broken").ToUpper(), dramatic: true);
 				}
 			}
+
+			return true;
 		}
 
 		public override void SaveData(TagCompound tag) {
