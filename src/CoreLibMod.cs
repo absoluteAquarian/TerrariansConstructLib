@@ -379,6 +379,12 @@ namespace TerrariansConstructLib {
 
 		public static MaterialDefinition? GetMaterialDefinition(Material material) => MaterialDefinitionLoader.Get(MaterialType(material));
 
+		public static int ProjectileType<T>() where T : TCProjectileDefinition => ModContent.GetInstance<T>()?.Type ?? -1;
+
+		public static TCProjectileDefinition? GetProjectileDefinition<T>() where T : TCProjectileDefinition => ProjectileDefinitionLoader.Get(ProjectileType<T>());
+
+		public static TCProjectileDefinition? GetProjectileDefinition(int index) => ProjectileDefinitionLoader.Get(index);
+
 		/// <summary>
 		/// Attempts to find the corresponding <see cref="MaterialDefinition"/> ID for the input <see cref="Material"/>, <paramref name="material"/>
 		/// </summary>

@@ -21,7 +21,7 @@ namespace TerrariansConstructLib.API.Edits {
 			IL.Terraria.Player.ItemCheck_UseMiningTools_ActuallyUseMiningTool += MSIL.Vanilla.Patch_Player_ItemCheck_UseMiningTools_ActuallyUseMiningTool;
 			IL.Terraria.Player.ItemCheck_UseMiningTools_TryHittingWall += MSIL.Vanilla.Patch_Player_ItemCheck_UseMiningTools_TryHittingWall;
 			IL.Terraria.Player.PickTile += MSIL.Vanilla.Patch_Player_PickTile;
-
+			IL.Terraria.Main.DrawProj_DrawNormalProjs += MSIL.Vanilla.Patch_Main_DrawProj_DrawNormalProjs;
 			ILHelper.DeInitMonoModDumps();
 
 			ILHelper.LogILEdits = false;

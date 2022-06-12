@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ReLogic.Content;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -307,5 +309,13 @@ namespace TerrariansConstructLib {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static double InverseLerp(float min, float max, float value)
 			=> (value - min) / (max - min);
+
+		public static Asset<Texture2D> CloneAndOverwriteValue(Asset<Texture2D> orig, Texture2D value) {
+			Asset<Texture2D> asset = ReflectionHelper<Asset<Texture2D>>.InvokeCloneMethod(orig);
+
+			ReflectionHelper<Asset<Texture2D>>.InvokeSetterFunction("ownValue", asset, value);
+
+			return asset;
+		}
 	}
 }

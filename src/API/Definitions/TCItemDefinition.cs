@@ -3,6 +3,7 @@ using System.Linq;
 using Terraria.ModLoader;
 using TerrariansConstructLib.API.UI;
 using TerrariansConstructLib.Items;
+using TerrariansConstructLib.Projectiles;
 
 namespace TerrariansConstructLib.API.Definitions {
 	public abstract class TCItemDefinition : ModType {
@@ -36,6 +37,11 @@ namespace TerrariansConstructLib.API.Definitions {
 		/// Defaults to 2
 		/// </summary>
 		public virtual int HitsPerToolSwing => 2;
+
+		/// <summary>
+		/// If this item's definition's item is ammo, this property indicates what <see cref="BaseTCProjectile"/> it spawns
+		/// </summary>
+		public virtual int ProjectileSpawnedFromAmmo => 0;
 
 		protected sealed override void Register() {
 			ModTypeLookup<TCItemDefinition>.Register(this);

@@ -43,6 +43,12 @@ namespace TerrariansConstructLib.Items {
 		public abstract int ItemDefinition { get; }
 
 		/// <summary>
+		/// The ID of the <see cref="AmmoID"/> or item ID that this item is classified under.
+		/// Defaults to 0, meaning this item is not ammo.
+		/// </summary>
+		public virtual int AmmoIDClassification => ItemID.None;
+
+		/// <summary>
 		/// The current durability for the item
 		/// </summary>
 		public int CurrentDurability { get; internal set; }
@@ -148,6 +154,14 @@ namespace TerrariansConstructLib.Items {
 
 			Item.maxStack = 1;
 			Item.consumable = false;
+
+			int ammo = AmmoIDClassification;
+
+			if (ammo > ItemID.None) {
+				Item.ammo = ammo;
+				Item.useAmmo = ItemID.None;
+				Item.shoot = ItemDefinitionLoader.Get(ItemDefinition)!.ProjectileSpawnedFromAmmo;
+			}
 		}
 
 		public void InitializeWithParts(params ItemPart[] parts) {
@@ -202,12 +216,12 @@ namespace TerrariansConstructLib.Items {
 
 		public sealed override void AutoStaticDefaults() {
 			//Need to get an asset instance just so that we can replace the texture...
-			Asset<Texture2D> asset = TextureAssets.Item[Item.type] = ReflectionHelper<Asset<Texture2D>>.InvokeCloneMethod(CoreLibMod.Instance.Assets.Request<Texture2D>("Assets/DummyItem", AssetRequestMode.ImmediateLoad));
-
-			ReflectionHelper<Asset<Texture2D>>.InvokeSetterFunction("ownValue", asset, CoreLibMod.ItemTextures.Get(
-				ItemDefinition,
-				ItemDefinitionLoader.Get(ItemDefinition)!.GetValidPartIDs().Select(p => new ItemPart(){ material = CoreLibMod.RegisteredMaterials.Unknown, partID = p }).ToArray(),
-				Array.Empty<BaseTrait>()));
+			TextureAssets.Item[Type] = Utility.CloneAndOverwriteValue(
+				CoreLibMod.Instance.Assets.Request<Texture2D>("Assets/DummyItem", AssetRequestMode.ImmediateLoad),
+				CoreLibMod.ItemTextures.Get(
+					ItemDefinition,
+					ItemDefinitionLoader.Get(ItemDefinition)!.GetValidPartIDs().Select(p => new ItemPart(){ material = CoreLibMod.RegisteredMaterials.Unknown, partID = p }).ToArray(),
+					Array.Empty<BaseTrait>()));
 
 			if (DisplayName.IsDefault())
 				DisplayName.SetDefault(Regex.Replace(Name, "([A-Z])", " $1").Trim());

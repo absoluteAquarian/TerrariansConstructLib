@@ -19,6 +19,6 @@ namespace TerrariansConstructLib.API {
 		public static void Unload() {
 			items.Clear();
 			Count = 0;
-		}		
+		}
 	}
 }
