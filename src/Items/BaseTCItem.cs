@@ -171,8 +171,10 @@ namespace TerrariansConstructLib.Items {
 
 			int useAmmo = UseAmmoIDClassification;
 
-			if (useAmmo > 0)
+			if (useAmmo > 0) {
 				Item.useAmmo = useAmmo;
+				Item.shoot = ProjectileID.PurificationPowder;  //Must be > 0 for things to be shot
+			}
 		}
 
 		public void InitializeWithParts(params ItemPart[] parts) {
