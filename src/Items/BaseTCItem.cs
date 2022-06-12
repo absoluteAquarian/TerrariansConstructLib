@@ -545,7 +545,12 @@ namespace TerrariansConstructLib.Items {
 			var data = ItemDefinitionLoader.Get(ItemDefinition)!;
 			float mult = data.UseSpeedMultiplier;
 
-			if (!HasAnyToolPower())
+			if(UseAmmoIDClassification > 0) {
+				GetBaseBowStats(out int useSpeed, out float shootSpeed);
+
+				Item.useTime = Item.useAmmo = useSpeed;
+				Item.shootSpeed = shootSpeed;
+			} else if (!HasAnyToolPower())
 				Item.useTime = Item.useAnimation = (int)Math.Max(1, GetBaseUseSpeed() * mult);
 			else {
 				float time = Math.Max(1, GetBaseMiningSpeed() * mult);
@@ -577,6 +582,21 @@ namespace TerrariansConstructLib.Items {
 				handle *= stat;
 
 			return (int)Math.Max(1, averageHead * handle);
+		}
+
+		public void GetBaseBowStats(out int useSpeed, out float shootSpeed) {
+			useSpeed = 0;
+			shootSpeed = 0;
+			if (UseAmmoIDClassification <= 0)
+				return;
+
+			double averageHead = AverageWeightedHeadStats(p => p.useSpeed, 20);
+			StatModifier handle = GetHandleParts().Sum(p => p.attackSpeed);
+			double extraBowDrawSpeed = GetExtraParts().Average(p => p.Get(CoreLibMod.KnownStatModifiers.BowDrawSpeed).Multiplicative);
+			double extraArrowSpeed = GetExtraParts().Average(p => p.Get(CoreLibMod.KnownStatModifiers.BowArrowSpeed, new StatModifier()).Additive, 28);
+
+			useSpeed = (int)Math.Max(1, handle.ApplyTo(averageHead * extraBowDrawSpeed));
+			shootSpeed = (float)extraArrowSpeed;
 		}
 
 		public int GetBaseCrit() {
