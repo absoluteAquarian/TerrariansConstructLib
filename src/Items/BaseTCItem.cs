@@ -49,6 +49,12 @@ namespace TerrariansConstructLib.Items {
 		public virtual int AmmoIDClassification => ItemID.None;
 
 		/// <summary>
+		/// The ID of the <see cref="AmmoID"/> or item ID that this item's ammo is classified under.
+		/// Defaults to 0, meaning this item does not use ammo.
+		/// </summary>
+		public virtual int UseAmmoIDClassification => ItemID.None;
+
+		/// <summary>
 		/// The current durability for the item
 		/// </summary>
 		public int CurrentDurability { get; internal set; }
@@ -162,6 +168,11 @@ namespace TerrariansConstructLib.Items {
 				Item.useAmmo = ItemID.None;
 				Item.shoot = ItemDefinitionLoader.Get(ItemDefinition)!.ProjectileSpawnedFromAmmo;
 			}
+
+			int useAmmo = UseAmmoIDClassification;
+
+			if (useAmmo > 0)
+				Item.useAmmo = useAmmo;
 		}
 
 		public void InitializeWithParts(params ItemPart[] parts) {

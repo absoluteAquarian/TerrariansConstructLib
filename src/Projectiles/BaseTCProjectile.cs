@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Terraria;
 using Terraria.GameContent;
@@ -10,6 +11,7 @@ using Terraria.ModLoader;
 using TerrariansConstructLib.API;
 using TerrariansConstructLib.API.Definitions;
 using TerrariansConstructLib.API.Reflection;
+using TerrariansConstructLib.API.Stats;
 using TerrariansConstructLib.Items;
 using TerrariansConstructLib.Materials;
 using TerrariansConstructLib.Modifiers;
@@ -30,7 +32,37 @@ namespace TerrariansConstructLib.Projectiles {
 		public int CountParts(Material material)
 			=> parts.Count(p => p.material.Type == material.Type);
 
-		protected ItemPart GetPart(int index) => parts[index];
+		protected IEnumerable<ItemPart> FilterParts(StatType type)
+			=> parts?.Where(p => PartDefinitionLoader.Get(p.partID)?.StatType == type) ?? Array.Empty<ItemPart>();
+
+		protected IEnumerable<ItemPart> FilterHeadParts() => FilterParts(StatType.Head);
+
+		protected IEnumerable<ItemPart> FilterHandleParts() => FilterParts(StatType.Handle);
+
+		protected IEnumerable<ItemPart> FilterExtraParts() => FilterParts(StatType.Extra);
+
+		protected IEnumerable<S> GetPartStats<S>(StatType type) where S : class, IPartStats
+			=> parts.Where(p => PartDefinitionLoader.Get(p.partID)?.StatType == type).Select(p => p.GetStat<S>(type)!).Where(s => s is not null);
+
+		protected IEnumerable<HeadPartStats> GetHeadParts() => GetPartStats<HeadPartStats>(StatType.Head);
+
+		protected IEnumerable<HandlePartStats> GetHandleParts() => GetPartStats<HandlePartStats>(StatType.Handle);
+
+		protected IEnumerable<ExtraPartStats> GetExtraParts() => GetPartStats<ExtraPartStats>(StatType.Extra);
+
+		protected IEnumerable<HeadPartStats> SelectToolPickaxeStats()
+			=> parts.Where(p => (PartDefinitionLoader.Get(p.partID)?.ToolType & ToolType.Pickaxe) != 0).Select(p => p.GetStat<HeadPartStats>(StatType.Head)!).Where(s => s is not null);
+
+		protected IEnumerable<HeadPartStats> SelectToolAxeStats()
+			=> parts.Where(p => (PartDefinitionLoader.Get(p.partID)?.ToolType & ToolType.Axe) != 0).Select(p => p.GetStat<HeadPartStats>(StatType.Head)!).Where(s => s is not null);
+
+		protected IEnumerable<HeadPartStats> SelectToolHammerStats()
+			=> parts.Where(p => (PartDefinitionLoader.Get(p.partID)?.ToolType & ToolType.Hammer) != 0).Select(p => p.GetStat<HeadPartStats>(StatType.Head)!).Where(s => s is not null);
+
+		public ItemPart this[int index] {
+			get => parts[index];
+			set => parts[index] = value;
+		}
 
 		/// <summary>
 		/// The ID of the <see cref="TCProjectileDefinition"/> that this projectile retrieves its data from
