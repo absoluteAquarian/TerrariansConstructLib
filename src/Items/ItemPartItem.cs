@@ -30,7 +30,7 @@ namespace TerrariansConstructLib.Items {
 
 				if (!CachedItemTexturesDictionary.TextureExists(asset, out asset)) {
 					// Default to the "unknown" asset
-					string path = GetUnkownTexturePath(part.partID);
+					string path = GetUnknownTexturePath(part.partID);
 
 					Mod.Logger.Warn($"Part texture (Material: \"{part.material.GetItemName()}\", Name: \"{PartDefinitionLoader.Get(part.partID)!.Name}\") could not be found." +
 						"  Defaulting to Unknown texture path:\n   " +
@@ -43,7 +43,7 @@ namespace TerrariansConstructLib.Items {
 			}
 		}
 
-		public static string GetUnkownTexturePath(int partID) {
+		public static string GetUnknownTexturePath(int partID) {
 			if (partID < 0 || partID >= PartDefinitionLoader.Count)
 				throw new ArgumentException("Part ID was invalid");
 

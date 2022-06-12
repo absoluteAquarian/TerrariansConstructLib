@@ -164,7 +164,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 				bool hasAsset;
 				Asset<Texture2D> asset;
 				if (partID >= 0 && partID < PartDefinitionLoader.Count)
-					hasAsset = ModContent.RequestIfExists(ItemPartItem.GetUnkownTexturePath(partID), out asset, AssetRequestMode.ImmediateLoad);
+					hasAsset = ModContent.RequestIfExists(ItemPartItem.GetUnknownTexturePath(partID), out asset, AssetRequestMode.ImmediateLoad);
 				else {
 					//Attempt to load a material item slot
 					int moldID = context - TCUIItemSlot.SlotContexts.ForgeMaterialSlot;
@@ -175,7 +175,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 						asset = TextureAssets.Item[ItemID.Wood];
 					} else if (moldID == -1) {
 						//Shard icon
-						hasAsset = ModContent.RequestIfExists(ItemPartItem.GetUnkownTexturePath(ModContent.GetInstance<ShardPartDefinition>().Type), out asset, AssetRequestMode.ImmediateLoad);
+						hasAsset = ModContent.RequestIfExists(ItemPartItem.GetUnknownTexturePath(ModContent.GetInstance<ShardPartDefinition>().Type), out asset, AssetRequestMode.ImmediateLoad);
 					} else if (moldID >= 0 && moldID < PartMold.moldsByPartID.Count) {
 						//Mold icon
 						var mold = PartMold.moldsByPartID[moldID].complexPlatinum;
