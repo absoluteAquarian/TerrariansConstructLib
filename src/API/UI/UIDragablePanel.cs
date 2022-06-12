@@ -71,6 +71,14 @@ namespace TerrariansConstructLib.API.UI {
 			}
 		}
 
+		public void SetActivePage(string page) {
+			foreach (var menu in menus.Values)
+				menu.TextColor = Color.White;
+
+			if (menus.TryGetValue(page, out var menuText))
+				menuText.TextColor = Color.Yellow;
+		}
+
 		public override void OnInitialize(){
 			base.OnInitialize();
 			header.Width = Width;
