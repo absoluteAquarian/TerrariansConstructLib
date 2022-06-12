@@ -9,6 +9,8 @@ namespace TerrariansConstructLib.API.Edits {
 
 			On.Terraria.Player.HasAmmo_Item_bool += Detours.Vanilla.Hook_Player_HasAmmo;
 			On.Terraria.Player.IsAmmoFreeThisShot += Detours.Vanilla.Hook_Player_IsAmmoFreeThisShot;
+			On.Terraria.UI.ItemSlot.LeftClick_ItemArray_int_int += Detours.Vanilla.Hook_ItemSlot_LeftClick_ItemArray_int_int;
+			On.Terraria.UI.ItemSlot.RightClick_ItemArray_int_int += Detours.Vanilla.Hook_ItemSlot_RightClick_ItemArray_int_int;
 
 			ILHelper.InitMonoModDumps();
 

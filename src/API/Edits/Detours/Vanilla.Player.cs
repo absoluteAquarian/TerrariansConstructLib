@@ -3,7 +3,7 @@ using TerrariansConstructLib.API.Sources;
 using TerrariansConstructLib.Items;
 
 namespace TerrariansConstructLib.API.Edits.Detours {
-	partial class Vanilla {
+	internal static partial class Vanilla {
 		internal static bool Hook_Player_HasAmmo(On.Terraria.Player.orig_HasAmmo_Item_bool orig, Player self, Item sItem, bool canUse) {
 			if (sItem.useAmmo <= 0)
 				return orig(self, sItem, canUse);
