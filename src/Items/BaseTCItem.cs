@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.Localization;
@@ -334,7 +335,10 @@ namespace TerrariansConstructLib.Items {
 
 		public sealed override bool CanBeConsumedAsAmmo(Item weapon, Player player) => false;
 
-		public sealed override void PickAmmo(Item weapon, Player player, ref int type, ref float speed, ref StatModifier damage, ref float knockback) { }
+		public sealed override void PickAmmo(Item weapon, Player player, ref int type, ref float speed, ref StatModifier damage, ref float knockback) {
+			if (AmmoIDClassification > 0)
+				API.Edits.MSIL.Vanilla.PickAmmo_Item = this;
+		}
 
 		public sealed override bool CanConsumeAmmo(Item ammo, Player player) {
 			bool consume = ammo.ModItem is not BaseTCItem tc || modifiers.CanConsumeAmmo(this, tc, player);
@@ -514,6 +518,12 @@ namespace TerrariansConstructLib.Items {
 		/// <param name="y">The tile Y-coordinate</param>
 		/// <param name="context">The context.  Contains information about what tool type was used to destroy the tile and how much damage was dealt to destroy the tile</param>
 		public virtual void SafeOnTileDestroyed(Player player, int x, int y, TileDestructionContext context) { }
+
+		public sealed override bool Shoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback) {
+			return SafeShoot(player, source, position, velocity, type, damage, knockback);
+		}
+
+		public virtual bool SafeShoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback) => true;
 
 		public int GetMaxDurability() {
 			double averageHead = AverageWeightedHeadStats(p => p.durability, 1);

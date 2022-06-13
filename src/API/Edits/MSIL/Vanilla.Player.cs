@@ -1,11 +1,14 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.Utils;
 using System;
 using System.Diagnostics;
 using System.Reflection;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent.Achievements;
 using TerrariansConstructLib.API.Reflection;
+using TerrariansConstructLib.API.Sources;
 using TerrariansConstructLib.DataStructures;
 using TerrariansConstructLib.Items;
 
@@ -275,6 +278,43 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 
 				//	Main.NewText($"Destroyed tile (TC item? {sItem.ModItem is BaseTCItem})");
 				}
+			});
+
+			ILHelper.UpdateInstructionOffsets(c);
+
+			ILHelper.CompleteLog(CoreLibMod.Instance, c, beforeEdit: false);
+
+			return;
+			bad_il:
+			throw new Exception("Unable to fully patch " + il.Method.Name + "()\n" +
+				"Reason: Could not find instruction sequence for patch #" + patchNum);
+		}
+
+		internal static BaseTCItem PickAmmo_Item;
+
+		internal static void Patch_Player_ItemCheck_Shoot(ILContext il) {
+			ILCursor c = new(il);
+
+			int patchNum = 1;
+
+			ILHelper.CompleteLog(CoreLibMod.Instance, c, beforeEdit: true);
+
+			if (!c.TryGotoNext(MoveType.Before, i => i.MatchStloc(9)))
+				goto bad_il;
+
+			patchNum++;
+
+			c.Index--;  //Move to before the assignment
+
+			c.Emit(OpCodes.Ldarg_0);
+			c.Emit(OpCodes.Ldarg_2);
+			c.EmitDelegate<Func<IEntitySource, Player, Item, IEntitySource>>((orig, player, sItem) => {
+				if (sItem.ModItem is BaseTCItem tc)
+					orig = new EntitySource_TCItemUse_WithAmmo(player, tc, PickAmmo_Item.Item, "TerrariansConstruct:PickAmmo redirection");
+
+				PickAmmo_Item = null!;
+
+				return orig;
 			});
 
 			ILHelper.UpdateInstructionOffsets(c);
