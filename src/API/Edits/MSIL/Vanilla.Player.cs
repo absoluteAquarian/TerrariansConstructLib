@@ -290,7 +290,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 				"Reason: Could not find instruction sequence for patch #" + patchNum);
 		}
 
-		internal static BaseTCItem PickAmmo_Item;
+		internal static Item PickAmmo_Item;
 
 		internal static void Patch_Player_ItemCheck_Shoot(ILContext il) {
 			ILCursor c = new(il);
@@ -310,7 +310,7 @@ namespace TerrariansConstructLib.API.Edits.MSIL {
 			c.Emit(OpCodes.Ldarg_2);
 			c.EmitDelegate<Func<IEntitySource, Player, Item, IEntitySource>>((orig, player, sItem) => {
 				if (sItem.ModItem is BaseTCItem tc)
-					orig = new EntitySource_TCItemUse_WithAmmo(player, tc, PickAmmo_Item.Item, "TerrariansConstruct:PickAmmo redirection");
+					orig = new EntitySource_TCItemUse_WithAmmo(player, tc, PickAmmo_Item, "TerrariansConstruct:PickAmmo redirection");
 
 				PickAmmo_Item = null!;
 

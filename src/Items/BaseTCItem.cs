@@ -335,10 +335,7 @@ namespace TerrariansConstructLib.Items {
 
 		public sealed override bool CanBeConsumedAsAmmo(Item weapon, Player player) => false;
 
-		public sealed override void PickAmmo(Item weapon, Player player, ref int type, ref float speed, ref StatModifier damage, ref float knockback) {
-			if (AmmoIDClassification > 0)
-				API.Edits.MSIL.Vanilla.PickAmmo_Item = this;
-		}
+		public sealed override void PickAmmo(Item weapon, Player player, ref int type, ref float speed, ref StatModifier damage, ref float knockback) { }
 
 		public sealed override bool CanConsumeAmmo(Item ammo, Player player) {
 			bool consume = ammo.ModItem is not BaseTCItem tc || modifiers.CanConsumeAmmo(this, tc, player);
